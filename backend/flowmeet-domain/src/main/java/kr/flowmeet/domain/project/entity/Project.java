@@ -6,11 +6,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import kr.flowmeet.domain.common.BaseTimeEntity;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import kr.flowmeet.domain.common.BaseTimeEntity;
 
 @Entity
 @Table(name = "projects")
@@ -26,15 +26,16 @@ public class Project extends BaseTimeEntity {
     @Column(nullable = false)
     private String name;
 
-    private String description;
-
     @Column(name = "profile_image_url")
     private String profileImageUrl;
 
     @Builder
-    public Project(String name, String description, String profileImageUrl) {
+    public Project(String name, String profileImageUrl) {
         this.name = name;
-        this.description = description;
         this.profileImageUrl = profileImageUrl;
+    }
+
+    public void updateName(final String name) {
+        this.name = name;
     }
 }
