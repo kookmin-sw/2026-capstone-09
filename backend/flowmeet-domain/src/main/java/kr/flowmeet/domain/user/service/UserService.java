@@ -1,6 +1,5 @@
 package kr.flowmeet.domain.user.service;
 
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,8 +20,9 @@ public class UserService {
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
     }
 
-    public Optional<User> findByPrimaryEmail(final String email) {
-        return userRepository.findByPrimaryEmailAndDeletedAtIsNull(email);
+    public User findByPrimaryEmail(final String email) {
+        return userRepository.findByPrimaryEmailAndDeletedAtIsNull(email)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
     }
 
     public void validateNicknameNotDuplicated(final String nickname, final String currentNickname) {

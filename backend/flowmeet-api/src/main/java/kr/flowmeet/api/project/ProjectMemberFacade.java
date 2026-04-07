@@ -13,7 +13,6 @@ import kr.flowmeet.domain.project.entity.ProjectMemberRole;
 import kr.flowmeet.domain.project.exception.ProjectErrorCode;
 import kr.flowmeet.domain.project.service.ProjectMemberService;
 import kr.flowmeet.domain.user.entity.User;
-import kr.flowmeet.domain.user.exception.UserErrorCode;
 import kr.flowmeet.domain.user.service.UserService;
 
 @Service
@@ -37,8 +36,7 @@ public class ProjectMemberFacade {
         ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
         validateProjectMemberIsViewer(requesterMember);
 
-        User invitee = userService.findByPrimaryEmail(request.email())
-                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+        User invitee = userService.findByPrimaryEmail(request.email());
 
         validateProjectMemberAlreadyExists(projectId, invitee.getId());
 
