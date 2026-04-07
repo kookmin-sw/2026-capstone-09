@@ -17,6 +17,7 @@ import kr.flowmeet.domain.project.entity.ProjectMember;
 import kr.flowmeet.domain.project.entity.ProjectMemberRole;
 import kr.flowmeet.domain.project.entity.ProjectUrl;
 import kr.flowmeet.domain.project.exception.ProjectErrorCode;
+import kr.flowmeet.domain.project.repository.projection.ProjectWithMemberCountProjection;
 import kr.flowmeet.domain.project.service.ProjectMemberService;
 import kr.flowmeet.domain.project.service.ProjectService;
 import kr.flowmeet.domain.project.service.ProjectUrlService;
@@ -55,14 +56,11 @@ public class ProjectFacade {
     }
 
     public GetAllProjectsResponse getAllProjects(final Long userId, final String search, final Pageable pageable) {
-        Page<Object[]> results = projectService.findAllByUserId(userId, search, pageable);
+        Page<ProjectWithMemberCountProjection> results = projectService.findAllByUserId(userId, search, pageable);
 
         List<GetAllProjectsResponse.ProjectItem> projects = results.getContent().stream()
-                .map(row -> {
-                    Project project = (Project) row[0];
-                    int memberCount = ((Long) row[1]).intValue();
-                    return GetAllProjectsResponse.ProjectItem.of(project, memberCount);
-                })
+                .map(projection -> GetAllProjectsResponse.ProjectItem.of(
+                        projection.project(), projection.memberCount().intValue()))
                 .toList();
 
         return GetAllProjectsResponse.of(projects, results.getTotalElements(), results.getTotalPages(),

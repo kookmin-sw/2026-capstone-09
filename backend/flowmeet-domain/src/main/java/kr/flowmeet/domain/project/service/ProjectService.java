@@ -9,6 +9,7 @@ import kr.flowmeet.domain.exception.BusinessException;
 import kr.flowmeet.domain.project.entity.Project;
 import kr.flowmeet.domain.project.exception.ProjectErrorCode;
 import kr.flowmeet.domain.project.repository.ProjectRepository;
+import kr.flowmeet.domain.project.repository.projection.ProjectWithMemberCountProjection;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +23,8 @@ public class ProjectService {
                 .orElseThrow(() -> new BusinessException(ProjectErrorCode.PROJECT_NOT_FOUND));
     }
 
-    public Page<Object[]> findAllByUserId(final Long userId, final String search, final Pageable pageable) {
+    public Page<ProjectWithMemberCountProjection> findAllByUserId(final Long userId, final String search,
+                                                                  final Pageable pageable) {
         return projectRepository.findAllByUserId(userId, search, pageable);
     }
 
