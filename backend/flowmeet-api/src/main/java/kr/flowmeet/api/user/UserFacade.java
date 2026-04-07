@@ -54,7 +54,7 @@ public class UserFacade {
         User user = userService.findById(userId);
 
         // TODO: 외부 스토리지에 파일 업로드 후 URL 반환
-        String imageUrl = "https://cdn.flowmeet.com/profiles/" + userId + ".png";
+        String imageUrl = "https://cdn.flowmeet.com/profiles/" + user.getId() + ".png";
         user.updateProfileImageUrl(imageUrl);
 
         return UpdateProfileImageResponse.from(imageUrl);
@@ -69,7 +69,7 @@ public class UserFacade {
         User user = userService.findById(userId);
         userService.delete(user);
 
-        projectMemberService.findAllByUserId(userId)
+        projectMemberService.findAllByUserId(user.getId())
                 .forEach(projectMemberService::delete);
     }
 

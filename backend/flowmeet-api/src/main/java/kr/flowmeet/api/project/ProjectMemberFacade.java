@@ -25,9 +25,9 @@ public class ProjectMemberFacade {
     private final ProjectMemberService projectMemberService;
 
     public GetAllProjectMembersResponse getAllMembers(final Long userId, final Long projectId) {
-        projectMemberService.findByProjectIdAndUserId(projectId, userId);
+        ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
 
-        List<ProjectMember> members = projectMemberService.findAllByProjectIdOrderByRole(projectId);
+        List<ProjectMember> members = projectMemberService.findAllByProjectIdOrderByRole(requesterMember.getProjectId());
 
         List<GetAllProjectMembersResponse.ProjectMemberInfo> memberInfos = members.stream()
                 .map(member -> GetAllProjectMembersResponse.ProjectMemberInfo.of(member, member.getUser()))
@@ -38,9 +38,9 @@ public class ProjectMemberFacade {
 
     @Transactional
     public void inviteMember(final Long userId, final Long projectId, final InviteProjectMemberRequest request) {
-        ProjectMember myMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
+        ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
 
-        if (myMember.getRole() == ProjectMemberRole.VIEWER) {
+        if (requesterMember.getRole() == ProjectMemberRole.VIEWER) {
             throw new BusinessException(ProjectErrorCode.MEMBER_INVITE_FORBIDDEN);
         }
 
@@ -63,9 +63,9 @@ public class ProjectMemberFacade {
     @Transactional
     public void updateMemberRole(final Long userId, final Long projectId, final Long memberId,
                                  final UpdateProjectMemberRoleRequest request) {
-        ProjectMember myMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
+        ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
 
-        if (!myMember.isOwner()) {
+        if (!requesterMember.isOwner()) {
             throw new BusinessException(ProjectErrorCode.MEMBER_ROLE_CHANGE_FORBIDDEN);
         }
 
@@ -84,9 +84,9 @@ public class ProjectMemberFacade {
 
     @Transactional
     public void deleteMember(final Long userId, final Long projectId, final Long memberId) {
-        ProjectMember myMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
+        ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
 
-        if (!myMember.isOwner()) {
+        if (!requesterMember.isOwner()) {
             throw new BusinessException(ProjectErrorCode.MEMBER_DELETE_FORBIDDEN);
         }
 
@@ -101,12 +101,12 @@ public class ProjectMemberFacade {
 
     @Transactional
     public void leaveProject(final Long userId, final Long projectId) {
-        ProjectMember myMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
+        ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
 
-        if (myMember.isOwner()) {
+        if (requesterMember.isOwner()) {
             throw new BusinessException(ProjectErrorCode.PROJECT_OWNER_CANNOT_LEAVE);
         }
 
-        projectMemberService.delete(myMember);
+        projectMemberService.delete(requesterMember);
     }
 }

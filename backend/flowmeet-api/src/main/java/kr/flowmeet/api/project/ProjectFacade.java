@@ -20,6 +20,7 @@ import kr.flowmeet.domain.project.exception.ProjectErrorCode;
 import kr.flowmeet.domain.project.service.ProjectMemberService;
 import kr.flowmeet.domain.project.service.ProjectService;
 import kr.flowmeet.domain.project.service.ProjectUrlService;
+import kr.flowmeet.domain.user.entity.User;
 import kr.flowmeet.domain.user.service.UserService;
 
 @Service
@@ -34,7 +35,7 @@ public class ProjectFacade {
 
     @Transactional
     public CreateProjectResponse createProject(final Long userId, final CreateProjectRequest request) {
-        userService.findById(userId);
+        User user = userService.findById(userId);
 
         Project project = projectService.save(
                 Project.builder()
@@ -45,7 +46,7 @@ public class ProjectFacade {
         projectMemberService.save(
                 ProjectMember.builder()
                         .projectId(project.getId())
-                        .userId(userId)
+                        .userId(user.getId())
                         .role(ProjectMemberRole.OWNER)
                         .build()
         );
@@ -71,19 +72,19 @@ public class ProjectFacade {
     public GetProjectResponse getProject(final Long userId, final Long projectId) {
         Project project = projectService.findById(projectId);
 
-        ProjectMember myMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
+        ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(project.getId(), userId);
 
-        int memberCount = projectMemberService.countByProjectId(projectId);
-        List<ProjectUrl> urls = projectUrlService.findAllByProjectId(projectId);
+        int memberCount = projectMemberService.countByProjectId(project.getId());
+        List<ProjectUrl> urls = projectUrlService.findAllByProjectId(project.getId());
 
-        return GetProjectResponse.of(project, myMember.getRole(), memberCount, urls);
+        return GetProjectResponse.of(project, requesterMember.getRole(), memberCount, urls);
     }
 
     @Transactional
     public void updateProject(final Long userId, final Long projectId, final UpdateProjectRequest request) {
-        ProjectMember myMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
+        ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
 
-        if (myMember.getRole() == ProjectMemberRole.VIEWER) {
+        if (requesterMember.getRole() == ProjectMemberRole.VIEWER) {
             throw new BusinessException(ProjectErrorCode.PROJECT_ACCESS_DENIED);
         }
 
@@ -93,19 +94,19 @@ public class ProjectFacade {
 
     @Transactional
     public void deleteProject(final Long userId, final Long projectId) {
-        ProjectMember myMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
+        ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
 
-        if (!myMember.isOwner()) {
+        if (!requesterMember.isOwner()) {
             throw new BusinessException(ProjectErrorCode.PROJECT_DELETE_FORBIDDEN);
         }
 
         Project project = projectService.findById(projectId);
         projectService.delete(project);
 
-        List<ProjectMember> members = projectMemberService.findAllByProjectId(projectId);
+        List<ProjectMember> members = projectMemberService.findAllByProjectId(project.getId());
         members.forEach(projectMemberService::delete);
 
-        List<ProjectUrl> urls = projectUrlService.findAllByProjectId(projectId);
+        List<ProjectUrl> urls = projectUrlService.findAllByProjectId(project.getId());
         urls.forEach(projectUrlService::delete);
     }
 }

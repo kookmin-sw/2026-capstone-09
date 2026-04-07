@@ -55,9 +55,9 @@ public class ProjectUrlFacade {
     }
 
     private void validateMemberCanEdit(final Long projectId, final Long userId) {
-        ProjectMember myMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
+        ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
 
-        if (myMember.getRole() == ProjectMemberRole.VIEWER) {
+        if (requesterMember.getRole() == ProjectMemberRole.VIEWER) {
             throw new BusinessException(ProjectErrorCode.PROJECT_ACCESS_DENIED);
         }
     }
