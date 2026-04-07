@@ -22,7 +22,7 @@ public class MockFacade {
     public void createMock(final Long userId, final CreateMockRequest request) {
         User user = userService.findById(userId);
 
-        mockService.save(request.name());
+        mockService.create(request.name());
     }
 
     public GetAllMocksResponse getAllMocks(final Long userId) {

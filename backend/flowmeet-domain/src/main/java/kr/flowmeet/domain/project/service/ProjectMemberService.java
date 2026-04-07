@@ -57,7 +57,7 @@ public class ProjectMemberService {
     }
 
     @Transactional
-    public ProjectMember save(final ProjectMember projectMember) {
+    public ProjectMember create(final ProjectMember projectMember) {
         return projectMemberRepository.save(projectMember);
     }
 

@@ -26,7 +26,7 @@ public class ProjectUrlService {
     }
 
     @Transactional
-    public ProjectUrl save(final ProjectUrl projectUrl) {
+    public ProjectUrl create(final ProjectUrl projectUrl) {
         return projectUrlRepository.save(projectUrl);
     }
 

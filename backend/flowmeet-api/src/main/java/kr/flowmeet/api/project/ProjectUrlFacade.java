@@ -25,7 +25,7 @@ public class ProjectUrlFacade {
     public ProjectUrlResponse addUrl(final Long userId, final Long projectId, final ProjectUrlRequest request) {
         validateMemberCanEdit(projectId, userId);
 
-        ProjectUrl projectUrl = projectUrlService.save(
+        ProjectUrl projectUrl = projectUrlService.create(
                 ProjectUrl.builder()
                         .projectId(projectId)
                         .url(request.url())

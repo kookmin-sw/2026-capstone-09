@@ -37,13 +37,13 @@ public class ProjectFacade {
     public CreateProjectResponse createProject(final Long userId, final CreateProjectRequest request) {
         User user = userService.findById(userId);
 
-        Project project = projectService.save(
+        Project project = projectService.create(
                 Project.builder()
                         .name(request.name())
                         .build()
         );
 
-        projectMemberService.save(
+        projectMemberService.create(
                 ProjectMember.builder()
                         .projectId(project.getId())
                         .userId(user.getId())

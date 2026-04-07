@@ -40,7 +40,7 @@ public class ProjectMemberFacade {
 
         validateProjectMemberAlreadyExists(projectId, invitee.getId());
 
-        projectMemberService.save(
+        projectMemberService.create(
                 ProjectMember.builder()
                         .projectId(projectId)
                         .userId(invitee.getId())

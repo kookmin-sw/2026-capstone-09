@@ -13,7 +13,7 @@ public class MockService {
         return name;
     }
 
-    public void save(String mock) {
+    public void create(String mock) {
         //생성 코드
     }
 
