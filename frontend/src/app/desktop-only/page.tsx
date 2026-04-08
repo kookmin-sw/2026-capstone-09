@@ -2,7 +2,6 @@ export default function DesktopOnlyPage() {
   return (
     <div className="bg-background flex min-h-screen flex-col items-center justify-center gap-6 p-8 text-center">
       <svg
-        // TODO : xmlns 수정 필요
         xmlns="http://www.w3.org/2000/svg"
         width="48"
         height="48"
