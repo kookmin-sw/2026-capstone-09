@@ -7,10 +7,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-
     "dev:desktop": "wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .",
     "dev:electron": "concurrently -k \"pnpm dev\" \"pnpm dev:desktop\"",
-
     "lint": "eslint"
   },
   "dependencies": {
@@ -43,5 +41,6 @@
     "tailwindcss": "^4",
     "typescript": "^5",
     "wait-on": "^9.0.4"
-  }
+  },
+  "packageManager": "pnpm@10.10.0+sha512.d615db246fe70f25dcfea6d8d73dee782ce23e2245e3c4f6f888249fb568149318637dca73c2c5c8ef2a4ca0d5657fb9567188bfab47f566d1ee6ce987815c39"
 }
