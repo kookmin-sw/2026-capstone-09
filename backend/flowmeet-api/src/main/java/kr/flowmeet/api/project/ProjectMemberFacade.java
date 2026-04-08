@@ -28,7 +28,7 @@ public class ProjectMemberFacade {
 
         List<ProjectMember> members = projectMemberService.findAllByProjectIdOrderByRole(requesterMember.getProjectId());
 
-        return GetAllProjectMembersResponse.from(members);
+        return GetAllProjectMembersResponse.of(members);
     }
 
     @Transactional
