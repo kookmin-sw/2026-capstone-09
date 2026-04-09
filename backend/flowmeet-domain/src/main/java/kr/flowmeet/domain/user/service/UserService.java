@@ -3,7 +3,7 @@ package kr.flowmeet.domain.user.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import kr.flowmeet.domain.exception.BusinessException;
+import kr.flowmeet.domain.common.exception.BusinessException;
 import kr.flowmeet.domain.user.entity.User;
 import kr.flowmeet.domain.user.exception.UserErrorCode;
 import kr.flowmeet.domain.user.repository.UserRepository;

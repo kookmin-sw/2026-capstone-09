@@ -6,7 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import kr.flowmeet.domain.exception.BusinessException;
+import kr.flowmeet.domain.common.exception.BusinessException;
 import kr.flowmeet.domain.project.entity.Project;
 import kr.flowmeet.domain.project.exception.ProjectErrorCode;
 import kr.flowmeet.domain.project.repository.ProjectRepository;

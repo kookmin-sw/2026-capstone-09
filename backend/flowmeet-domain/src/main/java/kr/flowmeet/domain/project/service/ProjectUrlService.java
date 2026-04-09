@@ -4,7 +4,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import kr.flowmeet.domain.exception.BusinessException;
+import kr.flowmeet.domain.common.exception.BusinessException;
 import kr.flowmeet.domain.project.entity.ProjectUrl;
 import kr.flowmeet.domain.project.exception.ProjectErrorCode;
 import kr.flowmeet.domain.project.repository.ProjectUrlRepository;
