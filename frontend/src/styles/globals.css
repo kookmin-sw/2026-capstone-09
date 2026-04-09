@@ -1,3 +1,4 @@
+@import 'pretendard/dist/web/variable/pretendardvariable.css';
 @import 'pretendard/dist/web/static/pretendard.css';
 @import './variables.css';
 @import 'tailwindcss';
@@ -30,8 +31,9 @@
 
 @theme inline {
   /* Fonts */
-  --font-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    'Helvetica Neue', Arial, sans-serif;
+  --font-pretendard:
+    'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 
   /* Colors */
@@ -55,11 +57,19 @@
   --color-theme---label---assistive: var(--theme---label---assistive);
   --color-theme---label---disable: var(--theme---label---disable);
   --color-theme---background---normal---normal: var(--theme---background---normal---normal);
-  --color-theme---background---normal---alternative: var(--theme---background---normal---alternative);
+  --color-theme---background---normal---alternative: var(
+    --theme---background---normal---alternative
+  );
   --color-theme---background---elevated---normal: var(--theme---background---elevated---normal);
-  --color-theme---background---elevated---alternative: var(--theme---background---elevated---alternative);
-  --color-theme---background---transparent---normal: var(--theme---background---transparent---normal);
-  --color-theme---background---transparent---alternative: var(--theme---background---transparent---alternative);
+  --color-theme---background---elevated---alternative: var(
+    --theme---background---elevated---alternative
+  );
+  --color-theme---background---transparent---normal: var(
+    --theme---background---transparent---normal
+  );
+  --color-theme---background---transparent---alternative: var(
+    --theme---background---transparent---alternative
+  );
   --color-theme---interaction---inactive: var(--theme---interaction---inactive);
   --color-theme---interaction---disable: var(--theme---interaction---disable);
   --color-theme---line---normal---normal: var(--theme---line---normal---normal);
@@ -369,7 +379,7 @@
 }
 
 body {
-  font-family: var(--font-sans);
+  font-family: var(--font-pretendard);
   background: #ffffff;
   color: var(--theme---label---normal);
 }

@@ -1,20 +1,20 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
+import { useState } from 'react';
 
 export default function Home() {
-  const [version, setVersion] = useState('')
+  const [version, setVersion] = useState('');
 
   const onClick = async () => {
-    const v = await window.desktop.getVersion()
-    setVersion(v)
-  }
+    const v = await window.desktop.getVersion();
+    setVersion(v);
+  };
 
   return (
     <main style={{ padding: 24 }}>
-      <h1>Web + Electron</h1>
+      <h1 className="bg-surface shadow-card">Web + Electron</h1>
       <button onClick={onClick}>앱 버전 확인</button>
       <p>{version}</p>
     </main>
-  )
+  );
 }
