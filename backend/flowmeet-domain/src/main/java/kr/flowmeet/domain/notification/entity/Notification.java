@@ -11,13 +11,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import kr.flowmeet.domain.common.BaseCreatedTimeEntity;
-import kr.flowmeet.domain.node.entity.Node;
-import kr.flowmeet.domain.user.entity.User;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import kr.flowmeet.domain.common.BaseCreatedTimeEntity;
+import kr.flowmeet.domain.node.entity.Node;
+import kr.flowmeet.domain.user.entity.User;
 
 @Entity
 @Table(name = "notifications")

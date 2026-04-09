@@ -1,9 +1,9 @@
 package kr.flowmeet.domain.mock.service;
 
 import java.util.List;
-import kr.flowmeet.domain.user.entity.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import kr.flowmeet.domain.user.entity.User;
 
 @Service
 @Transactional(readOnly = true)
@@ -13,7 +13,7 @@ public class MockService {
         return name;
     }
 
-    public void save(String mock) {
+    public void create(String mock) {
         //생성 코드
     }
 

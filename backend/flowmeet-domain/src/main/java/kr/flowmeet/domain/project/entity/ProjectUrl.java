@@ -13,12 +13,17 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+import kr.flowmeet.domain.common.BaseTimeEntity;
 
 @Entity
 @Table(name = "project_urls")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ProjectUrl {
+@SQLDelete(sql = "UPDATE project_urls SET deleted_at = CURRENT_TIMESTAMP WHERE project_url_id = ?")
+@SQLRestriction("deleted_at IS NULL")
+public class ProjectUrl extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,6 +43,10 @@ public class ProjectUrl {
     @Builder
     public ProjectUrl(Long projectId, String url) {
         this.projectId = projectId;
+        this.url = url;
+    }
+
+    public void updateUrl(final String url) {
         this.url = url;
     }
 }

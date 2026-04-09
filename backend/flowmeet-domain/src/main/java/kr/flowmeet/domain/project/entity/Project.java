@@ -6,16 +6,20 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import kr.flowmeet.domain.common.BaseTimeEntity;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+import kr.flowmeet.domain.common.BaseTimeEntity;
 
 @Entity
 @Table(name = "projects")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "UPDATE projects SET deleted_at = CURRENT_TIMESTAMP WHERE project_id = ?")
+@SQLRestriction("deleted_at IS NULL")
 public class Project extends BaseTimeEntity {
 
     @Id
@@ -26,15 +30,16 @@ public class Project extends BaseTimeEntity {
     @Column(nullable = false)
     private String name;
 
-    private String description;
-
     @Column(name = "profile_image_url")
     private String profileImageUrl;
 
     @Builder
-    public Project(String name, String description, String profileImageUrl) {
+    public Project(String name, String profileImageUrl) {
         this.name = name;
-        this.description = description;
         this.profileImageUrl = profileImageUrl;
+    }
+
+    public void updateName(final String name) {
+        this.name = name;
     }
 }

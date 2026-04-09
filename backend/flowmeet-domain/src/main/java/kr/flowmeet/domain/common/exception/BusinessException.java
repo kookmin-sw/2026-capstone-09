@@ -1,4 +1,4 @@
-package kr.flowmeet.domain.exception;
+package kr.flowmeet.domain.common.exception;
 
 import kr.flowmeet.common.exception.CustomException;
 import kr.flowmeet.common.exception.ErrorCode;

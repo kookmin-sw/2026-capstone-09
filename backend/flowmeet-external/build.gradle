@@ -1,3 +1,6 @@
 dependencies {
     implementation project(':flowmeet-common')
+
+    implementation 'org.springframework:spring-web'
+    implementation 'org.springframework:spring-context'
 }
