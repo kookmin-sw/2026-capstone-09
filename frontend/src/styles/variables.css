@@ -248,64 +248,85 @@
   --atomic---pink---99: #FFFAFE;
   --atomic---pink---100: #FFFFFF;
 
-  /* Text-size styles — 기준 16px = 1rem (Tailwind 기본과 정합) */
-  --display-1---bold: 3.5rem;
-  --display-1---medium: 3.5rem;
-  --display-1---regular: 3.5rem;
-  --display-2---regular: 2.5rem;
-  --display-2---bold: 2.5rem;
-  --display-2---medium: 2.5rem;
-  --display-3---bold: 2.25rem;
-  --display-3---medium: 2.25rem;
-  --display-3---regular: 2.25rem;
-  --title-1---bold: 2rem;
-  --title-1---medium: 2rem;
-  --title-1---regular: 2rem;
-  --title-2---bold: 1.75rem;
-  --title-2---medium: 1.75rem;
-  --title-2---regular: 1.75rem;
-  --title-3---bold: 1.5rem;
-  --title-3---medium: 1.5rem;
-  --title-3---regular: 1.5rem;
-  --heading-1---bold: 1.375rem;
-  --heading-1---medium: 1.375rem;
-  --heading-1---regular: 1.375rem;
-  --heading-2---bold: 1.25rem;
-  --heading-2---medium: 1.25rem;
-  --heading-2---regular: 1.25rem;
-  --headline-1---bold: 1.125rem;
-  --headline-1---medium: 1.125rem;
-  --headline-1---regular: 1.125rem;
-  --headline-2---bold: 1.0625rem;
-  --headline-2---medium: 1.0625rem;
-  --headline-2---regular: 1.0625rem;
-  --body-1---normal----regular: 1rem;
-  --body-1---normal----medium: 1rem;
-  --body-1---normal----bold: 1rem;
-  --body-1---reading----regular: 1rem;
-  --body-1---reading----medium: 1rem;
-  --body-1---reading----bold: 1rem;
-  --body-2---normal----regular: 0.9375rem;
-  --body-2---normal----medium: 0.9375rem;
-  --body-2---normal----bold: 0.9375rem;
-  --body-2---reading----regular: 0.9375rem;
-  --body-2---reading----medium: 0.9375rem;
-  --body-2---reading----bold: 0.9375rem;
-  --label-1---normal----bold: 0.875rem;
-  --label-1---normal----medium: 0.875rem;
-  --label-1---normal----regular: 0.875rem;
-  --label-1---reading----bold: 0.875rem;
-  --label-1---reading----medium: 0.875rem;
-  --label-1---reading----regular: 0.875rem;
-  --label-2---regular: 0.8125rem;
-  --label-2---medium: 0.8125rem;
-  --label-2---bold: 0.8125rem;
-  --caption-1---regular: 0.75rem;
-  --caption-1---medium: 0.75rem;
-  --caption-1---bold: 0.75rem;
-  --caption-2---regular: 0.6875rem;
-  --caption-2---medium: 0.6875rem;
-  --caption-2---bold: 0.6875rem;
+  /* Typography styles — fontSize, lineHeight, letterSpacing */
+  /* 기준 16px = 1rem (Tailwind 기본과 정합) */
+
+  /* Display variants */
+  --typography---display1---font-size: 3.5rem;
+  --typography---display1---line-height: 4.5rem;
+  --typography---display1---letter-spacing: -0.0319em;
+  --typography---display2---font-size: 2.5rem;
+  --typography---display2---line-height: 3.25rem;
+  --typography---display2---letter-spacing: -0.0282em;
+  --typography---display3---font-size: 2.25rem;
+  --typography---display3---line-height: 3rem;
+  --typography---display3---letter-spacing: -0.027em;
+
+  /* Title variants */
+  --typography---title1---font-size: 2rem;
+  --typography---title1---line-height: 2.75rem;
+  --typography---title1---letter-spacing: -0.0253em;
+  --typography---title2---font-size: 1.75rem;
+  --typography---title2---line-height: 2.375rem;
+  --typography---title2---letter-spacing: -0.0236em;
+  --typography---title3---font-size: 1.5rem;
+  --typography---title3---line-height: 2rem;
+  --typography---title3---letter-spacing: -0.023em;
+
+  /* Heading variants */
+  --typography---heading1---font-size: 1.375rem;
+  --typography---heading1---line-height: 1.875rem;
+  --typography---heading1---letter-spacing: -0.0194em;
+  --typography---heading2---font-size: 1.25rem;
+  --typography---heading2---line-height: 1.75rem;
+  --typography---heading2---letter-spacing: -0.012em;
+
+  /* Headline variants */
+  --typography---headline1---font-size: 1.125rem;
+  --typography---headline1---line-height: 1.625rem;
+  --typography---headline1---letter-spacing: -0.002em;
+  --typography---headline2---font-size: 1.0625rem;
+  --typography---headline2---line-height: 1.5rem;
+  --typography---headline2---letter-spacing: 0em;
+
+  /* Body variants */
+  --typography---body1---font-size: 1rem;
+  --typography---body1---line-height: 1.5rem;
+  --typography---body1---letter-spacing: 0.0057em;
+  --typography---body1-reading---font-size: 1rem;
+  --typography---body1-reading---line-height: 1.625rem;
+  --typography---body1-reading---letter-spacing: 0.0057em;
+  --typography---body2---font-size: 0.9375rem;
+  --typography---body2---line-height: 1.375rem;
+  --typography---body2---letter-spacing: 0.0096em;
+  --typography---body2-reading---font-size: 0.9375rem;
+  --typography---body2-reading---line-height: 1.5rem;
+  --typography---body2-reading---letter-spacing: 0.0096em;
+
+  /* Label variants */
+  --typography---label1---font-size: 0.875rem;
+  --typography---label1---line-height: 1.25rem;
+  --typography---label1---letter-spacing: 0.0145em;
+  --typography---label1-reading---font-size: 0.875rem;
+  --typography---label1-reading---line-height: 1.375rem;
+  --typography---label1-reading---letter-spacing: 0.0145em;
+  --typography---label2---font-size: 0.8125rem;
+  --typography---label2---line-height: 1.125rem;
+  --typography---label2---letter-spacing: 0.0194em;
+
+  /* Caption variants */
+  --typography---caption1---font-size: 0.75rem;
+  --typography---caption1---line-height: 1rem;
+  --typography---caption1---letter-spacing: 0.0252em;
+  --typography---caption2---font-size: 0.6875rem;
+  --typography---caption2---line-height: 0.875rem;
+  --typography---caption2---letter-spacing: 0.0311em;
+
+  /* Font weights */
+  --typography---weight---regular: 400;
+  --typography---weight---medium: 500;
+  --typography---weight---bold-display-title: 700;
+  --typography---weight---bold-default: 600;
 
   /* Effect styles */
   --shadow---normal---xsmall: 0px 1px 2px rgba(23, 23, 23, 0.1);
