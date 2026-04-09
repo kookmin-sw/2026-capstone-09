@@ -1,24 +1,22 @@
-@import 'pretendard/dist/web/static/pretendard.css';
-@import './variables.css';
 @import 'tailwindcss';
 
 :root {
-  --text-display-1: var(--display-1---regular);
-  --text-display-2: var(--display-2---regular);
-  --text-display-3: var(--display-3---regular);
-  --text-title-1: var(--title-1---regular);
-  --text-title-2: var(--title-2---regular);
-  --text-title-3: var(--title-3---regular);
-  --text-heading-1: var(--heading-1---regular);
-  --text-heading-2: var(--heading-2---regular);
-  --text-headline-1: var(--headline-1---regular);
-  --text-headline-2: var(--headline-2---regular);
-  --text-body-1: var(--body-1---normal----regular);
-  --text-body-2: var(--body-2---normal----regular);
-  --text-label-1: var(--label-1---normal----regular);
-  --text-label-2: var(--label-2---regular);
-  --text-caption-1: var(--caption-1---regular);
-  --text-caption-2: var(--caption-2---regular);
+  --text-display-1: var(--typography---display1---font-size);
+  --text-display-2: var(--typography---display2---font-size);
+  --text-display-3: var(--typography---display3---font-size);
+  --text-title-1: var(--typography---title1---font-size);
+  --text-title-2: var(--typography---title2---font-size);
+  --text-title-3: var(--typography---title3---font-size);
+  --text-heading-1: var(--typography---heading1---font-size);
+  --text-heading-2: var(--typography---heading2---font-size);
+  --text-headline-1: var(--typography---headline1---font-size);
+  --text-headline-2: var(--typography---headline2---font-size);
+  --text-body-1: var(--typography---body1---font-size);
+  --text-body-2: var(--typography---body2---font-size);
+  --text-label-1: var(--typography---label1---font-size);
+  --text-label-2: var(--typography---label2---font-size);
+  --text-caption-1: var(--typography---caption1---font-size);
+  --text-caption-2: var(--typography---caption2---font-size);
   --effect-shadow-xs: var(--shadow---normal---xsmall);
   --effect-shadow-sm: var(--shadow---normal---small);
   --effect-shadow-md: var(--shadow---normal---medium);
@@ -275,6 +273,68 @@
   --color-atomic---pink---99: var(--atomic---pink---99);
   --color-atomic---pink---100: var(--atomic---pink---100);
 
+  --typography-display1-font-size: var(--typography---display1---font-size);
+  --typography-display1-line-height: var(--typography---display1---line-height);
+  --typography-display1-letter-spacing: var(--typography---display1---letter-spacing);
+  --typography-display2-font-size: var(--typography---display2---font-size);
+  --typography-display2-line-height: var(--typography---display2---line-height);
+  --typography-display2-letter-spacing: var(--typography---display2---letter-spacing);
+  --typography-display3-font-size: var(--typography---display3---font-size);
+  --typography-display3-line-height: var(--typography---display3---line-height);
+  --typography-display3-letter-spacing: var(--typography---display3---letter-spacing);
+  --typography-title1-font-size: var(--typography---title1---font-size);
+  --typography-title1-line-height: var(--typography---title1---line-height);
+  --typography-title1-letter-spacing: var(--typography---title1---letter-spacing);
+  --typography-title2-font-size: var(--typography---title2---font-size);
+  --typography-title2-line-height: var(--typography---title2---line-height);
+  --typography-title2-letter-spacing: var(--typography---title2---letter-spacing);
+  --typography-title3-font-size: var(--typography---title3---font-size);
+  --typography-title3-line-height: var(--typography---title3---line-height);
+  --typography-title3-letter-spacing: var(--typography---title3---letter-spacing);
+  --typography-heading1-font-size: var(--typography---heading1---font-size);
+  --typography-heading1-line-height: var(--typography---heading1---line-height);
+  --typography-heading1-letter-spacing: var(--typography---heading1---letter-spacing);
+  --typography-heading2-font-size: var(--typography---heading2---font-size);
+  --typography-heading2-line-height: var(--typography---heading2---line-height);
+  --typography-heading2-letter-spacing: var(--typography---heading2---letter-spacing);
+  --typography-headline1-font-size: var(--typography---headline1---font-size);
+  --typography-headline1-line-height: var(--typography---headline1---line-height);
+  --typography-headline1-letter-spacing: var(--typography---headline1---letter-spacing);
+  --typography-headline2-font-size: var(--typography---headline2---font-size);
+  --typography-headline2-line-height: var(--typography---headline2---line-height);
+  --typography-headline2-letter-spacing: var(--typography---headline2---letter-spacing);
+  --typography-body1-font-size: var(--typography---body1---font-size);
+  --typography-body1-line-height: var(--typography---body1---line-height);
+  --typography-body1-letter-spacing: var(--typography---body1---letter-spacing);
+  --typography-body1-reading-font-size: var(--typography---body1-reading---font-size);
+  --typography-body1-reading-line-height: var(--typography---body1-reading---line-height);
+  --typography-body1-reading-letter-spacing: var(--typography---body1-reading---letter-spacing);
+  --typography-body2-font-size: var(--typography---body2---font-size);
+  --typography-body2-line-height: var(--typography---body2---line-height);
+  --typography-body2-letter-spacing: var(--typography---body2---letter-spacing);
+  --typography-body2-reading-font-size: var(--typography---body2-reading---font-size);
+  --typography-body2-reading-line-height: var(--typography---body2-reading---line-height);
+  --typography-body2-reading-letter-spacing: var(--typography---body2-reading---letter-spacing);
+  --typography-label1-font-size: var(--typography---label1---font-size);
+  --typography-label1-line-height: var(--typography---label1---line-height);
+  --typography-label1-letter-spacing: var(--typography---label1---letter-spacing);
+  --typography-label1-reading-font-size: var(--typography---label1-reading---font-size);
+  --typography-label1-reading-line-height: var(--typography---label1-reading---line-height);
+  --typography-label1-reading-letter-spacing: var(--typography---label1-reading---letter-spacing);
+  --typography-label2-font-size: var(--typography---label2---font-size);
+  --typography-label2-line-height: var(--typography---label2---line-height);
+  --typography-label2-letter-spacing: var(--typography---label2---letter-spacing);
+  --typography-caption1-font-size: var(--typography---caption1---font-size);
+  --typography-caption1-line-height: var(--typography---caption1---line-height);
+  --typography-caption1-letter-spacing: var(--typography---caption1---letter-spacing);
+  --typography-caption2-font-size: var(--typography---caption2---font-size);
+  --typography-caption2-line-height: var(--typography---caption2---line-height);
+  --typography-caption2-letter-spacing: var(--typography---caption2---letter-spacing);
+  --typography-weight-regular: var(--typography---weight---regular);
+  --typography-weight-medium: var(--typography---weight---medium);
+  --typography-weight-bold-display-title: var(--typography---weight---bold-display-title);
+  --typography-weight-bold-default: var(--typography---weight---bold-default);
+
   --text-display-1: var(--text-display-1);
   --text-display-2: var(--text-display-2);
   --text-display-3: var(--text-display-3);
@@ -298,14 +358,6 @@
   --shadow-xl: var(--effect-shadow-xl);
   --shadow-spread-sm: var(--effect-shadow-spread-sm);
   --shadow-spread-md: var(--effect-shadow-spread-md);
-  --font-sans:
-    'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
-    sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
-}
-
-body {
-  font-family: var(--font-sans);
 }
 
 /* 데스크탑 환경 세팅 - UA 우회 케이스 대비 CSS 보조 차단 */
