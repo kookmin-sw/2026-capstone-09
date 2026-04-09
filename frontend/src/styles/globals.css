@@ -5,11 +5,37 @@
 :root {
   --background: var(--semantic---background---normal---normal);
   --foreground: var(--semantic---label---normal);
+  --primary: var(--semantic---primary---normal);
+  --primary-strong: var(--semantic---primary---strong);
+  --label-strong: var(--semantic---label---strong);
+  --label-neutral: var(--semantic---label---neutral);
+  --label-alternative: var(--semantic---label---alternative);
+  --label-assistive: var(--semantic---label---assistive);
+  --line-neutral: var(--semantic---line---normal---neutral);
+  --line-alternative: var(--semantic---line---normal---alternative);
+  --fill-normal: var(--semantic---fill---normal);
+  --fill-alternative: var(--semantic---fill---alternative);
+  --status-positive: var(--semantic---status---positive);
+  --status-cautionary: var(--semantic---status---cautionary);
+  --status-negative: var(--semantic---status---negative);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-strong: var(--primary-strong);
+  --color-label-strong: var(--label-strong);
+  --color-label-neutral: var(--label-neutral);
+  --color-label-alternative: var(--label-alternative);
+  --color-label-assistive: var(--label-assistive);
+  --color-line-neutral: var(--line-neutral);
+  --color-line-alternative: var(--line-alternative);
+  --color-fill-normal: var(--fill-normal);
+  --color-fill-alternative: var(--fill-alternative);
+  --color-status-positive: var(--status-positive);
+  --color-status-cautionary: var(--status-cautionary);
+  --color-status-negative: var(--status-negative);
   --font-sans:
     'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
     sans-serif;
@@ -20,6 +46,11 @@
   :root {
     --background: var(--semantic---inverse---background);
     --foreground: var(--semantic---inverse---label);
+    --label-strong: var(--semantic---inverse---label);
+    --label-neutral: var(--semantic---inverse---label);
+    --label-alternative: var(--semantic---inverse---label);
+    --line-neutral: var(--semantic---line---normal--_-strong);
+    --line-alternative: var(--semantic---line---normal---neutral);
   }
 }
 
