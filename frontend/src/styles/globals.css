@@ -1,28 +1,32 @@
+@import 'pretendard/dist/web/static/pretendard.css';
+@import './variables.css';
 @import 'tailwindcss';
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: var(--semantic---background---normal---normal);
+  --foreground: var(--semantic---label---normal);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans:
+    'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: var(--semantic---inverse---background);
+    --foreground: var(--semantic---inverse---label);
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
 }
 
 /* 데스크탑 환경 세팅 - UA 우회 케이스 대비 CSS 보조 차단 */
@@ -37,8 +41,8 @@ body {
     align-items: center;
     justify-content: center;
     height: 100vh;
-    font-size: 14px;
-    color: #888;
+    font-size: 0.875rem;
+    color: var(--semantic---label---assistive);
     text-align: center;
     padding: 2rem;
   }
