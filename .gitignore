@@ -5,3 +5,9 @@
 conventions.md
 AGENTS.md
 .cursor/rules/conventions.mdc
+__pychache__/
+.pyc
+venv/
+.env
+*.md
+*.mdc
