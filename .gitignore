@@ -3,3 +3,4 @@ __pychache__/
 .pyc
 venv/
 .env
+**/.npmrc
