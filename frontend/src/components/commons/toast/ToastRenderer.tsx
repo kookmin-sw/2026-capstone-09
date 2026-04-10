@@ -8,6 +8,8 @@ import type { ToastPlacement } from './toast.types';
 import { toastStore } from './toastStore';
 import type { ToastItem } from './toastStore';
 
+// placement별로 컨테이너를 동적 생성 -> toastStore를 구독하면서 placement별로 그룹핑 후 각 컨테이너 DOM에 createPortal로 렌더링
+
 const containerMap = new Map<ToastPlacement, HTMLDivElement>();
 
 function getOrCreateContainer(placement: ToastPlacement): HTMLDivElement {
@@ -37,8 +39,8 @@ function cleanupUnusedContainers(usedPlacements: Set<ToastPlacement>) {
 export function ToastRenderer() {
   const toasts = useSyncExternalStore<ToastItem[]>(
     toastStore.subscribe,
-    () => toastStore.getSnapshot(),
-    () => [],
+    toastStore.getSnapshot,
+    toastStore.getServerSnapshot,
   );
 
   useEffect(() => {
@@ -77,6 +79,7 @@ export function ToastRenderer() {
                 if (!open) toastStore.remove(t.id);
               }}
               onAnimationEnd={t.onAnimationEnd}
+              disablePortal
             >
               <ToastContainer>
                 {t.icon !== undefined ? (

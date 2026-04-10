@@ -1,4 +1,4 @@
-import { useCallback, useId } from 'react';
+import { useCallback } from 'react';
 import type { ReactNode } from 'react';
 import type { ToastPlacement } from './toast.types';
 import { toastStore } from './toastStore';
@@ -15,17 +15,18 @@ interface ToastOptions {
   placement?: ToastPlacement;
 }
 
-export function usePositionedToast(defaultPlacement: ToastPlacement = 'bottom-center') {
-  const defaultId = useId();
+// id값 생성
+let toastCount = 0;
+function generateId() {
+  return `toast-${++toastCount}`;
+}
 
-  return useCallback(
-    ({ id, placement, ...options }: ToastOptions) => {
-      toastStore.add({
-        id: id ?? defaultId,
-        placement: placement ?? defaultPlacement,
-        ...options,
-      });
-    },
-    [defaultId, defaultPlacement],
-  );
+export function usePositionedToast() {
+  return useCallback(({ id, placement, ...options }: ToastOptions) => {
+    toastStore.add({
+      id: id ?? generateId(),
+      placement: placement ?? 'bottom-center',
+      ...options,
+    });
+  }, []);
 }

@@ -13,12 +13,15 @@ export interface ToastItem {
   placement: ToastPlacement;
 }
 
-type Listener = (items: ToastItem[]) => void;
+type Listener = () => void;
+
 let items: ToastItem[] = [];
 const listeners = new Set<Listener>();
 
+const EMPTY: ToastItem[] = [];
+
 function notify() {
-  listeners.forEach((l) => l([...items]));
+  listeners.forEach((l) => l());
 }
 
 export const toastStore = {
@@ -36,5 +39,8 @@ export const toastStore = {
   },
   getSnapshot(): ToastItem[] {
     return items;
+  },
+  getServerSnapshot(): ToastItem[] {
+    return EMPTY;
   },
 };

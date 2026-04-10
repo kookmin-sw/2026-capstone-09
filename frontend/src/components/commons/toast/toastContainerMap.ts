@@ -1,4 +1,4 @@
-// toastContainerMap.ts
+// placement마다 DOM <div>를 하나씩 만들어 document.body에 붙이기 위해 사용
 import styles from './toast.module.css';
 import type { ToastPlacement } from './toast.types';
 
