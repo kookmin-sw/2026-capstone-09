@@ -1,0 +1,96 @@
+'use client';
+
+import { Toast, ToastContainer, ToastContent, ToastIcon } from '@wanteddev/wds';
+import { useEffect, useSyncExternalStore } from 'react';
+import { createPortal } from 'react-dom';
+import styles from './toast.module.css';
+import type { ToastPlacement } from './toast.types';
+import { toastStore } from './toastStore';
+import type { ToastItem } from './toastStore';
+
+const containerMap = new Map<ToastPlacement, HTMLDivElement>();
+
+function getOrCreateContainer(placement: ToastPlacement): HTMLDivElement {
+  if (containerMap.has(placement)) return containerMap.get(placement)!;
+
+  const [vertical, horizontal] = placement.split('-') as [
+    'top' | 'bottom',
+    'left' | 'center' | 'right',
+  ];
+
+  const el = document.createElement('div');
+  el.className = [styles.container, styles[vertical], styles[horizontal]].join(' ');
+  document.body.appendChild(el);
+  containerMap.set(placement, el);
+  return el;
+}
+
+function cleanupUnusedContainers(usedPlacements: Set<ToastPlacement>) {
+  containerMap.forEach((el, placement) => {
+    if (!usedPlacements.has(placement)) {
+      document.body.removeChild(el);
+      containerMap.delete(placement);
+    }
+  });
+}
+
+export function ToastRenderer() {
+  const toasts = useSyncExternalStore<ToastItem[]>(
+    toastStore.subscribe,
+    () => toastStore.getSnapshot(),
+    () => [],
+  );
+
+  useEffect(() => {
+    const usedPlacements = new Set(toasts.map((t) => t.placement));
+    cleanupUnusedContainers(usedPlacements);
+  }, [toasts]);
+
+  useEffect(() => {
+    return () => {
+      containerMap.forEach((el) => document.body.removeChild(el));
+      containerMap.clear();
+    };
+  }, []);
+
+  if (typeof window === 'undefined') return null;
+
+  const grouped = toasts.reduce<Map<ToastPlacement, ToastItem[]>>((acc, toast) => {
+    const list = acc.get(toast.placement) ?? [];
+    acc.set(toast.placement, [...list, toast]);
+    return acc;
+  }, new Map());
+
+  return (
+    <>
+      {Array.from(grouped.entries()).map(([placement, items]) => {
+        const container = getOrCreateContainer(placement);
+
+        return createPortal(
+          items.map((t) => (
+            <Toast
+              key={t.id}
+              open
+              variant={t.variant}
+              duration={t.duration}
+              onOpenChange={(open) => {
+                if (!open) toastStore.remove(t.id);
+              }}
+              onAnimationEnd={t.onAnimationEnd}
+            >
+              <ToastContainer>
+                {t.icon !== undefined ? (
+                  <ToastIcon>{t.icon}</ToastIcon>
+                ) : (
+                  t.variant !== 'normal' && <ToastIcon />
+                )}
+                <ToastContent>{t.content}</ToastContent>
+              </ToastContainer>
+            </Toast>
+          )),
+          container,
+        );
+      })}
+    </>
+  );
+}
