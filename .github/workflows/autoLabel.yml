@@ -13,9 +13,9 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      # FRONTEND (sinji2102, pkm02118, chael-in)
+      # FRONTEND (sinji2102, pkm021118, chael-in)
       - name: Label FRONTEND
-        if: contains(fromJSON('["sinji2102", "pkm02118", "chael-in"]'), github.actor)
+        if: contains(fromJSON('["sinji2102", "pkm021118", "chael-in"]'), github.actor)
         uses: actions-ecosystem/action-add-labels@v1
         with:
           labels: FRONTEND
