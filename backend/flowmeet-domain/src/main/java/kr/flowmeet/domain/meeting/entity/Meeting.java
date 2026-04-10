@@ -19,11 +19,15 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "meetings")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "UPDATE meetings SET deleted_at = CURRENT_TIMESTAMP WHERE meeting_id = ?")
+@SQLRestriction("deleted_at IS NULL")
 public class Meeting extends BaseTimeEntity {
 
     @Id

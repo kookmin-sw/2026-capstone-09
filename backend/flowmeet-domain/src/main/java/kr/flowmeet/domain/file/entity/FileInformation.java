@@ -13,11 +13,15 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "file_information")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "UPDATE file_information SET deleted_at = CURRENT_TIMESTAMP WHERE file_id = ?")
+@SQLRestriction("deleted_at IS NULL")
 public class FileInformation extends BaseTimeEntity {
 
     @Id
