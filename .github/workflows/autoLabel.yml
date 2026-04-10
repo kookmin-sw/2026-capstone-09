@@ -1,0 +1,35 @@
+name: Auto Labeler
+
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+
+jobs:
+  labeler:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      # FRONTEND (sinji2102, pkm021118, chael-in)
+      - name: Label FRONTEND
+        if: contains(fromJSON('["sinji2102", "pkm021118", "chael-in"]'), github.actor)
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          labels: FRONTEND
+
+      # BACKEND (tnals0924, wngktjd13)
+      - name: Label BACKEND
+        if: contains(fromJSON('["tnals0924", "wngktjd13"]'), github.actor)
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          labels: BACKEND
+
+      # AI (ovepje2004)
+      - name: Label AI
+        if: github.actor == 'ovepje2004'
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          labels: AI
