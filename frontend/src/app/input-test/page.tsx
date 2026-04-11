@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { TagInput } from '@/components/common/input/TagInput';
-import { DropdownInput } from "@/components/common/input/DropdownInput";
 import { Avatar, ContentBadge } from "@wanteddev/wds";
+import { useState } from 'react';
+import { DropdownInput } from "@/components/common/input/DropdownInput";
+import { TagInput } from '@/components/common/input/TagInput';
 
 export default function Home() {
     const [selectedPeople, setSelectedPeople] = useState<string[]>([]);
