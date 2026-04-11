@@ -11,7 +11,7 @@ export interface NodeInfo {
 
 export interface TagInputProps {
     nodeInfo: NodeInfo;
-    label?: string;
+    heading?: string;
     disabled?: boolean;
     width?: string | number;
     height?: string | number;
@@ -20,24 +20,24 @@ export interface TagInputProps {
 
 export const TagInput = ({
                               nodeInfo,
-                              label,
+                              heading,
                               disabled = true,
                               width = '100%',
                               height,
                               className,
                           }: TagInputProps) => {
     return (
-        <FormField gap="8px">
-            {label && (
+        <FormField className="gap-2">
+            {heading && (
                 <FormLabel
                     htmlFor="nodename"
                     variant="label1"
-                    weight="regular"
+                    weight="bold"
                     sx={(theme: Theme) => ({
                         color: theme.semantic.label.neutral,
                     })}
                 >
-                    {label}
+                    {heading}
                 </FormLabel>
             )}
             <FormControl>
@@ -48,20 +48,13 @@ export const TagInput = ({
                     disabled={disabled}
                     readOnly
                     width={width}
-                    height={height || '48px'}
-                    sx={{
-                        '& input': {
-                            fontWeight: 400,
-                        }
-                    }}
+                    height={height}
                     leadingContent={
                         <TextFieldContent variant="badge">
                             {nodeInfo.nodeType === 'main' ? (
                                 <ContentBadge
                                     size="xsmall"
                                     variant="solid"
-                                    color="accent"
-                                    accentColor="semantic.primary.normal"
                                     className="!bg-primary-60/10 !text-primary-60"
                                 >
                                     #{nodeInfo.nodeNumber}
