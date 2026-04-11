@@ -8,12 +8,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 import kr.flowmeet.api.common.dto.CommonResponse;
+import kr.flowmeet.api.user.dto.request.UpdateProfileImageRequest;
 import kr.flowmeet.api.user.dto.response.GetUserResponse;
-import kr.flowmeet.api.user.dto.response.UpdateProfileImageResponse;
 import kr.flowmeet.api.user.dto.request.UpdateUserRequest;
 import kr.flowmeet.api.user.dto.response.UpdateUserResponse;
 import kr.flowmeet.auth.annotation.UserId;
@@ -39,9 +37,10 @@ public class UserController implements UserApi {
 
     @Override
     @PatchMapping("/me/profile-image")
-    public CommonResponse<UpdateProfileImageResponse> updateProfileImage(@UserId Long userId,
-                                                                        @RequestPart MultipartFile file) {
-        return CommonResponse.ok(userFacade.updateProfileImage(userId, file));
+    public CommonResponse<?> updateProfileImageUrl(@UserId Long userId,
+                                                @Valid @RequestBody UpdateProfileImageRequest request) {
+        userFacade.updateProfileImageUrl(userId, request.fileKey());
+        return CommonResponse.ok();
     }
 
     @Override
