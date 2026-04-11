@@ -4,8 +4,9 @@ import { FormField, FormLabel, FormControl, MenuItem, ContentBadge, Menu, MenuTr
 import { Box } from '@wanteddev/wds-engine';
 import type { Theme } from '@wanteddev/wds-engine';
 import { IconChevronUpThickSmall, IconChevronDownThickSmall, IconClose } from '@wanteddev/wds-icon';
-import type { ReactNode, RefObject } from 'react';
-import { useRef, useState, useLayoutEffect, useEffect, useCallback } from 'react';
+import type { ReactNode } from 'react';
+import { useRef, useState, useEffect } from 'react';
+import { useVisibleBadgeCount } from '@/hooks/useVisibleBadgeCount';
 
 export interface DropdownOption {
   label: string;
@@ -23,76 +24,6 @@ export interface DropdownInputProps {
   width?: string | number;
   height?: string | number;
   className?: string;
-}
-
-// 표시할 배지 개수를 계산하는 커스텀 훅
-function useVisibleBadgeCount(
-  selectedOptions: DropdownOption[],
-  containerRef: RefObject<HTMLDivElement | null>,
-  badgesRef: RefObject<HTMLDivElement | null>,
-  iconRef: RefObject<HTMLDivElement | null>,
-  plusBadgeRef: RefObject<HTMLDivElement | null>
-) {
-  const [visibleCount, setVisibleCount] = useState(0);
-
-  const calculateCount = useCallback(() => {
-    // selectedOptions가 없으면 0으로 설정
-    if (selectedOptions.length === 0) {
-      setVisibleCount(0);
-      return;
-    }
-
-    if (!badgesRef.current || !containerRef.current || !iconRef.current || !plusBadgeRef.current) {
-      return;
-    }
-
-    const containerWidth = containerRef.current.offsetWidth;
-    const iconWidth = iconRef.current.offsetWidth;
-    const plusBadgeWidth = plusBadgeRef.current.offsetWidth;
-    const availableWidth = containerWidth - 24 - iconWidth - 8;
-
-    const badges = Array.from(badgesRef.current.children) as HTMLElement[];
-    let totalWidth = 0;
-    let count = 0;
-
-    for (let i = 0; i < badges.length; i++) {
-      const badgeWidth = badges[i].offsetWidth;
-      const gap = count > 0 ? 4 : 0;
-      const newTotal = totalWidth + gap + badgeWidth;
-      const remaining = badges.length - (count + 1);
-      const required = newTotal + (remaining > 0 ? 4 + plusBadgeWidth : 0);
-
-      // 15% 여유
-      if (required * 1.15 <= availableWidth) {
-        totalWidth = newTotal;
-        count++;
-      } else {
-        break;
-      }
-    }
-
-    setVisibleCount(count);
-  }, [selectedOptions, badgesRef, containerRef, iconRef, plusBadgeRef]);
-
-  // selectedOptions 변경 시 계산
-  useLayoutEffect(() => {
-    requestAnimationFrame(calculateCount);
-  }, [calculateCount]);
-
-  // ResizeObserver로 컨테이너 크기 변경 감지
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const observer = new ResizeObserver(() => {
-      requestAnimationFrame(calculateCount);
-    });
-
-    observer.observe(containerRef.current);
-
-    return () => observer.disconnect();
-  }, [containerRef, calculateCount]);
-
-  return visibleCount;
 }
 
 export const DropdownInput = ({
