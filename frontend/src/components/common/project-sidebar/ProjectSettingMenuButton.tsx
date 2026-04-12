@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 
-import IcSetting from '@/components/common/icons/IcSetting';
+import { IconSetting } from '@/components/common/wds-icon';
 
 interface ProjectSettingMenuButtonProps {
   isCollapsed: boolean;
@@ -15,7 +15,7 @@ export const ProjectSettingMenuButton = ({ isCollapsed }: ProjectSettingMenuButt
       }`}
     >
       <span className="flex items-center gap-2 text-[rgba(23,23,25,0.52)]">
-        <IcSetting className="h-[18px] w-[18px]" />
+        <IconSetting className="h-[18px] w-[18px]" />
         <motion.span
           initial={false}
           animate={{ maxWidth: isCollapsed ? 0 : 48, opacity: isCollapsed ? 0 : 1 }}

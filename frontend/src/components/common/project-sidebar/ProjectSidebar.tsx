@@ -4,9 +4,11 @@ import { motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
-import IcProject from '@/components/common/icons/IcProject';
-import IcSidebar from '@/components/common/icons/IcSidebar';
-import IcSidebarOpen from '@/components/common/icons/IcSidebarOpen';
+import {
+  IconChevronDoubleLeft,
+  IconCompany,
+  IconLeftSide,
+} from '@/components/common/wds-icon';
 
 import { AlarmMenuButton } from './AlarmMenuButton';
 import { ProjectSettingMenuButton } from './ProjectSettingMenuButton';
@@ -84,7 +86,7 @@ export const ProjectSidebar = ({
             <div className={`flex items-center ${shouldUseCollapsedLayout ? 'w-full justify-center gap-0' : 'gap-3'}`}>
               <div className="relative flex items-center justify-center">
                 <div className="relative flex aspect-square h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-[6px] bg-[#E8E9EA] outline outline-1 outline-[#DEE0E1] outline-offset-[-1px]">
-                  <IcProject className="h-6 w-6 text-white" aria-hidden="true" />
+                  <IconCompany className="h-6 w-6 text-white" aria-hidden="true" />
                 </div>
               </div>
               <motion.div
@@ -107,7 +109,7 @@ export const ProjectSidebar = ({
                 className="grid h-[18px] w-[18px] place-items-center text-[rgba(23,23,25,0.52)] hover:text-[rgba(23,23,25,0.72)]"
                 aria-label="사이드바 접기"
               >
-                <IcSidebar
+                <IconLeftSide
                   className="h-[18px] w-[18px] transition-transform rotate-0"
                   aria-hidden="true"
                 />
@@ -120,7 +122,10 @@ export const ProjectSidebar = ({
                 className="flex h-14 w-full items-center justify-center overflow-hidden rounded-[6px] px-4 py-4 text-[rgba(23,23,25,0.52)] hover:bg-[rgba(112,115,124,0.05)]"
                 aria-label="사이드바 펼치기"
               >
-                <IcSidebarOpen className="h-[18px] w-[18px]" aria-hidden="true" />
+                <IconChevronDoubleLeft
+                  className="h-[18px] w-[18px] rotate-180"
+                  aria-hidden="true"
+                />
               </button>
             )}
           </div>

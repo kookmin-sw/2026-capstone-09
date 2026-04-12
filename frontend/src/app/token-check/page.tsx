@@ -24,13 +24,13 @@ export default function TokenCheckPage() {
       <section className="space-y-4">
         <h2 className="text-foreground text-2xl font-bold">2. 색상 토큰</h2>
         <div className="flex flex-wrap gap-3">
-          <div className="bg-theme---primary-60 flex h-24 w-24 items-end rounded-lg p-2">
+          <div className="bg---primary-60 flex h-24 w-24 items-end rounded-lg p-2">
             <span className="text-xs font-medium text-white">primary</span>
           </div>
-          <div className="bg-atomic---neutral---40 flex h-24 w-24 items-end rounded-lg p-2">
+          <div className="bg---neutral---40 flex h-24 w-24 items-end rounded-lg p-2">
             <span className="text-xs font-medium text-white">atomic neutral</span>
           </div>
-          <div className="bg-theme---label---normal flex h-24 w-24 items-end rounded-lg p-2">
+          <div className="bg---label---normal flex h-24 w-24 items-end rounded-lg p-2">
             <span className="text-xs font-medium text-white">label</span>
           </div>
         </div>

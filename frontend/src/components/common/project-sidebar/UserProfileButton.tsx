@@ -1,4 +1,4 @@
-import IcAvatar from '@/components/common/icons/IcAvatar';
+import { IconPersonFill } from '@/components/common/wds-icon';
 
 interface UserProfileButtonProps {
   isCollapsed: boolean;
@@ -15,7 +15,7 @@ export const UserProfileButton = ({ isCollapsed, userName, userEmail }: UserProf
       }`}
     >
       <div className="relative flex aspect-square h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E8E9EA] outline outline-1 outline-[#DEE0E1] outline-offset-[-1px]">
-        <IcAvatar className="h-6 w-6 text-white" aria-hidden="true" />
+        <IconPersonFill className="h-6 w-6 text-white" aria-hidden="true" />
       </div>
       {!isCollapsed && (
         <div className="flex flex-col gap-0">

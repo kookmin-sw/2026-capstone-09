@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 
-import IcAlarm from '@/components/common/icons/IcAlarm';
+import { IconBell } from '@/components/common/wds-icon';
 
 interface AlarmMenuButtonProps {
   isCollapsed: boolean;
@@ -15,7 +15,7 @@ export const AlarmMenuButton = ({ isCollapsed }: AlarmMenuButtonProps) => {
       }`}
     >
       <span className="flex items-center gap-2 text-[rgba(23,23,25,0.52)]">
-        <IcAlarm className="h-[18px] w-[18px]" />
+        <IconBell className="h-[18px] w-[18px]" />
         <motion.span
           initial={false}
           animate={{ maxWidth: isCollapsed ? 0 : 64, opacity: isCollapsed ? 0 : 1 }}
