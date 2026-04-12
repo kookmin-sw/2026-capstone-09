@@ -62,6 +62,10 @@ public class ProjectMember extends BaseTimeEntity {
         this.role = role;
     }
 
+    public boolean canEdit() {
+        return this.role != ProjectMemberRole.VIEWER;
+    }
+
     public boolean isOwner() {
         return this.role == ProjectMemberRole.OWNER;
     }

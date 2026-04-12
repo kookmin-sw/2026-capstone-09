@@ -9,6 +9,7 @@ import kr.flowmeet.domain.project.entity.ProjectMember;
 import kr.flowmeet.domain.project.entity.ProjectMemberRole;
 import kr.flowmeet.domain.project.exception.ProjectErrorCode;
 import kr.flowmeet.domain.project.repository.ProjectMemberRepository;
+import kr.flowmeet.domain.user.exception.UserErrorCode;
 
 @Service
 @RequiredArgsConstructor
@@ -44,12 +45,22 @@ public class ProjectMemberService {
         return projectMemberRepository.findAllByUserId(userId);
     }
 
-    public boolean existsByProjectIdAndUserId(final Long projectId, final Long userId) {
-        return projectMemberRepository.existsByProjectIdAndUserId(projectId, userId);
+    public void validateUserIsProjectMember(final Long projectId, final Long userId) {
+        if (!projectMemberRepository.existsByProjectIdAndUserId(projectId, userId)) {
+            throw new BusinessException(ProjectErrorCode.MEMBER_NOT_FOUND);
+        }
     }
 
-    public boolean existsOwnerProject(final Long userId) {
-        return projectMemberRepository.existsByUserIdAndRole(userId, ProjectMemberRole.OWNER);
+    public void validateProjectMemberNotExists(final Long projectId, final Long userId) {
+        if (projectMemberRepository.existsByProjectIdAndUserId(projectId, userId)) {
+            throw new BusinessException(ProjectErrorCode.MEMBER_ALREADY_EXISTS);
+        }
+    }
+
+    public void validateUserIsNotProjectOwner(final Long userId) {
+        if (projectMemberRepository.existsByUserIdAndRole(userId, ProjectMemberRole.OWNER)) {
+            throw new BusinessException(UserErrorCode.USER_IS_PROJECT_OWNER);
+        }
     }
 
     public int countByProjectId(final Long projectId) {
