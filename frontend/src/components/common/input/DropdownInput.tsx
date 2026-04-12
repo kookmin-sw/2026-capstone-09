@@ -124,14 +124,12 @@ export const DropdownInput = ({
                 padding: '12px',
                 backgroundColor: theme.semantic.background.transparent.normal,
                 backdropFilter: 'blur(32px)',
-                border: 'none',
                 borderRadius: '12px',
                 boxShadow: isOpen
                   ? `inset 0 0 0 2px #33EBC366, ${theme.semantic.elevation.shadow.normal.xsmall}`
                   : `inset 0 0 0 1px ${theme.semantic.line.normal.neutral}, ${theme.semantic.elevation.shadow.normal.xsmall}`,
                 cursor: 'pointer',
                 outline: 'none',
-                transition: 'box-shadow ease 0.2s',
                 '&:focus, &:focus-visible': {
                   outline: 'none',
                   boxShadow: `inset 0 0 0 2px #33EBC366, ${theme.semantic.elevation.shadow.normal.xsmall}`,
@@ -165,14 +163,13 @@ export const DropdownInput = ({
                 ) : (
                   <>
                     {/* 측정용 숨겨진 배지들 */}
-                    <Box
+                    <FlexBox
                       ref={badgesRef}
+                      gap="4px"
                       sx={{
                         position: 'absolute',
                         visibility: 'hidden',
                         pointerEvents: 'none',
-                        display: 'flex',
-                        gap: '4px',
                       }}
                     >
                       {selectedOptions.map((option) => (
@@ -182,17 +179,13 @@ export const DropdownInput = ({
                           variant="solid"
                           color="neutral"
                           leadingContent={option.leadingContent}
-                          trailingContent={
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <IconClose width={16} height={16} />
-                            </Box>
-                          }
+                          trailingContent={<IconClose width={16} height={16} />}
                           sx={{ paddingLeft: 12, gap: 12 }}
                         >
                           {option.label}
                         </ContentBadge>
                       ))}
-                    </Box>
+                    </FlexBox>
                     {/* 측정용 +N 배지 */}
                     <Box
                       ref={plusBadgeRef}
@@ -248,11 +241,10 @@ export const DropdownInput = ({
                   </>
                 )}
               </FlexBox>
-              <Box
+              <FlexBox
                 ref={iconRef}
+                alignItems="center"
                 sx={(theme: Theme) => ({
-                  display: 'flex',
-                  alignItems: 'center',
                   flexShrink: 0,
                   fontSize: '16px',
                   margin: '4px',
@@ -264,7 +256,7 @@ export const DropdownInput = ({
                 ) : (
                   <IconChevronDownThickSmall />
                 )}
-              </Box>
+              </FlexBox>
             </FlexBox>
           </MenuTrigger>
           <MenuContent
@@ -280,7 +272,6 @@ export const DropdownInput = ({
                   key={option.value}
                   value={option.value}
                   variant="normal"
-                  sx={{ alignItems: 'center' }}
                   leadingContent={
                     option.leadingContent && (
                       <Box sx={{ marginRight: 8 }}>
