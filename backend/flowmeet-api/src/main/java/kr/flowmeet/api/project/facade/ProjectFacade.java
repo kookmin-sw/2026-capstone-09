@@ -12,6 +12,7 @@ import kr.flowmeet.api.project.dto.response.CreateProjectResponse;
 import kr.flowmeet.api.project.dto.response.GetProjectResponse;
 import kr.flowmeet.api.project.dto.response.ProjectSummaryResponse;
 import kr.flowmeet.api.project.dto.request.UpdateProjectRequest;
+import org.springframework.context.ApplicationEventPublisher;
 import kr.flowmeet.domain.notification.entity.NotificationSetting;
 import kr.flowmeet.domain.notification.service.NotificationSettingService;
 import kr.flowmeet.domain.project.entity.Project;
@@ -23,6 +24,7 @@ import kr.flowmeet.domain.project.repository.projection.ProjectWithMemberCountPr
 import kr.flowmeet.domain.project.service.ProjectMemberService;
 import kr.flowmeet.domain.project.service.ProjectService;
 import kr.flowmeet.domain.project.service.ProjectSortType;
+import kr.flowmeet.domain.project.event.ProjectMemberJoinedEvent;
 import kr.flowmeet.domain.project.service.ProjectUrlService;
 import kr.flowmeet.domain.user.entity.User;
 import kr.flowmeet.domain.user.service.UserService;
@@ -37,6 +39,7 @@ public class ProjectFacade {
     private final ProjectMemberService projectMemberService;
     private final ProjectUrlService projectUrlService;
     private final NotificationSettingService notificationSettingService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public CreateProjectResponse createProject(final Long userId, final CreateProjectRequest request) {
@@ -56,12 +59,7 @@ public class ProjectFacade {
                         .build()
         );
 
-        notificationSettingService.create(
-                NotificationSetting.builder()
-                        .userId(user.getId())
-                        .projectId(project.getId())
-                        .build()
-        );
+        eventPublisher.publishEvent(new ProjectMemberJoinedEvent(user.getId(), project.getId()));
 
         return CreateProjectResponse.from(project);
     }

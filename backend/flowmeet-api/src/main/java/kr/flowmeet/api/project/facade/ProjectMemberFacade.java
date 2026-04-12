@@ -10,14 +10,12 @@ import kr.flowmeet.api.project.dto.response.GetAllProjectMembersResponse;
 import kr.flowmeet.api.project.dto.request.InviteProjectMemberRequest;
 import kr.flowmeet.api.project.dto.request.UpdateProjectMemberRoleRequest;
 import kr.flowmeet.domain.notification.entity.Notification;
-import kr.flowmeet.domain.notification.entity.NotificationSetting;
 import kr.flowmeet.domain.notification.entity.NotificationType;
-import kr.flowmeet.domain.notification.event.NotificationCreatedEvent;
 import kr.flowmeet.domain.notification.service.NotificationService;
-import kr.flowmeet.domain.notification.service.NotificationSettingService;
 import kr.flowmeet.domain.project.entity.Project;
 import kr.flowmeet.domain.project.entity.ProjectMember;
 import kr.flowmeet.domain.project.entity.ProjectMemberRole;
+import kr.flowmeet.domain.project.event.ProjectMemberJoinedEvent;
 import kr.flowmeet.domain.project.exception.ProjectErrorCode;
 import kr.flowmeet.domain.project.service.ProjectMemberService;
 import kr.flowmeet.domain.project.service.ProjectService;
@@ -33,7 +31,6 @@ public class ProjectMemberFacade {
     private final ProjectService projectService;
     private final ProjectMemberService projectMemberService;
     private final NotificationService notificationService;
-    private final NotificationSettingService notificationSettingService;
     private final ApplicationEventPublisher eventPublisher;
 
     public GetAllProjectMembersResponse getAllMembers(final Long userId, final Long projectId) {
@@ -63,14 +60,9 @@ public class ProjectMemberFacade {
                         .build()
         );
 
-        notificationSettingService.create(
-                NotificationSetting.builder()
-                        .userId(invitee.getId())
-                        .projectId(projectId)
-                        .build()
-        );
+        eventPublisher.publishEvent(new ProjectMemberJoinedEvent(invitee.getId(), projectId));
 
-        Notification notification = notificationService.create(
+        notificationService.create(
                 Notification.builder()
                         .userId(invitee.getId())
                         .type(NotificationType.MEMBER_INVITE)
@@ -78,8 +70,6 @@ public class ProjectMemberFacade {
                         .projectId(projectId)
                         .build()
         );
-
-        eventPublisher.publishEvent(new NotificationCreatedEvent(notification));
     }
 
     @Transactional
