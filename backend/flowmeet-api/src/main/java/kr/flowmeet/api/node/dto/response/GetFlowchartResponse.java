@@ -82,7 +82,7 @@ public record GetFlowchartResponse(
             Long edgeId,
             Long startNodeId,
             Long endNodeId,
-            String lineType
+            String comment
     ) {
 
         public static EdgeItem from(final Edge edge) {
@@ -90,7 +90,7 @@ public record GetFlowchartResponse(
                     edge.getId(),
                     edge.getStartNodeId(),
                     edge.getEndNodeId(),
-                    edge.getLineType().name()
+                    edge.getComment()
             );
         }
     }

@@ -20,8 +20,6 @@ import kr.flowmeet.api.node.dto.response.GetKanbanResponse;
 import kr.flowmeet.api.node.dto.response.GetNodeListResponse;
 import kr.flowmeet.api.node.dto.response.GetNodeResponse;
 import kr.flowmeet.api.node.dto.response.SearchNodeResponse;
-import kr.flowmeet.api.node.dto.response.UpdateNodeResponse;
-import kr.flowmeet.api.node.dto.response.UpdateNodeStatusResponse;
 import kr.flowmeet.domain.meeting.entity.Meeting;
 import kr.flowmeet.domain.meeting.service.MeetingService;
 import kr.flowmeet.domain.node.entity.Edge;
@@ -110,7 +108,7 @@ public class NodeFacade {
     }
 
     @Transactional
-    public UpdateNodeResponse updateNode(
+    public void updateNode(
             final Long userId,
             final Long projectId,
             final Long nodeId,
@@ -131,8 +129,6 @@ public class NodeFacade {
                 request.status(),
                 request.sortOrder()
         );
-
-        return UpdateNodeResponse.from(node);
     }
 
     @Transactional
@@ -216,7 +212,7 @@ public class NodeFacade {
     }
 
     @Transactional
-    public UpdateNodeStatusResponse updateNodeStatus(
+    public void updateNodeStatus(
             final Long userId,
             final Long projectId,
             final Long nodeId,
@@ -230,8 +226,6 @@ public class NodeFacade {
 
         Node node = nodeService.findByIdAndProjectId(nodeId, projectId);
         node.updateStatus(request.status(), request.sortOrder());
-
-        return UpdateNodeStatusResponse.from(node);
     }
 
     public SearchNodeResponse search(final Long userId, final Long projectId, final String query) {

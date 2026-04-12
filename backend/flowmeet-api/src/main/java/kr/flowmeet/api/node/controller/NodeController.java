@@ -23,8 +23,6 @@ import kr.flowmeet.api.node.dto.response.GetKanbanResponse;
 import kr.flowmeet.api.node.dto.response.GetNodeListResponse;
 import kr.flowmeet.api.node.dto.response.GetNodeResponse;
 import kr.flowmeet.api.node.dto.response.SearchNodeResponse;
-import kr.flowmeet.api.node.dto.response.UpdateNodeResponse;
-import kr.flowmeet.api.node.dto.response.UpdateNodeStatusResponse;
 import kr.flowmeet.api.node.facade.NodeFacade;
 import kr.flowmeet.auth.annotation.UserId;
 import kr.flowmeet.domain.node.entity.NodeStatus;
@@ -51,7 +49,6 @@ public class NodeController implements NodeApi {
 
     @Override
     @PostMapping("/nodes")
-    @ResponseStatus(HttpStatus.CREATED)
     public CommonResponse<?> createNode(@UserId Long userId, @PathVariable Long projectId,
                                         @Valid @RequestBody CreateNodeRequest request) {
         nodeFacade.createNode(userId, projectId, request);
@@ -60,13 +57,14 @@ public class NodeController implements NodeApi {
 
     @Override
     @PatchMapping("/nodes/{nodeId}")
-    public CommonResponse<UpdateNodeResponse> updateNode(
+    public CommonResponse<?> updateNode(
             @UserId Long userId,
             @PathVariable Long projectId,
             @PathVariable Long nodeId,
             @Valid @RequestBody UpdateNodeRequest request
     ) {
-        return CommonResponse.ok(nodeFacade.updateNode(userId, projectId, nodeId, request));
+        nodeFacade.updateNode(userId, projectId, nodeId, request);
+        return CommonResponse.ok();
     }
 
     @Override
@@ -102,11 +100,12 @@ public class NodeController implements NodeApi {
 
     @Override
     @PatchMapping("/nodes/{nodeId}/status")
-    public CommonResponse<UpdateNodeStatusResponse> updateNodeStatus(@UserId Long userId,
-                                                                     @PathVariable Long projectId,
-                                                                     @PathVariable Long nodeId,
-                                                                     @Valid @RequestBody UpdateNodeStatusRequest request) {
-        return CommonResponse.ok(nodeFacade.updateNodeStatus(userId, projectId, nodeId, request));
+    public CommonResponse<?> updateNodeStatus(@UserId Long userId,
+                                              @PathVariable Long projectId,
+                                              @PathVariable Long nodeId,
+                                              @Valid @RequestBody UpdateNodeStatusRequest request) {
+        nodeFacade.updateNodeStatus(userId, projectId, nodeId, request);
+        return CommonResponse.ok();
     }
 
     @Override

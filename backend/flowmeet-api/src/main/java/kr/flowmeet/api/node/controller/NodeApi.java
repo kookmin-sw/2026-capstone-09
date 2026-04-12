@@ -17,8 +17,6 @@ import kr.flowmeet.api.node.dto.response.GetKanbanResponse;
 import kr.flowmeet.api.node.dto.response.GetNodeListResponse;
 import kr.flowmeet.api.node.dto.response.GetNodeResponse;
 import kr.flowmeet.api.node.dto.response.SearchNodeResponse;
-import kr.flowmeet.api.node.dto.response.UpdateNodeResponse;
-import kr.flowmeet.api.node.dto.response.UpdateNodeStatusResponse;
 import kr.flowmeet.auth.annotation.UserId;
 import kr.flowmeet.domain.node.entity.NodeStatus;
 import kr.flowmeet.domain.meeting.exception.MeetingErrorCode;
@@ -48,7 +46,7 @@ public interface NodeApi {
 
     @Operation(summary = "노드 수정", description = "노드 제목, 설명, 노트, 상태, 정렬순서를 수정합니다.")
     @ApiErrorCode(code = NodeErrorCode.class, names = {"NODE_NOT_FOUND", "NODE_UPDATE_FORBIDDEN"})
-    CommonResponse<UpdateNodeResponse> updateNode(
+    CommonResponse<?> updateNode(
             @UserId Long userId,
             @PathVariable Long projectId,
             @PathVariable Long nodeId,
@@ -80,7 +78,7 @@ public interface NodeApi {
 
     @Operation(summary = "칸반 상태 변경", description = "드래그 & 드롭으로 상태와 순서를 변경합니다.")
     @ApiErrorCode(code = NodeErrorCode.class, names = {"NODE_NOT_FOUND"})
-    CommonResponse<UpdateNodeStatusResponse> updateNodeStatus(
+    CommonResponse<?> updateNodeStatus(
             @UserId Long userId,
             @PathVariable Long projectId,
             @PathVariable Long nodeId,
