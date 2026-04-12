@@ -3,12 +3,14 @@ package kr.flowmeet.domain.node.service;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import kr.flowmeet.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import kr.flowmeet.domain.common.exception.BusinessException;
 import kr.flowmeet.domain.node.entity.NodeAssignee;
+import kr.flowmeet.domain.node.exception.AssigneeErrorCode;
 import kr.flowmeet.domain.node.repository.NodeAssigneeRepository;
+import kr.flowmeet.domain.user.entity.User;
 
 @Service
 @RequiredArgsConstructor
@@ -36,5 +38,26 @@ public class NodeAssigneeService {
         return findAllByNodeIds(nodeIds)
                 .stream()
                 .collect(Collectors.groupingBy(NodeAssignee::getNodeId));
+    }
+
+    public NodeAssignee findByIdAndNodeId(final Long assigneeId, final Long nodeId) {
+        return nodeAssigneeRepository.findByIdAndNodeId(assigneeId, nodeId)
+                .orElseThrow(() -> new BusinessException(AssigneeErrorCode.ASSIGNEE_NOT_FOUND));
+    }
+
+    public void validateNotDuplicated(final Long nodeId, final Long userId) {
+        if (nodeAssigneeRepository.existsByNodeIdAndUserId(nodeId, userId)) {
+            throw new BusinessException(AssigneeErrorCode.ASSIGNEE_ALREADY_EXISTS);
+        }
+    }
+
+    @Transactional
+    public NodeAssignee create(final NodeAssignee nodeAssignee) {
+        return nodeAssigneeRepository.save(nodeAssignee);
+    }
+
+    @Transactional
+    public void delete(final NodeAssignee nodeAssignee) {
+        nodeAssigneeRepository.delete(nodeAssignee);
     }
 }
