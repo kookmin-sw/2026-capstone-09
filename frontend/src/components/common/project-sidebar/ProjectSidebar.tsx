@@ -9,6 +9,8 @@ import { motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
+import { PROJECT_SIDEBAR_LAYOUT } from '@/constants/exampleConstant';
+
 import { AlarmMenuButton } from './AlarmMenuButton';
 import { ProjectSettingMenuButton } from './ProjectSettingMenuButton';
 import { SearchMenuButton } from './SearchMenuButton';
@@ -20,18 +22,7 @@ interface ProjectSidebarProps {
   userEmail?: string;
 }
 
-const DEFAULT_PROJECT_NAME = '플로밋 기획';
-const DEFAULT_USER_NAME = '황수민';
-const DEFAULT_USER_EMAIL = 'tnals655@naver.com';
-
-const SIDEBAR_EXPANDED_WIDTH = 220;
-const SIDEBAR_COLLAPSED_WIDTH = 56;
-
-export const ProjectSidebar = ({
-  projectName = DEFAULT_PROJECT_NAME,
-  userName = DEFAULT_USER_NAME,
-  userEmail = DEFAULT_USER_EMAIL,
-}: ProjectSidebarProps) => {
+export const ProjectSidebar = ({ projectName, userName, userEmail }: ProjectSidebarProps) => {
   const pathname = usePathname();
   const [isCollapsedInternal, setIsCollapsedInternal] = useState(false);
 
@@ -60,7 +51,7 @@ export const ProjectSidebar = ({
     }, 0);
     const idTrue = window.setTimeout(() => {
       setIsCollapseSettled(true);
-    }, 240);
+    }, PROJECT_SIDEBAR_LAYOUT.transitionDuration * 1000);
 
     return () => {
       window.clearTimeout(idFalse);
@@ -77,8 +68,8 @@ export const ProjectSidebar = ({
     <motion.aside
       className="h-screen shrink-0 overflow-hidden border-r border-[#70737c29] bg-[#f7f7f8] px-4 py-2"
       initial={false}
-      animate={{ width: isCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH }}
-      transition={{ duration: 0.24, ease: 'easeInOut' }}
+      animate={{ width: isCollapsed ? 56 : 220 }}
+      transition={{ duration: PROJECT_SIDEBAR_LAYOUT.transitionDuration, ease: 'easeInOut' }}
     >
       <div className="flex h-full flex-col justify-between">
         <div className="flex flex-col gap-4">
@@ -95,17 +86,19 @@ export const ProjectSidebar = ({
                   <IconCompany className="h-6 w-6 text-white" aria-hidden="true" />
                 </div>
               </div>
-              <motion.div
-                initial={false}
-                animate={{
-                  maxWidth: isCollapsed ? 0 : 128,
-                  opacity: isCollapsed ? 0 : 1,
-                }}
-                transition={{ duration: 0.16, ease: 'easeInOut' }}
-                className="overflow-hidden whitespace-nowrap text-center text-title-3 font-medium text-[#686868]"
-              >
-                {projectName}
-              </motion.div>
+              {projectName && (
+                <motion.div
+                  initial={false}
+                  animate={{
+                    maxWidth: isCollapsed ? 0 : 128,
+                    opacity: isCollapsed ? 0 : 1,
+                  }}
+                  transition={{ duration: 0.16, ease: 'easeInOut' }}
+                  className="overflow-hidden whitespace-nowrap text-center text-title-3 font-medium text-[#686868]"
+                >
+                  {projectName}
+                </motion.div>
+              )}
             </div>
 
             {isCollapsible && !isCollapsed && (

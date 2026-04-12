@@ -1,6 +1,5 @@
 import { IconSearch } from '@wanteddev/wds-icon';
-import { motion } from 'framer-motion';
-
+import { SidebarMenuButton } from './SidebarMenuButton';
 
 interface SearchMenuButtonProps {
   isCollapsed: boolean;
@@ -8,23 +7,6 @@ interface SearchMenuButtonProps {
 
 export const SearchMenuButton = ({ isCollapsed }: SearchMenuButtonProps) => {
   return (
-    <button
-      type="button"
-      className={`flex h-14 w-full items-center overflow-hidden rounded-[6px] px-4 py-4 hover:bg-[#70737c0d] ${
-        isCollapsed ? 'justify-start' : 'justify-between'
-      }`}
-    >
-      <span className="flex items-center gap-2 text-[#17171985]">
-        <IconSearch className="h-[18px] w-[18px]" />
-        <motion.span
-          initial={false}
-          animate={{ maxWidth: isCollapsed ? 0 : 48, opacity: isCollapsed ? 0 : 1 }}
-          transition={{ duration: 0.16, ease: 'easeInOut' }}
-          className="overflow-hidden whitespace-nowrap text-center text-title-3 font-normal text-[#17171985]"
-        >
-          검색
-        </motion.span>
-      </span>
-    </button>
+    <SidebarMenuButton icon={IconSearch} isCollapsed={isCollapsed} label="검색" labelWidth={48} />
   );
 };
