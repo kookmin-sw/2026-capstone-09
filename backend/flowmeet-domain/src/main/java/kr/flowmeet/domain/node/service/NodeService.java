@@ -58,6 +58,12 @@ public class NodeService {
         return nodeRepository.save(node);
     }
 
+    public List<Long> findAllDescendantIds(Node node) {
+        return findAllDescendants(node.getProjectId(), node.getId()).stream()
+                .map(Node::getId)
+                .toList();
+    }
+
     @Transactional
     public void deleteWithAllDescendants(Node node) {
         List<Node> descendants = findAllDescendants(node.getProjectId(), node.getId());

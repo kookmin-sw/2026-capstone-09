@@ -21,6 +21,7 @@ import kr.flowmeet.api.node.dto.response.UpdateNodeResponse;
 import kr.flowmeet.api.node.dto.response.UpdateNodeStatusResponse;
 import kr.flowmeet.auth.annotation.UserId;
 import kr.flowmeet.domain.node.entity.NodeStatus;
+import kr.flowmeet.domain.meeting.exception.MeetingErrorCode;
 import kr.flowmeet.domain.node.exception.NodeErrorCode;
 
 @Tag(name = "Node")
@@ -55,7 +56,8 @@ public interface NodeApi {
     );
 
     @Operation(summary = "노드 삭제", description = "노드 삭제. 하위 서브 노드도 연쇄 삭제됩니다.")
-    @ApiErrorCode(code = NodeErrorCode.class, names = {"NODE_NOT_FOUND", "NODE_HAS_ACTIVE_MEETING"})
+    @ApiErrorCode(code = NodeErrorCode.class, names = {"NODE_NOT_FOUND"})
+    @ApiErrorCode(code = MeetingErrorCode.class, names = {"ACTIVE_MEETING_EXISTS"})
     CommonResponse<?> deleteNode(
             @UserId Long userId,
             @PathVariable Long projectId,

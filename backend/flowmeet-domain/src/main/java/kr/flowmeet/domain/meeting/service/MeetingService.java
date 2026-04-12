@@ -7,8 +7,10 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import kr.flowmeet.domain.common.exception.BusinessException;
 import kr.flowmeet.domain.meeting.entity.Meeting;
 import kr.flowmeet.domain.meeting.entity.MeetingStatus;
+import kr.flowmeet.domain.meeting.exception.MeetingErrorCode;
 import kr.flowmeet.domain.meeting.repository.MeetingRepository;
 
 @Service
@@ -32,6 +34,12 @@ public class MeetingService {
 
     public boolean hasActiveMeeting(final Long nodeId) {
         return meetingRepository.existsByNodeIdAndStatus(nodeId, MeetingStatus.IN_PROGRESS);
+    }
+
+    public void validateNoActiveMeeting(final Long nodeId) {
+        if (meetingRepository.existsByNodeIdAndStatus(nodeId, MeetingStatus.IN_PROGRESS)) {
+            throw new BusinessException(MeetingErrorCode.ACTIVE_MEETING_EXISTS);
+        }
     }
 
     public Set<Long> findAllMeetingNodeIds(final List<Long> nodeIds) {

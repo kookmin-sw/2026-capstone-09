@@ -17,4 +17,10 @@ public class EdgeService {
     public List<Edge> findAllByProjectId(final Long projectId) {
         return edgeRepository.findAllByProjectId(projectId);
     }
+
+    @Transactional
+    public void deleteAllByNodeIds(final List<Long> nodeIds) {
+        List<Edge> edges = edgeRepository.findAllByStartNodeIdInOrEndNodeIdIn(nodeIds, nodeIds);
+        edgeRepository.deleteAll(edges);
+    }
 }

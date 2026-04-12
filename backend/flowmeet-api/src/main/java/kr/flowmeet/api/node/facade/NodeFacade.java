@@ -145,10 +145,13 @@ public class NodeFacade {
 
         Node node = nodeService.findByIdAndProjectId(nodeId, projectId);
 
-        if (meetingService.hasActiveMeeting(nodeId)) {
-            throw new ApiException(NodeErrorCode.NODE_HAS_ACTIVE_MEETING);
-        }
+        meetingService.validateNoActiveMeeting(nodeId);
 
+        List<Long> descendantIds = nodeService.findAllDescendantIds(node);
+        List<Long> allNodeIds = new ArrayList<>(descendantIds);
+        allNodeIds.add(nodeId);
+
+        edgeService.deleteAllByNodeIds(allNodeIds);
         nodeService.deleteWithAllDescendants(node);
     }
 
