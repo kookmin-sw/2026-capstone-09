@@ -1,7 +1,9 @@
+@import '@wanteddev/wds/global.css';
+@import "tailwindcss/utilities";
+@import "tailwindcss/theme";
+@import './variables.css';
 @import 'pretendard/dist/web/variable/pretendardvariable.css';
 @import 'pretendard/dist/web/static/pretendard.css';
-@import './variables.css';
-@import 'tailwindcss';
 
 :root {
   --text-display-1: var(--typography---display1---font-size);
