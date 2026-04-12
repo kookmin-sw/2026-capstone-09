@@ -1,5 +1,8 @@
 package kr.flowmeet.domain.node.service;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,10 +34,6 @@ public class NodeService {
         return nodeRepository.findAllByParentId(parentId);
     }
 
-    public List<Node> findAllByIds(final List<Long> nodeIds) {
-        return nodeRepository.findAllById(nodeIds);
-    }
-
     public List<Node> searchByQuery(final Long projectId, final String query) {
         return nodeRepository.searchByQuery(projectId, query);
     }
@@ -60,12 +59,33 @@ public class NodeService {
     }
 
     @Transactional
-    public void delete(final Node node) {
+    public void deleteWithAllDescendants(Node node) {
+        List<Node> descendants = findAllDescendants(node.getProjectId(), node.getId());
+
+        nodeRepository.deleteAll(descendants);
         nodeRepository.delete(node);
     }
 
-    @Transactional
-    public void deleteAll(final List<Node> nodes) {
-        nodeRepository.deleteAll(nodes);
+    private List<Node> findAllDescendants(Long projectId, Long nodeId) {
+        List<Node> allNodes = findAllByProjectId(projectId);
+
+        Map<Long, List<Node>> childMap = allNodes.stream()
+                .filter(n -> n.getParentId() != null)
+                .collect(Collectors.groupingBy(Node::getParentId));
+
+        List<Node> descendants = new ArrayList<>();
+        Deque<Long> queue = new ArrayDeque<>();
+
+        queue.add(nodeId);
+
+        while (!queue.isEmpty()) {
+            Long currentId = queue.poll();
+            List<Node> children = childMap.getOrDefault(currentId, List.of());
+
+            descendants.addAll(children);
+            children.forEach(child -> queue.add(child.getId()));
+        }
+
+        return descendants;
     }
 }

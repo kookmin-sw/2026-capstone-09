@@ -143,9 +143,7 @@ public class NodeFacade {
         }
 
         //TODO: 자식 노드 탐색 서비스 레이어로 옮기기
-        List<Node> childNodes = collectAllDescendants(nodeId);
-        nodeService.deleteAll(childNodes);
-        nodeService.delete(node);
+        nodeService.deleteWithAllDescendants(node);
     }
 
     public GetNodeListResponse getNodeList(
@@ -242,17 +240,9 @@ public class NodeFacade {
         }
     }
 
-    private List<Node> collectAllDescendants(final Long parentId) {
-        List<Node> descendants = new ArrayList<>();
-        List<Node> children = nodeService.findAllByParentId(parentId);
-        for (Node child : children) {
-            descendants.add(child);
-            descendants.addAll(collectAllDescendants(child.getId()));
-        }
-        return descendants;
-    }
-
     private List<Long> getNodeIdFromNodes(List<Node> nodes) {
-        return nodes.stream().map(Node::getId).toList();
+        return nodes.stream()
+                .map(Node::getId)
+                .toList();
     }
 }
