@@ -102,7 +102,7 @@ export const ProjectSidebar = ({
                   opacity: isCollapsed ? 0 : 1,
                 }}
                 transition={{ duration: 0.16, ease: 'easeInOut' }}
-                className="overflow-hidden whitespace-nowrap text-center text-[15px] font-medium leading-[22.01px] tracking-[0.14px] text-[#686868]"
+                className="overflow-hidden whitespace-nowrap text-center text-[1.5rem] font-medium leading-[2.201rem] tracking-[0.014rem] text-[#686868]"
               >
                 {projectName}
               </motion.div>

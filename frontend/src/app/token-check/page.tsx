@@ -33,6 +33,12 @@ export default function TokenCheckPage() {
           <div className="bg---label---normal flex h-24 w-24 items-end rounded-lg p-2">
             <span className="text-xs font-medium text-white">label</span>
           </div>
+          <div className="bg---line---soft flex h-24 w-24 items-end rounded-lg p-2 outline outline-1 outline-black/10">
+            <span className="text---label---normal text-xs font-medium">line-soft</span>
+          </div>
+          <div className="bg---surface---canvas flex h-24 w-24 items-end rounded-lg p-2 outline outline-1 outline-black/10">
+            <span className="text---label---normal text-xs font-medium">surface-canvas</span>
+          </div>
         </div>
         <p className="text-muted-foreground text-sm">
           ✅ 각 박스가 토큰에 맞는 색으로 보이면 색상 토큰 정상 적용

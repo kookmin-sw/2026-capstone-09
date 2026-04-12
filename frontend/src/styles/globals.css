@@ -112,6 +112,8 @@
   --color---inverse---label: var(--color---inverse---label);
   --color---common---0: var(--color---common---0);
   --color---common---100: var(--color---common---100);
+  --color---surface---canvas: var(--color---surface---canvas);
+  --color---line---soft: var(--color---line---soft);
   --color---neutral---5: var(--color---neutral---5);
   --color---neutral---10: var(--color---neutral---10);
   --color---neutral---15: var(--color---neutral---15);

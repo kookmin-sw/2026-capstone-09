@@ -19,10 +19,10 @@ export const UserProfileButton = ({ isCollapsed, userName, userEmail }: UserProf
       </div>
       {!isCollapsed && (
         <div className="flex flex-col gap-0">
-          <div className="text-left text-[13px] font-medium leading-[18px] tracking-[0.25px] text-[#7E7E7E]">
+          <div className="text-left text-[1.3rem] font-medium leading-[1.8rem] tracking-[0.025rem] text-[#7E7E7E]">
             {userName}
           </div>
-          <div className="text-left text-[11px] font-normal leading-[14px] tracking-[0.34px] text-[#7E7E7E]">
+          <div className="text-left text-[1.1rem] font-normal leading-[1.4rem] tracking-[0.034rem] text-[#7E7E7E]">
             {userEmail}
           </div>
         </div>

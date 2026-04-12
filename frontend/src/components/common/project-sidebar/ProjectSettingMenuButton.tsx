@@ -20,7 +20,7 @@ export const ProjectSettingMenuButton = ({ isCollapsed }: ProjectSettingMenuButt
           initial={false}
           animate={{ maxWidth: isCollapsed ? 0 : 48, opacity: isCollapsed ? 0 : 1 }}
           transition={{ duration: 0.16, ease: 'easeInOut' }}
-          className="overflow-hidden whitespace-nowrap text-center text-[15px] font-normal leading-6 tracking-[0.14px] text-[rgba(23,23,25,0.52)]"
+          className="overflow-hidden whitespace-nowrap text-center text-[1.5rem] font-normal leading-[1.5rem] tracking-[0.014rem] text-[rgba(23,23,25,0.52)]"
         >
           설정
         </motion.span>
