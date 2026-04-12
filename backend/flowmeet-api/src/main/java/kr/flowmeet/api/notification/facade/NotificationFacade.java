@@ -1,7 +1,6 @@
 package kr.flowmeet.api.notification.facade;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,7 +13,6 @@ import kr.flowmeet.api.notification.dto.response.GetUnreadCountResponse;
 import kr.flowmeet.domain.notification.entity.Notification;
 import kr.flowmeet.domain.notification.entity.NotificationSetting;
 import kr.flowmeet.domain.notification.entity.NotificationType;
-import kr.flowmeet.domain.notification.event.NotificationCreatedEvent;
 import kr.flowmeet.domain.notification.exception.NotificationErrorCode;
 import kr.flowmeet.domain.notification.service.NotificationService;
 import kr.flowmeet.domain.notification.service.NotificationSettingService;
@@ -26,12 +24,11 @@ public class NotificationFacade {
 
     private final NotificationService notificationService;
     private final NotificationSettingService notificationSettingService;
-    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public void createNotification(final Long userId, final NotificationType type,
                                     final String content, final Long projectId, final Long nodeId) {
-        Notification notification = notificationService.create(
+        notificationService.create(
                 Notification.builder()
                         .userId(userId)
                         .type(type)
@@ -40,8 +37,6 @@ public class NotificationFacade {
                         .nodeId(nodeId)
                         .build()
         );
-
-        eventPublisher.publishEvent(new NotificationCreatedEvent(notification));
     }
 
     public PageResponse<NotificationSummaryResponse> getAllNotifications(final Long userId, final Boolean isRead,

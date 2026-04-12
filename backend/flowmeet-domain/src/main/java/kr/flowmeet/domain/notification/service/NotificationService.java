@@ -8,7 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 import kr.flowmeet.domain.common.exception.BusinessException;
 import kr.flowmeet.domain.notification.entity.Notification;
 import kr.flowmeet.domain.notification.exception.NotificationErrorCode;
+import kr.flowmeet.domain.notification.event.NotificationCreatedEvent;
 import kr.flowmeet.domain.notification.repository.NotificationRepository;
+import org.springframework.context.ApplicationEventPublisher;
 
 @Service
 @RequiredArgsConstructor
@@ -16,6 +18,7 @@ import kr.flowmeet.domain.notification.repository.NotificationRepository;
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public Notification findById(final Long notificationId) {
         return notificationRepository.findById(notificationId)
@@ -33,7 +36,9 @@ public class NotificationService {
 
     @Transactional
     public Notification create(final Notification notification) {
-        return notificationRepository.save(notification);
+        Notification saved = notificationRepository.save(notification);
+        eventPublisher.publishEvent(new NotificationCreatedEvent(saved));
+        return saved;
     }
 
     @Transactional
