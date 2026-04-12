@@ -78,7 +78,9 @@ public class ProjectFacade {
     @Transactional
     public void updateProject(final Long userId, final Long projectId, final UpdateProjectRequest request) {
         ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-        validateMemberCanEdit(requesterMember);
+        if (!requesterMember.canEdit()) {
+            throw new ApiException(ProjectErrorCode.PROJECT_ACCESS_DENIED);
+        }
 
         Project project = projectService.findById(projectId);
         project.updateName(request.name());
@@ -87,7 +89,9 @@ public class ProjectFacade {
     @Transactional
     public void deleteProject(final Long userId, final Long projectId) {
         ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-        validateMemberCanDeleteProject(requesterMember);
+        if (!requesterMember.isOwner()) {
+            throw new ApiException(ProjectErrorCode.PROJECT_DELETE_FORBIDDEN);
+        }
 
         Project project = projectService.findById(projectId);
         projectService.delete(project);
@@ -99,15 +103,4 @@ public class ProjectFacade {
         urls.forEach(projectUrlService::delete);
     }
 
-    private void validateMemberCanEdit(final ProjectMember member) {
-        if (member.getRole() == ProjectMemberRole.VIEWER) {
-            throw new ApiException(ProjectErrorCode.PROJECT_ACCESS_DENIED);
-        }
-    }
-
-    private void validateMemberCanDeleteProject(final ProjectMember member) {
-        if (!member.isOwner()) {
-            throw new ApiException(ProjectErrorCode.PROJECT_DELETE_FORBIDDEN);
-        }
-    }
 }
