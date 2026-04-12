@@ -77,18 +77,10 @@ public class NotificationFacade {
                                                                      final UpdateNotificationSettingRequest request) {
         NotificationSetting setting = notificationSettingService.findByUserIdAndProjectId(userId, projectId);
 
-        if (request.meetingEnabled() != null) {
-            setting.updateMeetingEnabled(request.meetingEnabled());
-        }
-        if (request.nodeEnabled() != null) {
-            setting.updateNodeEnabled(request.nodeEnabled());
-        }
-        if (request.desktopEnabled() != null) {
-            setting.updateDesktopEnabled(request.desktopEnabled());
-        }
-        if (request.emailEnabled() != null) {
-            setting.updateEmailEnabled(request.emailEnabled());
-        }
+        setting.updateMeetingEnabled(request.meetingEnabled());
+        setting.updateNodeEnabled(request.nodeEnabled());
+        setting.updateDesktopEnabled(request.desktopEnabled());
+        setting.updateEmailEnabled(request.emailEnabled());
 
         return GetNotificationSettingResponse.from(setting);
     }
