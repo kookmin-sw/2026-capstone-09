@@ -64,19 +64,11 @@ public class NotificationSetting extends BaseTimeEntity {
         this.isEmailEnabled = false;
     }
 
-    public void updateMeetingEnabled(final boolean isMeetingEnabled) {
+    public void update(final boolean isMeetingEnabled, final boolean isNodeEnabled,
+                       final boolean isDesktopEnabled, final boolean isEmailEnabled) {
         this.isMeetingEnabled = isMeetingEnabled;
-    }
-
-    public void updateNodeEnabled(final boolean isNodeEnabled) {
         this.isNodeEnabled = isNodeEnabled;
-    }
-
-    public void updateDesktopEnabled(final boolean isDesktopEnabled) {
         this.isDesktopEnabled = isDesktopEnabled;
-    }
-
-    public void updateEmailEnabled(final boolean isEmailEnabled) {
         this.isEmailEnabled = isEmailEnabled;
     }
 }
