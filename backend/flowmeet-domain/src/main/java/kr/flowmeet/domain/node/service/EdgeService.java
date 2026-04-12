@@ -4,7 +4,9 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import kr.flowmeet.domain.common.exception.BusinessException;
 import kr.flowmeet.domain.node.entity.Edge;
+import kr.flowmeet.domain.node.exception.EdgeErrorCode;
 import kr.flowmeet.domain.node.repository.EdgeRepository;
 
 @Service
@@ -16,6 +18,27 @@ public class EdgeService {
 
     public List<Edge> findAllByProjectId(final Long projectId) {
         return edgeRepository.findAllByProjectId(projectId);
+    }
+
+    public Edge findByIdAndProjectId(final Long edgeId, final Long projectId) {
+        return edgeRepository.findByIdAndProjectId(edgeId, projectId)
+                .orElseThrow(() -> new BusinessException(EdgeErrorCode.EDGE_NOT_FOUND));
+    }
+
+    public void validateNotDuplicated(final Long startNodeId, final Long endNodeId) {
+        if (edgeRepository.existsByStartNodeIdAndEndNodeId(startNodeId, endNodeId)) {
+            throw new BusinessException(EdgeErrorCode.EDGE_DUPLICATE);
+        }
+    }
+
+    @Transactional
+    public Edge create(final Edge edge) {
+        return edgeRepository.save(edge);
+    }
+
+    @Transactional
+    public void delete(final Edge edge) {
+        edgeRepository.delete(edge);
     }
 
     @Transactional

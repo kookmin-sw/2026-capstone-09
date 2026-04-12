@@ -72,6 +72,12 @@ public class NodeService {
         nodeRepository.delete(node);
     }
 
+    public void validateNodeIsInProject(Long projectId, Long nodeId) {
+        if (!nodeRepository.existsByIdAndProjectId(nodeId, projectId)) {
+            throw new BusinessException(NodeErrorCode.NODE_NOT_FOUND);
+        }
+    }
+
     private List<Node> findAllDescendants(Long projectId, Long nodeId) {
         List<Node> allNodes = findAllByProjectId(projectId);
 

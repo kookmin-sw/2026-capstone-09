@@ -22,4 +22,6 @@ public interface NodeRepository extends JpaRepository<Node, Long> {
     int countByProjectIdAndParentIdIsNull(Long projectId);
 
     int countByParentId(Long parentId);
+
+    boolean existsByIdAndProjectId(Long id, Long projectId);
 }

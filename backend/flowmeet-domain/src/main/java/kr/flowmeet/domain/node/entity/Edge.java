@@ -2,8 +2,6 @@ package kr.flowmeet.domain.node.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -62,28 +60,19 @@ public class Edge extends BaseTimeEntity {
     @JoinColumn(name = "created_by", insertable = false, updatable = false)
     private User createdBy;
 
-    @Column(name = "comment_author_id", nullable = false)
-    private Long commentAuthorId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "comment_author_id", insertable = false, updatable = false)
-    private User commentAuthor;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "line_type", nullable = false)
-    private EdgeLineType lineType;
-
     private String comment;
 
     @Builder
-    public Edge(Long projectId, Long startNodeId, Long endNodeId, Long createdById,
-                Long commentAuthorId, EdgeLineType lineType, String comment) {
+    public Edge(Long projectId, Long startNodeId, Long endNodeId, Long createdById, String comment) {
         this.projectId = projectId;
         this.startNodeId = startNodeId;
         this.endNodeId = endNodeId;
         this.createdById = createdById;
-        this.commentAuthorId = commentAuthorId;
-        this.lineType = lineType;
         this.comment = comment;
+    }
+
+    public void update(final Long startNodeId, final Long endNodeId) {
+        this.startNodeId = startNodeId;
+        this.endNodeId = endNodeId;
     }
 }
