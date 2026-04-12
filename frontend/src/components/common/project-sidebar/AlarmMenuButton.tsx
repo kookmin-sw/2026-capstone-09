@@ -1,6 +1,6 @@
+import { IconBell } from '@wanteddev/wds-icon';
 import { motion } from 'framer-motion';
 
-import { IconBell } from '@/components/common/wds-icon';
 
 interface AlarmMenuButtonProps {
   isCollapsed: boolean;

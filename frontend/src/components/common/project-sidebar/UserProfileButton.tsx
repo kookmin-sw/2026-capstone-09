@@ -1,4 +1,4 @@
-import { IconPersonFill } from '@/components/common/wds-icon';
+import { IconPersonFill } from '@wanteddev/wds-icon';
 
 interface UserProfileButtonProps {
   isCollapsed: boolean;

@@ -1,6 +1,6 @@
+import { IconSetting } from '@wanteddev/wds-icon';
 import { motion } from 'framer-motion';
 
-import { IconSetting } from '@/components/common/wds-icon';
 
 interface ProjectSettingMenuButtonProps {
   isCollapsed: boolean;

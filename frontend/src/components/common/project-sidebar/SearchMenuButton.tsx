@@ -1,6 +1,6 @@
+import { IconSearch } from '@wanteddev/wds-icon';
 import { motion } from 'framer-motion';
 
-import { IconSearch } from '@/components/common/wds-icon';
 
 interface SearchMenuButtonProps {
   isCollapsed: boolean;

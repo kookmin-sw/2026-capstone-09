@@ -1,14 +1,13 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { usePathname } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
-
 import {
   IconChevronDoubleLeft,
   IconCompany,
   IconLeftSide,
-} from '@/components/common/wds-icon';
+} from '@wanteddev/wds-icon';
+import { motion } from 'framer-motion';
+import { usePathname } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
 
 import { AlarmMenuButton } from './AlarmMenuButton';
 import { ProjectSettingMenuButton } from './ProjectSettingMenuButton';
@@ -50,16 +49,23 @@ export const ProjectSidebar = ({
 
   useEffect(() => {
     if (!isCollapsed) {
-      setIsCollapseSettled(true);
-      return;
+      const id = window.setTimeout(() => {
+        setIsCollapseSettled(true);
+      }, 0);
+      return () => window.clearTimeout(id);
     }
 
-    setIsCollapseSettled(false);
-    const collapseTimer = window.setTimeout(() => {
+    const idFalse = window.setTimeout(() => {
+      setIsCollapseSettled(false);
+    }, 0);
+    const idTrue = window.setTimeout(() => {
       setIsCollapseSettled(true);
     }, 240);
 
-    return () => window.clearTimeout(collapseTimer);
+    return () => {
+      window.clearTimeout(idFalse);
+      window.clearTimeout(idTrue);
+    };
   }, [isCollapsed]);
 
   const handleToggleCollapsed = () => {
