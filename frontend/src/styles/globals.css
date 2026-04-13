@@ -259,10 +259,6 @@
   --color-pink-100: var(--color---pink---100);
 }
 
-html {
-  font-size: 62.5%;
-}
-
 @layer utilities {
   .text-display-1 {
     font-size: var(--typography---display1---font-size);
