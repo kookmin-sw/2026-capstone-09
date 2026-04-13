@@ -45,18 +45,6 @@ public class ProjectMemberService {
         return projectMemberRepository.findAllByUserId(userId);
     }
 
-    public void validateUserIsProjectMember(final Long projectId, final Long userId) {
-        if (!projectMemberRepository.existsByProjectIdAndUserId(projectId, userId)) {
-            throw new BusinessException(ProjectErrorCode.MEMBER_NOT_FOUND);
-        }
-    }
-
-    public void validateProjectMemberNotExists(final Long projectId, final Long userId) {
-        if (projectMemberRepository.existsByProjectIdAndUserId(projectId, userId)) {
-            throw new BusinessException(ProjectErrorCode.MEMBER_ALREADY_EXISTS);
-        }
-    }
-
     public void validateUserIsNotProjectOwner(final Long userId) {
         if (projectMemberRepository.existsByUserIdAndRole(userId, ProjectMemberRole.OWNER)) {
             throw new BusinessException(UserErrorCode.USER_IS_PROJECT_OWNER);

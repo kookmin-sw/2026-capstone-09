@@ -1,6 +1,8 @@
 package kr.flowmeet.api.node.facade;
 
 import kr.flowmeet.domain.node.exception.EdgeErrorCode;
+import kr.flowmeet.domain.project.entity.ProjectMemberRole;
+import kr.flowmeet.domain.project.service.ProjectPermissionValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,7 @@ public class EdgeFacade {
     private final EdgeService edgeService;
     private final NodeService nodeService;
     private final ProjectMemberService projectMemberService;
+    private final ProjectPermissionValidator projectPermissionValidator;
 
     @Transactional
     public void createEdge(
@@ -27,11 +30,7 @@ public class EdgeFacade {
             final Long projectId,
             final CreateEdgeRequest request
     ) {
-        ProjectMember projectMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-
-        if (!projectMember.canEdit()) {
-            throw new ApiException(EdgeErrorCode.EDGE_CREATE_FORBIDDEN);
-        }
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         Long startNodeId = request.startNodeId();
         Long endNodeId = request.endNodeId();
@@ -53,13 +52,10 @@ public class EdgeFacade {
 
     @Transactional
     public void deleteEdge(final Long userId, final Long projectId, final Long edgeId) {
-        ProjectMember projectMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-
-        if (!projectMember.canEdit()) {
-            throw new ApiException(EdgeErrorCode.EDGE_DELETE_FORBIDDEN);
-        }
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         Edge edge = edgeService.findByIdAndProjectId(edgeId, projectId);
+
         edgeService.delete(edge);
     }
 }

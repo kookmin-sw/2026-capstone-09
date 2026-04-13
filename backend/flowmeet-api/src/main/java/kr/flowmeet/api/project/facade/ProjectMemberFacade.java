@@ -1,7 +1,9 @@
 package kr.flowmeet.api.project.facade;
 
 import java.util.List;
+import kr.flowmeet.domain.project.service.ProjectPermissionValidator;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.converters.PropertyCustomizingConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import kr.flowmeet.api.common.exception.ApiException;
@@ -22,31 +24,29 @@ public class ProjectMemberFacade {
 
     private final UserService userService;
     private final ProjectMemberService projectMemberService;
+    private final ProjectPermissionValidator projectPermissionValidator;
 
     public GetAllProjectMembersResponse getAllMembers(final Long userId, final Long projectId) {
-        ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
+        projectPermissionValidator.validate(projectId, userId);
 
-        List<ProjectMember> members = projectMemberService.findAllByProjectIdOrderByRole(requesterMember.getProjectId());
+        List<ProjectMember> members = projectMemberService.findAllByProjectIdOrderByRole(projectId);
 
         return GetAllProjectMembersResponse.of(members);
     }
 
     @Transactional
     public void inviteMember(final Long userId, final Long projectId, final InviteProjectMemberRequest request) {
-        ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-
-        if (!requesterMember.canEdit()) {
-            throw new ApiException(ProjectErrorCode.MEMBER_INVITE_FORBIDDEN);
-        }
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         User invitee = userService.findByEmail(request.email());
+        Long inviteeId = invitee.getId();
 
-        projectMemberService.validateProjectMemberNotExists(projectId, invitee.getId());
+        projectPermissionValidator.validateNotIn(projectId, inviteeId);
 
         projectMemberService.create(
                 ProjectMember.builder()
                         .projectId(projectId)
-                        .userId(invitee.getId())
+                        .userId(inviteeId)
                         .role(ProjectMemberRole.MEMBER)
                         .build()
         );
@@ -55,11 +55,7 @@ public class ProjectMemberFacade {
     @Transactional
     public void updateMemberRole(final Long userId, final Long projectId, final Long memberId,
                                  final UpdateProjectMemberRoleRequest request) {
-        ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-
-        if (!requesterMember.isOwner()) {
-            throw new ApiException(ProjectErrorCode.MEMBER_ROLE_CHANGE_FORBIDDEN);
-        }
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         ProjectMember targetMember = projectMemberService.findByIdAndProjectId(memberId, projectId);
 

@@ -1,6 +1,7 @@
 package kr.flowmeet.api.project.facade;
 
 import java.util.List;
+import kr.flowmeet.domain.project.service.ProjectPermissionValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,7 @@ public class ProjectFacade {
     private final ProjectService projectService;
     private final ProjectMemberService projectMemberService;
     private final ProjectUrlService projectUrlService;
+    private final ProjectPermissionValidator projectPermissionValidator;
 
     @Transactional
     public CreateProjectResponse createProject(final Long userId, final CreateProjectRequest request) {
@@ -77,10 +79,7 @@ public class ProjectFacade {
 
     @Transactional
     public void updateProject(final Long userId, final Long projectId, final UpdateProjectRequest request) {
-        ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-        if (!requesterMember.canEdit()) {
-            throw new ApiException(ProjectErrorCode.PROJECT_ACCESS_DENIED);
-        }
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         Project project = projectService.findById(projectId);
         project.updateName(request.name());
@@ -88,10 +87,7 @@ public class ProjectFacade {
 
     @Transactional
     public void deleteProject(final Long userId, final Long projectId) {
-        ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-        if (!requesterMember.isOwner()) {
-            throw new ApiException(ProjectErrorCode.PROJECT_DELETE_FORBIDDEN);
-        }
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.OWNER);
 
         Project project = projectService.findById(projectId);
         projectService.delete(project);

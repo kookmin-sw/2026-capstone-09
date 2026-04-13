@@ -1,5 +1,7 @@
 package kr.flowmeet.api.node.facade;
 
+import kr.flowmeet.domain.project.entity.ProjectMemberRole;
+import kr.flowmeet.domain.project.service.ProjectPermissionValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +21,7 @@ public class NodeAssigneeFacade {
 
     private final NodeService nodeService;
     private final NodeAssigneeService nodeAssigneeService;
-    private final ProjectMemberService projectMemberService;
+    private final ProjectPermissionValidator projectPermissionValidator;
 
     @Transactional
     public void createAssignee(
@@ -28,16 +30,12 @@ public class NodeAssigneeFacade {
             final Long nodeId,
             final CreateAssigneeRequest request
     ) {
-        ProjectMember projectMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-
-        if (!projectMember.canEdit()) {
-            throw new ApiException(NodeErrorCode.NODE_UPDATE_FORBIDDEN);
-        }
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         Long assigneeUserId = request.userId();
 
         nodeService.validateNodeIsInProject(projectId, nodeId);
-        projectMemberService.validateUserIsProjectMember(projectId, assigneeUserId);
+        projectPermissionValidator.validate(projectId, userId);
         nodeAssigneeService.validateNotDuplicated(nodeId, assigneeUserId);
 
         nodeAssigneeService.create(
@@ -55,11 +53,7 @@ public class NodeAssigneeFacade {
             final Long nodeId,
             final Long assigneeId
     ) {
-        ProjectMember projectMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-
-        if (!projectMember.canEdit()) {
-            throw new ApiException(NodeErrorCode.NODE_UPDATE_FORBIDDEN);
-        }
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         NodeAssignee nodeAssignee = nodeAssigneeService.findByIdAndNodeId(assigneeId, nodeId);
 

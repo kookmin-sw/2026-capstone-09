@@ -8,6 +8,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import kr.flowmeet.domain.common.BaseTimeEntity;
 import kr.flowmeet.domain.project.entity.ProjectMember;
+import kr.flowmeet.domain.project.entity.ProjectMemberRole;
+import kr.flowmeet.domain.project.service.ProjectPermissionValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,10 +49,10 @@ public class NodeFacade {
     private final NodeTagService nodeTagService;
     private final NodeAssigneeService nodeAssigneeService;
     private final MeetingService meetingService;
-    private final ProjectMemberService projectMemberService;
+    private final ProjectPermissionValidator projectPermissionValidator;
 
     public GetFlowchartResponse getFlowchart(final Long userId, final Long projectId) {
-        projectMemberService.validateUserIsProjectMember(projectId, userId);
+        projectPermissionValidator.validate(projectId, userId);
 
         List<Node> nodes = nodeService.findAllByProjectId(projectId);
         List<Edge> edges = edgeService.findAllByProjectId(projectId);
@@ -66,7 +68,7 @@ public class NodeFacade {
     }
 
     public GetNodeResponse getNode(final Long userId, final Long projectId, final Long nodeId) {
-        projectMemberService.validateUserIsProjectMember(projectId, userId);
+        projectPermissionValidator.validate(projectId, userId);
 
         Node node = nodeService.findByIdAndProjectId(nodeId, projectId);
         List<Tag> tags = nodeTagService.findAllTagsByNodeId(nodeId);
@@ -80,11 +82,7 @@ public class NodeFacade {
 
     @Transactional
     public void createNode(final Long userId, final Long projectId, final CreateNodeRequest request) {
-        ProjectMember projectMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-
-        if (!projectMember.canEdit()) {
-            throw new ApiException(NodeErrorCode.NODE_CREATE_FORBIDDEN);
-        }
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         if (request.parentId() != null) {
             nodeService.findByIdAndProjectId(request.parentId(), projectId);
@@ -114,11 +112,7 @@ public class NodeFacade {
             final Long nodeId,
             final UpdateNodeRequest request
     ) {
-        ProjectMember projectMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-
-        if (!projectMember.canEdit()) {
-            throw new ApiException(NodeErrorCode.NODE_CREATE_FORBIDDEN);
-        }
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         Node node = nodeService.findByIdAndProjectId(nodeId, projectId);
 
@@ -133,11 +127,7 @@ public class NodeFacade {
 
     @Transactional
     public void deleteNode(final Long userId, final Long projectId, final Long nodeId) {
-        ProjectMember projectMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-
-        if (!projectMember.canEdit()) {
-            throw new ApiException(NodeErrorCode.NODE_CREATE_FORBIDDEN);
-        }
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         Node node = nodeService.findByIdAndProjectId(nodeId, projectId);
 
@@ -160,7 +150,7 @@ public class NodeFacade {
             final List<Long> assigneeIds,
             final Boolean hasMeeting
     ) {
-        projectMemberService.validateUserIsProjectMember(projectId, userId);
+        projectPermissionValidator.validate(projectId, userId);
 
         List<Node> nodes = nodeService.findAllByProjectId(projectId);
 
@@ -196,7 +186,7 @@ public class NodeFacade {
     }
 
     public GetKanbanResponse getKanban(final Long userId, final Long projectId) {
-        projectMemberService.validateUserIsProjectMember(projectId, userId);
+        projectPermissionValidator.validate(projectId, userId);
 
         List<Node> nodes = nodeService.findAllByProjectId(projectId);
 
@@ -218,18 +208,14 @@ public class NodeFacade {
             final Long nodeId,
             final UpdateNodeStatusRequest request
     ) {
-        ProjectMember projectMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-
-        if (!projectMember.canEdit()) {
-            throw new ApiException(NodeErrorCode.NODE_CREATE_FORBIDDEN);
-        }
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         Node node = nodeService.findByIdAndProjectId(nodeId, projectId);
         node.updateStatus(request.status(), request.sortOrder());
     }
 
     public SearchNodeResponse search(final Long userId, final Long projectId, final String query) {
-        projectMemberService.validateUserIsProjectMember(projectId, userId);
+        projectPermissionValidator.validate(projectId, userId);
 
         List<Node> nodes = nodeService.searchByQuery(projectId, query);
 

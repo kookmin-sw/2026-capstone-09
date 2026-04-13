@@ -2,6 +2,8 @@ package kr.flowmeet.api.node.facade;
 
 import java.util.List;
 import kr.flowmeet.domain.node.exception.TagErrorCode;
+import kr.flowmeet.domain.project.entity.ProjectMemberRole;
+import kr.flowmeet.domain.project.service.ProjectPermissionValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,10 +29,10 @@ public class TagFacade {
     private final TagService tagService;
     private final NodeTagService nodeTagService;
     private final NodeService nodeService;
-    private final ProjectMemberService projectMemberService;
+    private final ProjectPermissionValidator projectPermissionValidator;
 
     public GetAllTagsResponse getAllTags(final Long userId, final Long projectId) {
-        projectMemberService.validateUserIsProjectMember(projectId, userId);
+        projectPermissionValidator.validate(projectId, userId);
 
         List<Tag> tags = tagService.findAllByProjectId(projectId);
         return GetAllTagsResponse.from(tags);
@@ -42,11 +44,7 @@ public class TagFacade {
             final Long projectId,
             final CreateTagRequest request
     ) {
-        ProjectMember projectMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-
-        if (!projectMember.canEdit()) {
-            throw new ApiException(TagErrorCode.TAG_CREATE_FORBIDDEN);
-        }
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         tagService.validateNameNotDuplicated(projectId, request.name());
 
@@ -66,11 +64,7 @@ public class TagFacade {
             final Long tagId,
             final UpdateTagRequest request
     ) {
-        ProjectMember projectMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-
-        if (!projectMember.canEdit()) {
-            throw new ApiException(TagErrorCode.TAG_UPDATE_FORBIDDEN);
-        }
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         Tag tag = tagService.findByIdAndProjectId(tagId, projectId);
         String newName = request.name();
@@ -84,13 +78,10 @@ public class TagFacade {
 
     @Transactional
     public void deleteTag(final Long userId, final Long projectId, final Long tagId) {
-        ProjectMember projectMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-
-        if (!projectMember.canEdit()) {
-            throw new ApiException(TagErrorCode.TAG_DELETE_FORBIDDEN);
-        }
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         Tag tag = tagService.findByIdAndProjectId(tagId, projectId);
+
         nodeTagService.deleteAllByTagId(tagId);
         tagService.delete(tag);
     }
@@ -102,12 +93,7 @@ public class TagFacade {
             final Long nodeId,
             final AddNodeTagRequest request
     ) {
-        ProjectMember projectMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-
-        if (!projectMember.canEdit()) {
-            throw new ApiException(TagErrorCode.NODE_TAG_ADD_FORBIDDEN);
-        }
-
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
         nodeService.validateNodeIsInProject(projectId, nodeId);
         tagService.validateTagIsInProject(request.tagId(), projectId);
         nodeTagService.validateNotDuplicated(nodeId, request.tagId());
@@ -127,11 +113,7 @@ public class TagFacade {
             final Long nodeId,
             final Long tagId
     ) {
-        ProjectMember projectMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-
-        if (!projectMember.canEdit()) {
-            throw new ApiException(TagErrorCode.NODE_TAG_DELETE_FORBIDDEN);
-        }
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         nodeService.findByIdAndProjectId(nodeId, projectId);
         nodeTagService.deleteByNodeIdAndTagId(nodeId, tagId);
