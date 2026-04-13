@@ -6,6 +6,8 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import kr.flowmeet.domain.node.entity.NodeStatus;
+import kr.flowmeet.domain.node.entity.NodeType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,8 +56,18 @@ public class NodeService {
     }
 
     @Transactional
-    public Node create(final Node node) {
-        return nodeRepository.save(node);
+    public void create(Long projectId, Long parentId, String title, String description, NodeType type, int sortOrder) {
+        Node node = Node.builder()
+                .projectId(projectId)
+                .parentId(parentId)
+                .title(title)
+                .description(description)
+                .status(NodeStatus.WAITING)
+                .type(type)
+                .sortOrder(sortOrder)
+                .build();
+
+        nodeRepository.save(node);
     }
 
     public List<Long> findAllDescendantIds(Node node) {

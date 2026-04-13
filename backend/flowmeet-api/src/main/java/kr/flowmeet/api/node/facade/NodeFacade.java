@@ -92,17 +92,14 @@ public class NodeFacade {
                 ? nodeService.countChildNodes(request.parentId())
                 : nodeService.countRootNodes(projectId);
 
-        Node node = Node.builder()
-                .projectId(projectId)
-                .parentId(request.parentId())
-                .title(request.title())
-                .description(request.description())
-                .type(request.type())
-                .status(NodeStatus.WAITING)
-                .sortOrder(sortOrder)
-                .build();
-
-        nodeService.create(node);
+        nodeService.create(
+                projectId,
+                request.parentId(),
+                request.title(),
+                request.description(),
+                request.type(),
+                sortOrder
+        );
     }
 
     @Transactional
