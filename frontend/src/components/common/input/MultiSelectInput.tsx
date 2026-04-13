@@ -237,7 +237,12 @@ export const MultiSelectInput = ({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
       e.preventDefault();
-      handleSubmit();
+
+      if (menuStage === 'user-list' || menuStage === 'node-list') {
+        confirmSelection();
+      } else {
+        handleSubmit();
+      }
     }
   };
 
