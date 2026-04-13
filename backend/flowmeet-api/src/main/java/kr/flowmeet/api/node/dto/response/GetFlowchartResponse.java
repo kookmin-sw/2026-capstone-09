@@ -94,26 +94,4 @@ public record GetFlowchartResponse(
             );
         }
     }
-
-    public record TagItem(
-            Long tagId,
-            String name,
-            String color
-    ) {
-
-        public static TagItem from(final Tag tag) {
-            return new TagItem(tag.getId(), tag.getName(), tag.getColor());
-        }
-    }
-
-    public record AssigneeItem(
-            Long userId,
-            String nickname,
-            String profileImageUrl
-    ) {
-
-        public static AssigneeItem from(final User user) {
-            return new AssigneeItem(user.getId(), user.getNickname(), user.getProfileImageUrl());
-        }
-    }
 }

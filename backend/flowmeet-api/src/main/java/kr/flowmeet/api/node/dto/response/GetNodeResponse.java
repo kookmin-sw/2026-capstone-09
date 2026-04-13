@@ -42,29 +42,6 @@ public record GetNodeResponse(
         );
     }
 
-    public record TagItem(
-            Long tagId,
-            String name,
-            String color
-    ) {
-
-        public static TagItem from(final Tag tag) {
-            return new TagItem(tag.getId(), tag.getName(), tag.getColor());
-        }
-    }
-
-    public record AssigneeItem(
-            Long userId,
-            String nickname,
-            String email,
-            String profileImageUrl
-    ) {
-
-        public static AssigneeItem from(final User user) {
-            return new AssigneeItem(user.getId(), user.getNickname(), user.getEmail(), user.getProfileImageUrl());
-        }
-    }
-
     public record MeetingItem(
             Long meetingId,
             String status,
