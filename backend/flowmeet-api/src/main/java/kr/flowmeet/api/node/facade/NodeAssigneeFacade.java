@@ -35,7 +35,7 @@ public class NodeAssigneeFacade {
         Long assigneeUserId = request.userId();
 
         nodeService.validateNodeIsInProject(projectId, nodeId);
-        projectPermissionValidator.validate(projectId, userId);
+        projectPermissionValidator.validate(projectId, assigneeUserId);
         nodeAssigneeService.validateNotDuplicated(nodeId, assigneeUserId);
 
         nodeAssigneeService.create(
