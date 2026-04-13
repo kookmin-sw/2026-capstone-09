@@ -23,7 +23,7 @@ export const UserProfileButton = ({
       onClick={onClick}
       className={cn(
         'flex w-full items-center border-t border-line-normal-neutral py-4',
-        isCollapsed ? 'justify-center px-0' : 'gap-1 px-0.5',
+        isCollapsed ? 'justify-center px-0' : 'gap-2 px-0.5',
       )}
     >
       <div className="relative flex aspect-square h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full border border-line-solid-normal bg-cool-neutral-96">

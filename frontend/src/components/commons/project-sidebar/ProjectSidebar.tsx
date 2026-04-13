@@ -9,6 +9,7 @@ import {
   IconSetting,
 } from '@wanteddev/wds-icon';
 import { motion } from 'framer-motion';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
 import { EXAMPLE_PROJECT_SIDEBAR_PROFILE } from '@/constants/exampleConstant';
@@ -41,8 +42,10 @@ export const ProjectSidebar = ({
   onSettingClick,
   onProfileClick,
 }: ProjectSidebarProps) => {
+  const pathname = usePathname();
   const [isCollapsedInternal, setIsCollapsedInternal] = useState(false);
-  const isCollapsed = isCollapsedInternal;
+  const isProjectSelectionPage = pathname === '/projects';
+  const isCollapsed = isProjectSelectionPage || isCollapsedInternal;
   const [isCollapseSettled, setIsCollapseSettled] = useState(true);
   const shouldUseCollapsedLayout = isCollapsed && isCollapseSettled;
 
@@ -74,8 +77,8 @@ export const ProjectSidebar = ({
             className={cn(
               'border-b border-line-normal-neutral',
               shouldUseCollapsedLayout
-                ? 'flex flex-col items-center justify-center gap-2 pb-1 pt-3'
-                : 'flex items-center justify-between py-3 pl-1',
+                ? 'flex flex-col items-center justify-center gap-2 py-3.5'
+                : 'flex items-center justify-between py-3.5 pl-1',
             )}
           >
             <div
@@ -104,7 +107,7 @@ export const ProjectSidebar = ({
               )}
             </div>
 
-            {!isCollapsed && (
+            {!isCollapsed && !isProjectSelectionPage && (
               <button
                 type="button"
                 onClick={handleToggleCollapsed}
@@ -114,7 +117,7 @@ export const ProjectSidebar = ({
                 <IconLeftSide className="h-4 w-4 rotate-0 transition-transform" aria-hidden="true" />
               </button>
             )}
-            {shouldUseCollapsedLayout && (
+            {shouldUseCollapsedLayout && !isProjectSelectionPage && (
               <button
                 type="button"
                 onClick={handleToggleCollapsed}
@@ -126,33 +129,35 @@ export const ProjectSidebar = ({
             )}
           </div>
 
-          <nav className={cn('flex flex-col gap-1', isCollapsed && 'items-start')}>
-            <SidebarMenuButton
-              icon={IconSearch}
-              isCollapsed={isCollapsed}
-              label="검색"
-              labelWidth={48}
-              labelTransitionDuration={SIDEBAR_LABEL_TRANSITION_DURATION}
-              onClick={onSearchClick}
-            />
-            <SidebarMenuButton
-              icon={IconBell}
-              isCollapsed={isCollapsed}
-              label="수신함"
-              labelWidth={64}
-              badgeText="+99"
-              labelTransitionDuration={SIDEBAR_LABEL_TRANSITION_DURATION}
-              onClick={onInboxClick}
-            />
-            <SidebarMenuButton
-              icon={IconSetting}
-              isCollapsed={isCollapsed}
-              label="설정"
-              labelWidth={48}
-              labelTransitionDuration={SIDEBAR_LABEL_TRANSITION_DURATION}
-              onClick={onSettingClick}
-            />
-          </nav>
+          {!isProjectSelectionPage && (
+            <nav className={cn('flex flex-col gap-1', isCollapsed && 'items-start')}>
+              <SidebarMenuButton
+                icon={IconSearch}
+                isCollapsed={isCollapsed}
+                label="검색"
+                labelWidth={48}
+                labelTransitionDuration={SIDEBAR_LABEL_TRANSITION_DURATION}
+                onClick={onSearchClick}
+              />
+              <SidebarMenuButton
+                icon={IconBell}
+                isCollapsed={isCollapsed}
+                label="수신함"
+                labelWidth={64}
+                badgeText="+99"
+                labelTransitionDuration={SIDEBAR_LABEL_TRANSITION_DURATION}
+                onClick={onInboxClick}
+              />
+              <SidebarMenuButton
+                icon={IconSetting}
+                isCollapsed={isCollapsed}
+                label="설정"
+                labelWidth={48}
+                labelTransitionDuration={SIDEBAR_LABEL_TRANSITION_DURATION}
+                onClick={onSettingClick}
+              />
+            </nav>
+          )}
         </div>
 
         <div className="w-full bg-neutral-99">
