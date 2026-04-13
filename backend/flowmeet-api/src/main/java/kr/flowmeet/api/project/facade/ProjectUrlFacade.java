@@ -1,5 +1,7 @@
 package kr.flowmeet.api.project.facade;
 
+import kr.flowmeet.domain.project.entity.ProjectMemberRole;
+import kr.flowmeet.domain.project.service.ProjectPermissionValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,13 +21,11 @@ public class ProjectUrlFacade {
 
     private final ProjectMemberService projectMemberService;
     private final ProjectUrlService projectUrlService;
+    private final ProjectPermissionValidator projectPermissionValidator;
 
     @Transactional
     public ProjectUrlResponse addUrl(final Long userId, final Long projectId, final ProjectUrlRequest request) {
-        ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-        if (!requesterMember.canEdit()) {
-            throw new ApiException(ProjectErrorCode.PROJECT_ACCESS_DENIED);
-        }
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         ProjectUrl projectUrl = projectUrlService.create(
                 ProjectUrl.builder()
@@ -40,10 +40,7 @@ public class ProjectUrlFacade {
     @Transactional
     public ProjectUrlResponse updateUrl(final Long userId, final Long projectId, final Long urlId,
                                         final ProjectUrlRequest request) {
-        ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-        if (!requesterMember.canEdit()) {
-            throw new ApiException(ProjectErrorCode.PROJECT_ACCESS_DENIED);
-        }
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         ProjectUrl projectUrl = projectUrlService.findByIdAndProjectId(urlId, projectId);
         projectUrl.updateUrl(request.url());
@@ -53,10 +50,7 @@ public class ProjectUrlFacade {
 
     @Transactional
     public void deleteUrl(final Long userId, final Long projectId, final Long urlId) {
-        ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-        if (!requesterMember.canEdit()) {
-            throw new ApiException(ProjectErrorCode.PROJECT_ACCESS_DENIED);
-        }
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         ProjectUrl projectUrl = projectUrlService.findByIdAndProjectId(urlId, projectId);
         projectUrlService.delete(projectUrl);
