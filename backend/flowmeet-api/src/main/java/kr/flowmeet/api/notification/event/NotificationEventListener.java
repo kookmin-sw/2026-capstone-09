@@ -15,6 +15,6 @@ public class NotificationEventListener {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleNotificationCreated(final NotificationCreatedEvent event) {
-        notificationSender.send(event.getNotification());
+        notificationSender.send(event.notification());
     }
 }

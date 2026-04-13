@@ -17,8 +17,8 @@ public class ProjectMemberEventListener {
     public void handleProjectMemberJoined(final ProjectMemberJoinedEvent event) {
         notificationSettingService.create(
                 NotificationSetting.builder()
-                        .userId(event.getUserId())
-                        .projectId(event.getProjectId())
+                        .userId(event.userId())
+                        .projectId(event.projectId())
                         .build()
         );
     }
