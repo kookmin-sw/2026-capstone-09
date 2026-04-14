@@ -41,21 +41,21 @@ function CompactModal({ content }: { content: ReactNode }) {
 // Variant: sidebar — 좌측 사이드바 + 상하 24px
 function SidebarModal({ sidebar, content }: { sidebar?: ReactNode; content: ReactNode }) {
   return (
-    <div className="relative flex min-h-125 w-full overflow-hidden rounded-4xl bg-white">
+    <div className="relative flex min-h-125 w-full gap-8 overflow-hidden rounded-4xl bg-white">
       {/* ── 사이드바 ── */}
-      <aside className="w-50 shrink-0 bg-gray-50 px-5 py-6">
-        {sidebar ?? <p className="text-label-1 mt-2 text-gray-400">사이드바 영역</p>}
+      <aside className="bg-background-normal-alternative w-50 shrink-0 p-6">
+        {sidebar ?? <p className="text-label-1 text-label-strong mt-2">사이드바 영역</p>}
       </aside>
 
       {/* ── 본문 ── */}
-      <div className="flex-1 overflow-y-auto px-8 py-6 pr-12">
+      <div className="flex-1 py-6">
         <div>{content}</div>
       </div>
     </div>
   );
 }
 
-// Modal Shell — 백드롭 + 애니메이션 + variant 분기
+// Modal Shell — 딤드 + 애니메이션 + variant 분기
 export default function Modal() {
   const { state, closeModal } = useModal()!;
   const variant: ModalVariant = (state.variant ?? 'default') as ModalVariant; // 인덱싱 오류로 인한 구조분해 분리 및 타입 명시
@@ -86,10 +86,10 @@ export default function Modal() {
 
   const modalContent = (
     <div className="fixed inset-0 z-9999 flex items-center justify-center px-4">
-      {/* 백드롭 */}
+      {/* 딤드 */}
       <div
         ref={backdropRef}
-        className="animate-in fade-in absolute inset-0 bg-black/40 backdrop-blur-[2px] duration-200"
+        className="animate-in fade-in bg-label-alternative absolute inset-0 backdrop-blur-[2px] duration-200"
         onClick={() => closeOnBackdrop && closeModal()}
         aria-hidden="true"
       />

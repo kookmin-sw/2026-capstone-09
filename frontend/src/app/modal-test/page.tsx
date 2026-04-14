@@ -1,15 +1,15 @@
 'use client';
 
 import { Button } from '@wanteddev/wds';
-import { Bell, FolderOpen, Users } from 'lucide-react';
+import { IconFolder, IconBell, IconPerson } from '@wanteddev/wds-icon';
 import { useModal } from '@/components/commons/modal/ModalContext';
 
 // ── 사이드바 예시 컴포넌트 ──────────────────────────────────
 function SettingsSidebar() {
   const items = [
-    { icon: <FolderOpen size={16} />, label: '프로젝트' },
-    { icon: <Users size={16} />, label: '구성원' },
-    { icon: <Bell size={16} />, label: '알림' },
+    { icon: <IconFolder />, label: '프로젝트' },
+    { icon: <IconPerson />, label: '구성원' },
+    { icon: <IconBell />, label: '알림' },
   ];
 
   return (
@@ -38,7 +38,7 @@ function ProjectSettingsContent({ onClose }: { onClose: () => void }) {
       {/* 아이콘 + 이름 */}
       <div className="flex items-start gap-4">
         <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-gray-100">
-          <FolderOpen size={28} className="text-gray-400" />
+          <IconFolder />
         </div>
         <div className="flex-1">
           <label className="mb-1.5 block text-xs font-semibold tracking-wider text-gray-500 uppercase">
@@ -69,9 +69,12 @@ function ProjectSettingsContent({ onClose }: { onClose: () => void }) {
 
       {/* 위험 영역 */}
       <div className="border-t border-gray-100 pt-6">
-        <button className="flex items-center gap-2 text-sm font-medium text-red-500 transition-colors hover:text-red-600">
+        <button
+          className="flex items-center gap-2 text-sm font-medium text-red-500 transition-colors hover:text-red-600"
+          onClick={onClose}
+        >
           <span>🗑</span>
-          프로젝트 삭제
+          프로젝트 삭제 죄송해요 귀찮앗는데 여기 누르면 모달 닫힙니다
         </button>
       </div>
     </div>
