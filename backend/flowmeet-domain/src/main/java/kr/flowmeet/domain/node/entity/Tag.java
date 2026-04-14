@@ -15,11 +15,15 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "tags")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "UPDATE tags SET deleted_at = CURRENT_TIMESTAMP WHERE tag_id = ?")
+@SQLRestriction("deleted_at IS NULL")
 public class Tag extends BaseTimeEntity {
 
     @Id
@@ -43,6 +47,11 @@ public class Tag extends BaseTimeEntity {
     @Builder
     public Tag(Long projectId, String name, String color) {
         this.projectId = projectId;
+        this.name = name;
+        this.color = color;
+    }
+
+    public void update(final String name, final String color) {
         this.name = name;
         this.color = color;
     }

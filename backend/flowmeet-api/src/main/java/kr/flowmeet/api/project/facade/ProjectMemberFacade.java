@@ -1,7 +1,9 @@
 package kr.flowmeet.api.project.facade;
 
 import java.util.List;
+import kr.flowmeet.domain.project.service.ProjectPermissionValidator;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.converters.PropertyCustomizingConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.context.ApplicationEventPublisher;
@@ -30,32 +32,33 @@ public class ProjectMemberFacade {
     private final UserService userService;
     private final ProjectService projectService;
     private final ProjectMemberService projectMemberService;
+    private final ProjectPermissionValidator projectPermissionValidator;
     private final NotificationService notificationService;
     private final ApplicationEventPublisher eventPublisher;
 
     public GetAllProjectMembersResponse getAllMembers(final Long userId, final Long projectId) {
-        ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
+        projectPermissionValidator.validate(projectId, userId);
 
-        List<ProjectMember> members = projectMemberService.findAllByProjectIdOrderByRole(requesterMember.getProjectId());
+        List<ProjectMember> members = projectMemberService.findAllByProjectIdOrderByRole(projectId);
 
         return GetAllProjectMembersResponse.of(members);
     }
 
     @Transactional
     public void inviteMember(final Long userId, final Long projectId, final InviteProjectMemberRequest request) {
-        ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-        validateProjectMemberIsViewer(requesterMember);
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         User requester = userService.findById(userId);
         User invitee = userService.findByEmail(request.email());
+        Long inviteeId = invitee.getId();
         Project project = projectService.findById(projectId);
 
-        validateProjectMemberAlreadyExists(projectId, invitee.getId());
+        projectPermissionValidator.validateNotIn(projectId, inviteeId);
 
         projectMemberService.create(
                 ProjectMember.builder()
                         .projectId(projectId)
-                        .userId(invitee.getId())
+                        .userId(inviteeId)
                         .role(ProjectMemberRole.MEMBER)
                         .build()
         );
@@ -75,12 +78,17 @@ public class ProjectMemberFacade {
     @Transactional
     public void updateMemberRole(final Long userId, final Long projectId, final Long memberId,
                                  final UpdateProjectMemberRoleRequest request) {
-        ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-        validateRequesterCanChangeRole(requesterMember);
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         ProjectMember targetMember = projectMemberService.findByIdAndProjectId(memberId, projectId);
-        validateTargetIsNotOwnerForRoleChange(targetMember);
-        validateNewRoleIsNotOwner(request.role());
+
+        if (targetMember.isOwner()) {
+            throw new ApiException(ProjectErrorCode.MEMBER_CANNOT_CHANGE_OWNER);
+        }
+
+        if (request.role() == ProjectMemberRole.OWNER) {
+            throw new ApiException(ProjectErrorCode.MEMBER_CANNOT_CHANGE_OWNER);
+        }
 
         targetMember.updateRole(request.role());
     }
@@ -88,10 +96,16 @@ public class ProjectMemberFacade {
     @Transactional
     public void deleteMember(final Long userId, final Long projectId, final Long memberId) {
         ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-        validateRequesterCanDeleteMember(requesterMember);
+
+        if (!requesterMember.isOwner()) {
+            throw new ApiException(ProjectErrorCode.MEMBER_DELETE_FORBIDDEN);
+        }
 
         ProjectMember targetMember = projectMemberService.findByIdAndProjectId(memberId, projectId);
-        validateTargetIsNotOwnerForDelete(targetMember);
+
+        if (targetMember.isOwner()) {
+            throw new ApiException(ProjectErrorCode.MEMBER_CANNOT_DELETE_OWNER);
+        }
 
         projectMemberService.delete(targetMember);
     }
@@ -99,56 +113,11 @@ public class ProjectMemberFacade {
     @Transactional
     public void leaveProject(final Long userId, final Long projectId) {
         ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-        validateRequesterIsNotOwner(requesterMember);
+        if (requesterMember.isOwner()) {
+            throw new ApiException(ProjectErrorCode.PROJECT_OWNER_CANNOT_LEAVE);
+        }
 
         projectMemberService.delete(requesterMember);
     }
 
-    private void validateProjectMemberIsViewer(final ProjectMember member) {
-        if (member.getRole() == ProjectMemberRole.VIEWER) {
-            throw new ApiException(ProjectErrorCode.MEMBER_INVITE_FORBIDDEN);
-        }
-    }
-
-    private void validateProjectMemberAlreadyExists(final Long projectId, final Long userId) {
-        if (projectMemberService.existsByProjectIdAndUserId(projectId, userId)) {
-            throw new ApiException(ProjectErrorCode.MEMBER_ALREADY_EXISTS);
-        }
-    }
-
-    private void validateRequesterCanChangeRole(final ProjectMember requester) {
-        if (!requester.isOwner()) {
-            throw new ApiException(ProjectErrorCode.MEMBER_ROLE_CHANGE_FORBIDDEN);
-        }
-    }
-
-    private void validateTargetIsNotOwnerForRoleChange(final ProjectMember target) {
-        if (target.isOwner()) {
-            throw new ApiException(ProjectErrorCode.MEMBER_CANNOT_CHANGE_OWNER);
-        }
-    }
-
-    private void validateNewRoleIsNotOwner(final ProjectMemberRole role) {
-        if (role == ProjectMemberRole.OWNER) {
-            throw new ApiException(ProjectErrorCode.MEMBER_CANNOT_CHANGE_OWNER);
-        }
-    }
-
-    private void validateRequesterCanDeleteMember(final ProjectMember requester) {
-        if (!requester.isOwner()) {
-            throw new ApiException(ProjectErrorCode.MEMBER_DELETE_FORBIDDEN);
-        }
-    }
-
-    private void validateTargetIsNotOwnerForDelete(final ProjectMember target) {
-        if (target.isOwner()) {
-            throw new ApiException(ProjectErrorCode.MEMBER_CANNOT_DELETE_OWNER);
-        }
-    }
-
-    private void validateRequesterIsNotOwner(final ProjectMember requester) {
-        if (requester.isOwner()) {
-            throw new ApiException(ProjectErrorCode.PROJECT_OWNER_CANNOT_LEAVE);
-        }
-    }
 }

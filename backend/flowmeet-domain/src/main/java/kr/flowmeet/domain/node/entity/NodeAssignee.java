@@ -15,11 +15,15 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "node_assignees")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "UPDATE node_assignees SET deleted_at = CURRENT_TIMESTAMP WHERE node_assignee_id = ?")
+@SQLRestriction("deleted_at IS NULL")
 public class NodeAssignee extends BaseTimeEntity {
 
     @Id

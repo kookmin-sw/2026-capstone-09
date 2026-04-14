@@ -12,7 +12,6 @@ import kr.flowmeet.api.user.dto.response.UpdateUserResponse;
 import kr.flowmeet.domain.file.entity.FileDomainType;
 import kr.flowmeet.domain.project.service.ProjectMemberService;
 import kr.flowmeet.domain.user.entity.User;
-import kr.flowmeet.domain.user.exception.UserErrorCode;
 import kr.flowmeet.domain.user.service.UserService;
 
 @Service
@@ -54,9 +53,7 @@ public class UserFacade {
 
     @Transactional
     public void deleteMe(final Long userId) {
-        if (projectMemberService.existsOwnerProject(userId)) {
-            throw new ApiException(UserErrorCode.USER_IS_PROJECT_OWNER);
-        }
+        projectMemberService.validateUserIsNotProjectOwner(userId);
 
         User user = userService.findById(userId);
         userService.delete(user);

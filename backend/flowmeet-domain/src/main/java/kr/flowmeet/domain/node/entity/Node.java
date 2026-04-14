@@ -17,11 +17,15 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "nodes")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "UPDATE nodes SET deleted_at = CURRENT_TIMESTAMP WHERE node_id = ?")
+@SQLRestriction("deleted_at IS NULL")
 public class Node extends BaseTimeEntity {
 
     @Id
@@ -48,6 +52,10 @@ public class Node extends BaseTimeEntity {
 
     private String description;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private NodeType type;
+
     @Column(name = "note_content", columnDefinition = "TEXT")
     private String noteContent;
 
@@ -59,14 +67,30 @@ public class Node extends BaseTimeEntity {
     private int sortOrder;
 
     @Builder
-    public Node(Long projectId, Long parentId, String title, String description,
+    public Node(Long projectId, Long parentId, String title, String description, NodeType type,
                 String noteContent, NodeStatus status, int sortOrder) {
         this.projectId = projectId;
         this.parentId = parentId;
+        this.title = title;
+        this.description = description;
+        this.type = type;
+        this.noteContent = noteContent;
+        this.status = status;
+        this.sortOrder = sortOrder;
+    }
+
+    public void update(final String title, final String description, final String noteContent,
+                       final NodeStatus status, final Integer sortOrder) {
         this.title = title;
         this.description = description;
         this.noteContent = noteContent;
         this.status = status;
         this.sortOrder = sortOrder;
     }
+
+    public void updateStatus(final NodeStatus status, final int sortOrder) {
+        this.status = status;
+        this.sortOrder = sortOrder;
+    }
+
 }

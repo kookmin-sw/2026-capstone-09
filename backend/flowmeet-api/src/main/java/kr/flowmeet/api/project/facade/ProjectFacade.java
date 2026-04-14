@@ -1,6 +1,7 @@
 package kr.flowmeet.api.project.facade;
 
 import java.util.List;
+import kr.flowmeet.domain.project.service.ProjectPermissionValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -41,6 +42,7 @@ public class ProjectFacade {
     private final ProjectService projectService;
     private final ProjectMemberService projectMemberService;
     private final ProjectUrlService projectUrlService;
+    private final ProjectPermissionValidator projectPermissionValidator;
     private final NotificationSettingService notificationSettingService;
     private final ApplicationEventPublisher eventPublisher;
     private final ImageUploader imageUploader;
@@ -89,8 +91,7 @@ public class ProjectFacade {
 
     @Transactional
     public void updateProject(final Long userId, final Long projectId, final UpdateProjectRequest request) {
-        ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-        validateMemberCanEdit(requesterMember);
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         Project project = projectService.findById(projectId);
         project.updateName(request.name());
@@ -98,8 +99,7 @@ public class ProjectFacade {
 
     @Transactional
     public void deleteProject(final Long userId, final Long projectId) {
-        ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-        validateMemberCanDeleteProject(requesterMember);
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.OWNER);
 
         Project project = projectService.findById(projectId);
         projectService.delete(project);
@@ -124,15 +124,4 @@ public class ProjectFacade {
         project.updateProfileImageUrl(imageUrl);
     }
 
-    private void validateMemberCanEdit(final ProjectMember member) {
-        if (member.getRole() == ProjectMemberRole.VIEWER) {
-            throw new ApiException(ProjectErrorCode.PROJECT_ACCESS_DENIED);
-        }
-    }
-
-    private void validateMemberCanDeleteProject(final ProjectMember member) {
-        if (!member.isOwner()) {
-            throw new ApiException(ProjectErrorCode.PROJECT_DELETE_FORBIDDEN);
-        }
-    }
 }
