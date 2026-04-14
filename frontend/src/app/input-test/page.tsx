@@ -2,9 +2,9 @@
 
 import { Avatar, ContentBadge } from "@wanteddev/wds";
 import { useState } from 'react';
-import { DropdownInput } from "@/components/common/input/DropdownInput";
-import { MultiSelectInput, type MultiSelectInputValue } from '@/components/common/input/MultiSelectInput';
-import { TagInput } from '@/components/common/input/TagInput';
+import { DropdownInput } from "@/components/commons/input/DropdownInput";
+import { MultiSelectInput, type MultiSelectInputValue } from '@/components/commons/input/MultiSelectInput';
+import { TagInput } from '@/components/commons/input/TagInput';
 
 export default function Home() {
     const [selectedPeople, setSelectedPeople] = useState<string[]>([]);
