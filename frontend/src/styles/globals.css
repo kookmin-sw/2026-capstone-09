@@ -256,10 +256,6 @@
   --shadow-spread-md: var(--effect-shadow-spread-md);
 }
 
-html {
-  font-size: 62.5%;
-}
-
 body {
   font-family: var(--font-pretendard);
   background: #ffffff;
