@@ -4,8 +4,7 @@ import { FormField, List, ListCell } from '@wanteddev/wds';
 import { Box } from '@wanteddev/wds-engine';
 import type { Theme } from '@wanteddev/wds-engine';
 import { IconCheck, IconPerson, IconFolder, IconSend, IconChevronDownThickSmall, IconChevronUpThickSmall } from '@wanteddev/wds-icon';
-import type { ReactNode } from 'react';
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import {ReactNode, useEffect, useState, useRef, useCallback, useMemo } from 'react';
 
 export interface UserOption {
   id: string;
@@ -72,6 +71,7 @@ export const MultiSelectInput = ({
   const [currentType, setCurrentType] = useState<'user' | 'node' | null>(null);
   const [isComposing, setIsComposing] = useState(false);
   const [isListExpanded, setIsListExpanded] = useState(true);
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -153,6 +153,7 @@ export const MultiSelectInput = ({
   const handleCategorySelect = (category: 'user' | 'node') => {
     setCurrentType(category);
     setMenuStage(category === 'user' ? 'user-list' : 'node-list');
+    setSelectedIndex(0);
     setSearchQuery('');
     const alreadySelected = value.mentions
       .filter((m) => m.type === category)
@@ -174,6 +175,7 @@ export const MultiSelectInput = ({
       const newText = inputText.slice(0, atIndex);
 
       setInputText(newText);
+      setSelectedIndex(0);
       setMenuStage(null);
       setSearchQuery('');
 
@@ -235,14 +237,46 @@ export const MultiSelectInput = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
-      e.preventDefault();
+    if (isComposing) return
 
-      if (menuStage === 'user-list' || menuStage === 'node-list') {
-        confirmSelection();
-      } else {
-        handleSubmit();
+    if (menuStage === 'category') {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev === 0 ? 1 : prev));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev === 1 ? 0 : prev));
+      } else if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        const category = selectedIndex === 0 ? 'user' : 'node';
+        handleCategorySelect(category);
       }
+    } 
+    
+    if (menuStage === 'user-list' || menuStage === 'node-list') {
+      const options = menuStage === 'user-list' ? filteredUserOptions : filteredNodeOptions;
+      const atIndex = inputText.lastIndexOf('@');
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedIndex((prev) => Math.min(prev + 1, options.length - 1));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedIndex((prev) => Math.max(prev - 1, 0));
+      } else if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        if (atIndex === -1 && inputText.trim()) {
+          handleSubmit();
+        } else if (options.length > 0) {
+          handleItemToggle(options[selectedIndex].id);
+        }
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        confirmSelection();
+      }
+    } else if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
     }
   };
 
@@ -414,7 +448,7 @@ export const MultiSelectInput = ({
                     onClick={() => handleCategorySelect('user')}
                     sx={(theme: Theme) => ({
                       ...MENU_ITEM_STYLES,
-                      background: 'none',
+                      background: selectedIndex === 0 ? theme.semantic.background.normal.alternative : 'transparent',
                       '&:hover': {
                         backgroundColor: theme.semantic.background.normal.alternative,
                       },
@@ -430,7 +464,7 @@ export const MultiSelectInput = ({
                     onClick={() => handleCategorySelect('node')}
                     sx={(theme: Theme) => ({
                       ...MENU_ITEM_STYLES,
-                      background: 'none',
+                      background: selectedIndex === 1 ? theme.semantic.background.normal.alternative : 'transparent',
                       '&:hover': {
                         backgroundColor: theme.semantic.background.normal.alternative,
                       },
@@ -447,8 +481,9 @@ export const MultiSelectInput = ({
                   {(() => {
                     const options = menuStage === 'user-list' ? filteredUserOptions : filteredNodeOptions;
                     return options.length > 0 ? (
-                      options.map((item) => {
+                      options.map((item, index) => {
                         const isSelected = tempSelectedIds.includes(item.id);
+                        const isSelectedIndex = index === selectedIndex;
                         return (
                           <Box
                             as="button"
@@ -459,7 +494,7 @@ export const MultiSelectInput = ({
                             onClick={() => handleItemToggle(item.id)}
                             sx={(theme: Theme) => ({
                               ...MENU_ITEM_STYLES,
-                              backgroundColor: isSelected ? theme.semantic.background.normal.alternative : 'transparent',
+                              backgroundColor: isSelected || isSelectedIndex ? theme.semantic.background.normal.alternative : 'transparent',
                               '&:hover': {
                                 backgroundColor: theme.semantic.background.normal.alternative,
                               },
