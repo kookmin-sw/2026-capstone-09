@@ -222,7 +222,7 @@ export const MultiSelectInput = ({
   };
 
   const handleSubmit = () => {
-    if (!inputText.trim() && value.mentions.length === 0) return;
+    if (!inputText.trim()) return;
 
     onSubmit?.({
       text: inputText,
