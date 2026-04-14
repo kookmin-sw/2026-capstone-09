@@ -1,7 +1,9 @@
 package kr.flowmeet.domain.project.service;
 
 import java.util.List;
+import kr.flowmeet.domain.project.event.ProjectMemberJoinedEvent;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import kr.flowmeet.domain.common.exception.BusinessException;
@@ -17,14 +19,10 @@ import kr.flowmeet.domain.user.exception.UserErrorCode;
 public class ProjectMemberService {
 
     private final ProjectMemberRepository projectMemberRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     public ProjectMember findByProjectIdAndUserId(final Long projectId, final Long userId) {
         return projectMemberRepository.findByProjectIdAndUserId(projectId, userId)
-                .orElseThrow(() -> new BusinessException(ProjectErrorCode.MEMBER_NOT_FOUND));
-    }
-
-    public ProjectMember findById(final Long memberId) {
-        return projectMemberRepository.findById(memberId)
                 .orElseThrow(() -> new BusinessException(ProjectErrorCode.MEMBER_NOT_FOUND));
     }
 
@@ -56,8 +54,15 @@ public class ProjectMemberService {
     }
 
     @Transactional
-    public ProjectMember create(final ProjectMember projectMember) {
-        return projectMemberRepository.save(projectMember);
+    public void create(final Long userId, final Long projectId, final ProjectMemberRole role) {
+        ProjectMember projectMember = ProjectMember.builder()
+                .userId(userId)
+                .projectId(projectId)
+                .role(role)
+                .build();
+
+        projectMemberRepository.save(projectMember);
+        applicationEventPublisher.publishEvent(ProjectMemberJoinedEvent.of(userId, projectId));
     }
 
     @Transactional
