@@ -32,10 +32,6 @@ public class NodeService {
         return nodeRepository.findAllByProjectId(projectId);
     }
 
-    public List<Node> findAllByParentId(final Long parentId) {
-        return nodeRepository.findAllByParentId(parentId);
-    }
-
     public List<Node> searchByQuery(final Long projectId, final String query) {
         return nodeRepository.searchByQuery(projectId, query);
     }
