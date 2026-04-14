@@ -69,6 +69,8 @@
   --color---inverse---label: #F7F7F8;
   --color---common---0: #000000;
   --color---common---100: #FFFFFF;
+  --color---surface---canvas: #f8f8f8;
+  --color---line---soft: #efefef;
   --color---neutral---5: #0F0F0F;
   --color---neutral---10: #171717;
   --color---neutral---15: #1C1C1C;
@@ -328,15 +330,15 @@
   --typography---weight---bold-default: 600;
 
   /* Effect styles */
-  --shadow---normal---xsmall: 0px 1px 2px rgba(23, 23, 23, 0.1);
+  --shadow---normal---xsmall: 0px 1px 2px #1717171a;
   --shadow---normal---small:
-    0px 4px 6px rgba(23, 23, 23, 0.06), 0px 2px 4px rgba(23, 23, 23, 0.06);
+    0px 4px 6px #1717170f, 0px 2px 4px #1717170f;
   --shadow---normal---medium:
-    0px 10px 15px rgba(23, 23, 23, 0.07), 0px 4px 6px rgba(23, 23, 23, 0.07);
+    0px 10px 15px #17171712, 0px 4px 6px #17171712;
   --shadow---normal---large:
-    0px 16px 24px rgba(23, 23, 23, 0.08), 0px 6px 10px rgba(23, 23, 23, 0.08);
+    0px 16px 24px #17171714, 0px 6px 10px #17171714;
   --shadow---normal---xlarge:
-    0px 24px 38px rgba(23, 23, 23, 0.12), 0px 10px 15px rgba(23, 23, 23, 0.1);
-  --shadow---spread---small: 0px 0px 60px rgba(23, 23, 23, 0.1);
-  --shadow---spread---medium: 0px 15px 75px rgba(23, 23, 23, 0.16);
+    0px 24px 38px #1717171f, 0px 10px 15px #1717171a;
+  --shadow---spread---small: 0px 0px 60px #1717171a;
+  --shadow---spread---medium: 0px 15px 75px #17171729;
 }

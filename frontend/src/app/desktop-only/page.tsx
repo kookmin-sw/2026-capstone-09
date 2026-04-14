@@ -28,8 +28,8 @@ export default function DesktopOnlyPage() {
         <path d="M8 21h8M12 17v4" />
       </svg>
       <div className="space-y-2">
-        <h1 className="text-foreground text-xl font-semibold">데스크탑에서 사용해 주세요</h1>
-        <p className="text-muted-foreground max-w-xs text-sm">
+        <h1 className="text-foreground text-title-3 font-semibold">데스크탑에서 사용해 주세요</h1>
+        <p className="text-muted-foreground text-body-2 max-w-xs">
           이 서비스는 데스크탑 환경에 최적화되어 있습니다. 더 넓은 화면에서 접속해 주세요.
         </p>
       </div>

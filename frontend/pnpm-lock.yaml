@@ -21,20 +21,20 @@ importers:
         specifier: ^3.20.1
         version: 3.20.4
       '@wanteddev/wds':
-        specifier: ^3.4.6
-        version: 3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/server@11.11.0)(@emotion/utils@1.4.2)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))
-      '@wanteddev/wds-engine':
-        specifier: ^3.4.6
-        version: 3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/server@11.11.0)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)
+        specifier: 3.4.6
+        version: 3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/utils@1.4.2)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))
       '@wanteddev/wds-icon':
-        specifier: ^3.4.6
-        version: 3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/server@11.11.0)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)
+        specifier: 3.4.6
+        version: 3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)
       '@wanteddev/wds-nextjs':
-        specifier: ^3.4.6
+        specifier: 3.4.6
         version: 3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/server@11.11.0)(@emotion/utils@1.4.2)(@types/react@19.2.14)(next@16.1.6(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      framer-motion:
+        specifier: ^12.38.0
+        version: 12.38.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       next:
         specifier: 16.1.6
         version: 16.1.6(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -75,9 +75,6 @@ importers:
       cross-env:
         specifier: ^10.1.0
         version: 10.1.0
-      dotenv-cli:
-        specifier: ^11.0.0
-        version: 11.0.0
       electron:
         specifier: ^41.0.3
         version: 41.0.3
@@ -1398,40 +1395,31 @@ packages:
       '@emotion/cache': ^11.11.0
       '@emotion/react': ^11.11.0
       '@emotion/serialize': ^1.1.0
-      '@emotion/server': '*'
       '@emotion/utils': ^1.2.0
       '@types/react': ^18.0.0 || ^19.0.0
       react: ^18.0.0 || ^19.0.0
-    peerDependenciesMeta:
-      '@emotion/cache':
-        optional: true
-      '@emotion/react':
-        optional: true
-      '@emotion/serialize':
-        optional: true
-      '@emotion/server':
-        optional: true
-      '@emotion/utils':
-        optional: true
-      '@types/react':
-        optional: true
 
   '@wanteddev/wds-icon@3.4.6':
     resolution: {integrity: sha512-1j9Lj/IRfaTzBsKnHdvfwgKOoNIcWwxzFnxnn4W7uw4sUlBaMA07dRA5ZLX2jVhCVNij+GCsDNkEJA/KybDIsg==, tarball: https://npm.pkg.github.com/download/@wanteddev/wds-icon/3.4.6/ebb0699423a2ccf0fa569cdc579da3f83429d873}
     peerDependencies:
       '@types/react': ^18.0.0 || ^19.0.0
       react: ^18.0.0 || ^19.0.0
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
 
   '@wanteddev/wds-nextjs@3.4.6':
     resolution: {integrity: sha512-qcV2XKytAnLijLg1ZTfHUOgoolKdmIZJ9qSdVyIvxhdXBDaTOkYYU+Q2LOtJp13AlzCiTx5HZSVZFm/VvQXfgQ==, tarball: https://npm.pkg.github.com/download/@wanteddev/wds-nextjs/3.4.6/7d6b422142e3e89683062a7c0fae336510f24d92}
     peerDependencies:
+      '@emotion/cache': '*'
       '@emotion/server': ^11.11.0
       '@types/react': ^18.0.0 || ^19.0.0
       next: ^13.0.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
       react: ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      '@emotion/cache':
+        optional: true
+      '@emotion/server':
+        optional: true
+      '@types/react':
+        optional: true
 
   '@wanteddev/wds-theme@3.4.6':
     resolution: {integrity: sha512-3P9itxg03EDIzLAj9xfOPk7gtJWwDvI+VjIqxs3m1aKRzQUw6k+d3DzwSRJJEqUBc4iJojveRSMPVauHFiswzg==, tarball: https://npm.pkg.github.com/download/@wanteddev/wds-theme/3.4.6/0176efd2b96e5420ce00ea9ce55cfad2a7f87ea4}
@@ -1744,22 +1732,6 @@ packages:
     resolution: {integrity: sha512-35mSku4ZXK0vfCuHEDAwt55dg2jNajHZ1odvF+8SSr82EsZY4QmXfuWso8oEd8zRhVObSN18aM0CjSdoBX7zIw==}
     engines: {node: '>=0.10.0'}
 
-  dotenv-cli@11.0.0:
-    resolution: {integrity: sha512-r5pA8idbk7GFWuHEU7trSTflWcdBpQEK+Aw17UrSHjS6CReuhrrPcyC3zcQBPQvhArRHnBo/h6eLH1fkCvNlww==}
-    hasBin: true
-
-  dotenv-expand@12.0.3:
-    resolution: {integrity: sha512-uc47g4b+4k/M/SeaW1y4OApx+mtLWl92l5LMPP0GNXctZqELk+YGgOPIIC5elYmUH4OuoK3JLhuRUYegeySiFA==}
-    engines: {node: '>=12'}
-
-  dotenv@16.6.1:
-    resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
-    engines: {node: '>=12'}
-
-  dotenv@17.4.1:
-    resolution: {integrity: sha512-k8DaKGP6r1G30Lx8V4+pCsLzKr8vLmV2paqEj1Y55GdAgJuIqpRp5FfajGF8KtwMxCz9qJc6wUIJnm053d/WCw==}
-    engines: {node: '>=12'}
-
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
     engines: {node: '>= 0.4'}
@@ -2069,6 +2041,20 @@ packages:
   form-data@4.0.5:
     resolution: {integrity: sha512-8RipRLol37bNs2bhoV67fiTEvdTrbMUYcFTiy3+wuuOnUog2QBHCZWXDRijWQfAkhBj2Uf5UnVaiWwA5vdd82w==}
     engines: {node: '>= 6'}
+
+  framer-motion@12.38.0:
+    resolution: {integrity: sha512-rFYkY/pigbcswl1XQSb7q424kSTQ8q6eAC+YUsSKooHQYuLdzdHjrt6uxUC+PRAO++q5IS7+TamgIw1AphxR+g==}
+    peerDependencies:
+      '@emotion/is-prop-valid': '*'
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      '@emotion/is-prop-valid':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
 
   fs-extra@8.1.0:
     resolution: {integrity: sha512-yhlQgA6mnOJUKOsRUFsgJdQCvkKhcz8tlZG5HBQfReYZy46OwLcY+Zia0mtdHsOo9y/hP+CxMN0TU9QxoOtG4g==}
@@ -2574,6 +2560,12 @@ packages:
 
   minimist@1.2.8:
     resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
+
+  motion-dom@12.38.0:
+    resolution: {integrity: sha512-pdkHLD8QYRp8VfiNLb8xIBJis1byQ9gPT3Jnh2jqfFtAsWUA3dEepDlsWe/xMpO8McV+VdpKVcp+E+TGJEtOoA==}
+
+  motion-utils@12.36.0:
+    resolution: {integrity: sha512-eHWisygbiwVvf6PZ1vhaHCLamvkSbPIeAYxWUuL3a2PD/TROgE7FvfHWTIH4vMl798QLfMw15nRqIaRDXTlYRg==}
 
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
@@ -3523,8 +3515,7 @@ snapshots:
     dependencies:
       '@babel/types': 7.29.0
 
-  '@babel/runtime@7.29.2':
-    optional: true
+  '@babel/runtime@7.29.2': {}
 
   '@babel/template@7.28.6':
     dependencies:
@@ -3594,7 +3585,6 @@ snapshots:
       stylis: 4.2.0
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
   '@emotion/cache@11.14.0':
     dependencies:
@@ -3603,13 +3593,10 @@ snapshots:
       '@emotion/utils': 1.4.2
       '@emotion/weak-memoize': 0.4.0
       stylis: 4.2.0
-    optional: true
 
-  '@emotion/hash@0.9.2':
-    optional: true
+  '@emotion/hash@0.9.2': {}
 
-  '@emotion/memoize@0.9.0':
-    optional: true
+  '@emotion/memoize@0.9.0': {}
 
   '@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3)':
     dependencies:
@@ -3626,7 +3613,6 @@ snapshots:
       '@types/react': 19.2.14
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
   '@emotion/serialize@1.3.3':
     dependencies:
@@ -3635,7 +3621,6 @@ snapshots:
       '@emotion/unitless': 0.10.0
       '@emotion/utils': 1.4.2
       csstype: 3.2.3
-    optional: true
 
   '@emotion/server@11.11.0':
     dependencies:
@@ -3643,22 +3628,19 @@ snapshots:
       html-tokenize: 2.0.1
       multipipe: 1.0.2
       through: 2.3.8
-
-  '@emotion/sheet@1.4.0':
     optional: true
 
-  '@emotion/unitless@0.10.0':
-    optional: true
+  '@emotion/sheet@1.4.0': {}
+
+  '@emotion/unitless@0.10.0': {}
 
   '@emotion/use-insertion-effect-with-fallbacks@1.2.0(react@19.2.3)':
     dependencies:
       react: 19.2.3
-    optional: true
 
   '@emotion/utils@1.4.2': {}
 
-  '@emotion/weak-memoize@0.4.0':
-    optional: true
+  '@emotion/weak-memoize@0.4.0': {}
 
   '@epic-web/invariant@1.0.0': {}
 
@@ -4506,8 +4488,7 @@ snapshots:
     dependencies:
       undici-types: 7.16.0
 
-  '@types/parse-json@4.0.2':
-    optional: true
+  '@types/parse-json@4.0.2': {}
 
   '@types/react-dom@19.2.3(@types/react@19.2.14)':
     dependencies:
@@ -4678,41 +4659,38 @@ snapshots:
   '@unrs/resolver-binding-win32-x64-msvc@1.11.1':
     optional: true
 
-  '@wanteddev/wds-engine@3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/server@11.11.0)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)':
+  '@wanteddev/wds-engine@3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)':
     dependencies:
-      '@wanteddev/wds-theme': 3.4.6
-      csstype: 3.2.3
-      react: 19.2.3
-    optionalDependencies:
       '@emotion/cache': 11.14.0
       '@emotion/react': 11.14.0(@types/react@19.2.14)(react@19.2.3)
       '@emotion/serialize': 1.3.3
-      '@emotion/server': 11.11.0
       '@emotion/utils': 1.4.2
       '@types/react': 19.2.14
-
-  '@wanteddev/wds-icon@3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/server@11.11.0)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)':
-    dependencies:
-      '@wanteddev/wds-engine': 3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/server@11.11.0)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)
+      '@wanteddev/wds-theme': 3.4.6
+      csstype: 3.2.3
       react: 19.2.3
-    optionalDependencies:
+
+  '@wanteddev/wds-icon@3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)':
+    dependencies:
       '@types/react': 19.2.14
+      '@wanteddev/wds-engine': 3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)
+      react: 19.2.3
     transitivePeerDependencies:
       - '@emotion/cache'
       - '@emotion/react'
       - '@emotion/serialize'
-      - '@emotion/server'
       - '@emotion/utils'
 
   '@wanteddev/wds-nextjs@3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/server@11.11.0)(@emotion/utils@1.4.2)(@types/react@19.2.14)(next@16.1.6(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)':
     dependencies:
-      '@emotion/server': 11.11.0
-      '@types/react': 19.2.14
-      '@wanteddev/wds-engine': 3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/server@11.11.0)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)
+      '@wanteddev/wds-engine': 3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)
       next: 16.1.6(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       react: 19.2.3
+    optionalDependencies:
+      '@emotion/cache': 11.14.0
+      '@emotion/server': 11.11.0
+      '@types/react': 19.2.14
     transitivePeerDependencies:
-      - '@emotion/cache'
       - '@emotion/react'
       - '@emotion/serialize'
       - '@emotion/utils'
@@ -4721,7 +4699,7 @@ snapshots:
     dependencies:
       object-path: 0.11.8
 
-  '@wanteddev/wds@3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/server@11.11.0)(@emotion/utils@1.4.2)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))':
+  '@wanteddev/wds@3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/utils@1.4.2)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))':
     dependencies:
       '@floating-ui/react': 0.27.19(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@radix-ui/primitive': 1.1.3
@@ -4737,8 +4715,8 @@ snapshots:
       '@radix-ui/react-use-controllable-state': 1.2.2(@types/react@19.2.14)(react@19.2.3)
       '@radix-ui/react-use-previous': 1.1.1(@types/react@19.2.14)(react@19.2.3)
       '@radix-ui/react-use-size': 1.1.1(@types/react@19.2.14)(react@19.2.3)
-      '@wanteddev/wds-engine': 3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/server@11.11.0)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)
-      '@wanteddev/wds-icon': 3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/server@11.11.0)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)
+      '@wanteddev/wds-engine': 3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)
+      '@wanteddev/wds-icon': 3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)
       aria-hidden: 1.2.6
       dayjs: 1.11.20
       next-themes: 0.4.6(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -4754,7 +4732,6 @@ snapshots:
       - '@emotion/cache'
       - '@emotion/react'
       - '@emotion/serialize'
-      - '@emotion/server'
       - '@emotion/utils'
       - immer
       - use-sync-external-store
@@ -4880,7 +4857,6 @@ snapshots:
       '@babel/runtime': 7.29.2
       cosmiconfig: 7.1.0
       resolve: 1.22.11
-    optional: true
 
   balanced-match@1.0.2: {}
 
@@ -4914,7 +4890,8 @@ snapshots:
 
   buffer-crc32@0.2.13: {}
 
-  buffer-from@0.1.2: {}
+  buffer-from@0.1.2:
+    optional: true
 
   cacheable-lookup@5.0.4: {}
 
@@ -4989,12 +4966,12 @@ snapshots:
       tree-kill: 1.2.2
       yargs: 17.7.2
 
-  convert-source-map@1.9.0:
-    optional: true
+  convert-source-map@1.9.0: {}
 
   convert-source-map@2.0.0: {}
 
-  core-util-is@1.0.3: {}
+  core-util-is@1.0.3:
+    optional: true
 
   cosmiconfig@7.1.0:
     dependencies:
@@ -5003,7 +4980,6 @@ snapshots:
       parse-json: 5.2.0
       path-type: 4.0.0
       yaml: 1.10.3
-    optional: true
 
   crelt@1.0.6: {}
 
@@ -5083,21 +5059,6 @@ snapshots:
     dependencies:
       esutils: 2.0.3
 
-  dotenv-cli@11.0.0:
-    dependencies:
-      cross-spawn: 7.0.6
-      dotenv: 17.4.1
-      dotenv-expand: 12.0.3
-      minimist: 1.2.8
-
-  dotenv-expand@12.0.3:
-    dependencies:
-      dotenv: 16.6.1
-
-  dotenv@16.6.1: {}
-
-  dotenv@17.4.1: {}
-
   dunder-proto@1.0.1:
     dependencies:
       call-bind-apply-helpers: 1.0.2
@@ -5107,6 +5068,7 @@ snapshots:
   duplexer2@0.1.4:
     dependencies:
       readable-stream: 2.3.8
+    optional: true
 
   electron-to-chromium@1.5.313: {}
 
@@ -5138,7 +5100,6 @@ snapshots:
   error-ex@1.3.4:
     dependencies:
       is-arrayish: 0.2.1
-    optional: true
 
   es-abstract@1.24.1:
     dependencies:
@@ -5521,8 +5482,7 @@ snapshots:
     dependencies:
       to-regex-range: 5.0.1
 
-  find-root@1.1.0:
-    optional: true
+  find-root@1.1.0: {}
 
   find-up@5.0.0:
     dependencies:
@@ -5549,6 +5509,15 @@ snapshots:
       es-set-tostringtag: 2.1.0
       hasown: 2.0.2
       mime-types: 2.1.35
+
+  framer-motion@12.38.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3):
+    dependencies:
+      motion-dom: 12.38.0
+      motion-utils: 12.36.0
+      tslib: 2.8.1
+    optionalDependencies:
+      react: 19.2.3
+      react-dom: 19.2.3(react@19.2.3)
 
   fs-extra@8.1.0:
     dependencies:
@@ -5685,7 +5654,6 @@ snapshots:
   hoist-non-react-statics@3.3.2:
     dependencies:
       react-is: 16.13.1
-    optional: true
 
   html-tokenize@2.0.1:
     dependencies:
@@ -5694,6 +5662,7 @@ snapshots:
       minimist: 1.2.8
       readable-stream: 1.0.34
       through2: 0.4.2
+    optional: true
 
   http-cache-semantics@4.2.0: {}
 
@@ -5713,7 +5682,8 @@ snapshots:
 
   imurmurhash@0.1.4: {}
 
-  inherits@2.0.4: {}
+  inherits@2.0.4:
+    optional: true
 
   internal-slot@1.1.0:
     dependencies:
@@ -5727,8 +5697,7 @@ snapshots:
       call-bound: 1.0.4
       get-intrinsic: 1.3.0
 
-  is-arrayish@0.2.1:
-    optional: true
+  is-arrayish@0.2.1: {}
 
   is-async-function@2.1.1:
     dependencies:
@@ -5838,9 +5807,11 @@ snapshots:
       call-bound: 1.0.4
       get-intrinsic: 1.3.0
 
-  isarray@0.0.1: {}
+  isarray@0.0.1:
+    optional: true
 
-  isarray@1.0.0: {}
+  isarray@1.0.0:
+    optional: true
 
   isarray@2.0.5: {}
 
@@ -5879,8 +5850,7 @@ snapshots:
 
   json-buffer@3.0.1: {}
 
-  json-parse-even-better-errors@2.3.1:
-    optional: true
+  json-parse-even-better-errors@2.3.1: {}
 
   json-schema-traverse@0.4.1: {}
 
@@ -5974,8 +5944,7 @@ snapshots:
       lightningcss-win32-arm64-msvc: 1.31.1
       lightningcss-win32-x64-msvc: 1.31.1
 
-  lines-and-columns@1.2.4:
-    optional: true
+  lines-and-columns@1.2.4: {}
 
   linkify-it@5.0.0:
     dependencies:
@@ -6050,12 +6019,19 @@ snapshots:
 
   minimist@1.2.8: {}
 
+  motion-dom@12.38.0:
+    dependencies:
+      motion-utils: 12.36.0
+
+  motion-utils@12.36.0: {}
+
   ms@2.1.3: {}
 
   multipipe@1.0.2:
     dependencies:
       duplexer2: 0.1.4
       object-assign: 4.1.1
+    optional: true
 
   nanoid@3.3.11: {}
 
@@ -6107,7 +6083,8 @@ snapshots:
 
   object-inspect@1.13.4: {}
 
-  object-keys@0.4.0: {}
+  object-keys@0.4.0:
+    optional: true
 
   object-keys@1.1.1: {}
 
@@ -6190,7 +6167,6 @@ snapshots:
       error-ex: 1.3.4
       json-parse-even-better-errors: 2.3.1
       lines-and-columns: 1.2.4
-    optional: true
 
   path-exists@4.0.0: {}
 
@@ -6198,8 +6174,7 @@ snapshots:
 
   path-parse@1.0.7: {}
 
-  path-type@4.0.0:
-    optional: true
+  path-type@4.0.0: {}
 
   pend@1.2.0: {}
 
@@ -6237,7 +6212,8 @@ snapshots:
 
   prettier@3.8.1: {}
 
-  process-nextick-args@2.0.1: {}
+  process-nextick-args@2.0.1:
+    optional: true
 
   progress@2.0.3: {}
 
@@ -6407,6 +6383,7 @@ snapshots:
       inherits: 2.0.4
       isarray: 0.0.1
       string_decoder: 0.10.31
+    optional: true
 
   readable-stream@2.3.8:
     dependencies:
@@ -6417,6 +6394,7 @@ snapshots:
       safe-buffer: 5.1.2
       string_decoder: 1.1.1
       util-deprecate: 1.0.2
+    optional: true
 
   reflect.getprototypeof@1.0.10:
     dependencies:
@@ -6495,7 +6473,8 @@ snapshots:
       has-symbols: 1.1.0
       isarray: 2.0.5
 
-  safe-buffer@5.1.2: {}
+  safe-buffer@5.1.2:
+    optional: true
 
   safe-push-apply@1.0.0:
     dependencies:
@@ -6614,8 +6593,7 @@ snapshots:
 
   source-map-js@1.2.1: {}
 
-  source-map@0.5.7:
-    optional: true
+  source-map@0.5.7: {}
 
   sprintf-js@1.1.3:
     optional: true
@@ -6683,11 +6661,13 @@ snapshots:
       define-properties: 1.2.1
       es-object-atoms: 1.1.1
 
-  string_decoder@0.10.31: {}
+  string_decoder@0.10.31:
+    optional: true
 
   string_decoder@1.1.1:
     dependencies:
       safe-buffer: 5.1.2
+    optional: true
 
   strip-ansi@6.0.1:
     dependencies:
@@ -6704,8 +6684,7 @@ snapshots:
     optionalDependencies:
       '@babel/core': 7.29.0
 
-  stylis@4.2.0:
-    optional: true
+  stylis@4.2.0: {}
 
   sumchecker@3.0.1:
     dependencies:
@@ -6739,8 +6718,10 @@ snapshots:
     dependencies:
       readable-stream: 1.0.34
       xtend: 2.1.2
+    optional: true
 
-  through@2.3.8: {}
+  through@2.3.8:
+    optional: true
 
   tinyglobby@0.2.15:
     dependencies:
@@ -6887,7 +6868,8 @@ snapshots:
     dependencies:
       react: 19.2.3
 
-  util-deprecate@1.0.2: {}
+  util-deprecate@1.0.2:
+    optional: true
 
   w3c-keyname@2.2.8: {}
 
@@ -6959,6 +6941,7 @@ snapshots:
   xtend@2.1.2:
     dependencies:
       object-keys: 0.4.0
+    optional: true
 
   y-prosemirror@1.3.7(prosemirror-model@1.25.4)(prosemirror-state@1.4.4)(prosemirror-view@1.41.6)(y-protocols@1.0.7(yjs@13.6.30))(yjs@13.6.30):
     dependencies:
@@ -6984,8 +6967,7 @@ snapshots:
 
   yallist@3.1.1: {}
 
-  yaml@1.10.3:
-    optional: true
+  yaml@1.10.3: {}
 
   yargs-parser@21.1.1: {}
 
