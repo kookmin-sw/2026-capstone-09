@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import kr.flowmeet.api.common.dto.CommonResponse;
 import kr.flowmeet.api.common.dto.PageResponse;
 import kr.flowmeet.api.common.swagger.ApiErrorCode;
@@ -15,6 +16,7 @@ import kr.flowmeet.api.project.dto.response.GetProjectResponse;
 import kr.flowmeet.api.project.dto.response.ProjectSummaryResponse;
 import kr.flowmeet.api.project.dto.request.UpdateProjectRequest;
 import kr.flowmeet.auth.annotation.UserId;
+import kr.flowmeet.domain.file.exception.FileErrorCode;
 import kr.flowmeet.domain.project.exception.ProjectErrorCode;
 import kr.flowmeet.domain.project.service.ProjectSortType;
 
@@ -41,6 +43,10 @@ public interface ProjectApi {
     @ApiErrorCode(code = ProjectErrorCode.class, names = {"PROJECT_ACCESS_DENIED"})
     CommonResponse<?> updateProject(@UserId Long userId, @PathVariable Long projectId,
                                     @Valid @RequestBody UpdateProjectRequest request);
+
+    @Operation(summary = "프로젝트 이미지 변경", description = "png, jpeg, webp만 허용 (최대 5MB)")
+    @ApiErrorCode(code = FileErrorCode.class, names = {"FILE_SIZE_EXCEEDED", "FILE_INVALID_TYPE"})
+    CommonResponse<?> updateProfileImage(@UserId Long userId, @PathVariable Long projectId, MultipartFile profileImage);
 
     @Operation(summary = "프로젝트 삭제", description = "OWNER만 삭제할 수 있습니다.")
     @ApiErrorCode(code = ProjectErrorCode.class, names = {"PROJECT_DELETE_FORBIDDEN"})

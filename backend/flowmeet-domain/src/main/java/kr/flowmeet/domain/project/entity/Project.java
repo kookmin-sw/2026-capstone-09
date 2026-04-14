@@ -42,4 +42,8 @@ public class Project extends BaseTimeEntity {
     public void updateName(final String name) {
         this.name = name;
     }
+
+    public void updateProfileImageUrl(final String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
+    }
 }

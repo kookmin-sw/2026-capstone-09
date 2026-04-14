@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import kr.flowmeet.domain.common.BaseTimeEntity;
 import kr.flowmeet.domain.project.entity.Project;
 import kr.flowmeet.domain.user.entity.User;
 import lombok.AccessLevel;
@@ -20,7 +21,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "notification_settings")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class NotificationSetting {
+public class NotificationSetting extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,11 +55,17 @@ public class NotificationSetting {
     private boolean isEmailEnabled;
 
     @Builder
-    public NotificationSetting(Long userId, Long projectId, boolean isMeetingEnabled,
-                               boolean isNodeEnabled, boolean isDesktopEnabled,
-                               boolean isEmailEnabled) {
+    public NotificationSetting(Long userId, Long projectId) {
         this.userId = userId;
         this.projectId = projectId;
+        this.isMeetingEnabled = true;
+        this.isNodeEnabled = true;
+        this.isDesktopEnabled = true;
+        this.isEmailEnabled = false;
+    }
+
+    public void update(final boolean isMeetingEnabled, final boolean isNodeEnabled,
+                       final boolean isDesktopEnabled, final boolean isEmailEnabled) {
         this.isMeetingEnabled = isMeetingEnabled;
         this.isNodeEnabled = isNodeEnabled;
         this.isDesktopEnabled = isDesktopEnabled;

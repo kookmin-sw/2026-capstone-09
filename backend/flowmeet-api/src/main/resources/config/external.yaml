@@ -7,3 +7,10 @@ spring:
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
+
+cloud:
+  aws:
+    s3:
+      bucket: ${S3_BUCKET:flowmeet-bucket}
+      region: ${S3_REGION:ap-northeast-2}
+      cdn-url: ${S3_CDN_URL:}

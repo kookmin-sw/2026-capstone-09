@@ -25,6 +25,9 @@ public class FileInformation extends BaseCreatedTimeEntity {
     @Column(name = "file_id")
     private Long id;
 
+    @Column(name = "file_key", nullable = false, unique = true)
+    private String fileKey;
+
     @Column(nullable = false)
     private String name;
 
@@ -34,6 +37,9 @@ public class FileInformation extends BaseCreatedTimeEntity {
     @Column(nullable = false)
     private long size;
 
+    @Column(name = "content_type", nullable = false)
+    private String contentType;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "domain_type", nullable = false)
     private FileDomainType domainType;
@@ -41,21 +47,25 @@ public class FileInformation extends BaseCreatedTimeEntity {
     @Column(name = "entity_id")
     private Long entityId;
 
-    @Column(length = 50)
-    private String category;
-
     @Column(name = "upload_url", nullable = false, columnDefinition = "TEXT")
     private String uploadUrl;
 
     @Builder
-    public FileInformation(String name, String extension, long size, FileDomainType domainType,
-                           Long entityId, String category, String uploadUrl) {
+    public FileInformation(String fileKey, String name, String extension, long size,
+                           String contentType, FileDomainType domainType, Long entityId,
+                           String uploadUrl) {
+        this.fileKey = fileKey;
         this.name = name;
         this.extension = extension;
         this.size = size;
+        this.contentType = contentType;
         this.domainType = domainType;
         this.entityId = entityId;
-        this.category = category;
         this.uploadUrl = uploadUrl;
+    }
+
+    public void updateDomain(final FileDomainType domainType, final Long entityId) {
+        this.domainType = domainType;
+        this.entityId = entityId;
     }
 }

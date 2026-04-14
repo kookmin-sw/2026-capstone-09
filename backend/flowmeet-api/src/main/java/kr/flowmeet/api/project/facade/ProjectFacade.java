@@ -6,13 +6,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import kr.flowmeet.api.common.dto.PageResponse;
 import kr.flowmeet.api.common.exception.ApiException;
+import kr.flowmeet.api.file.ImageUploader;
 import kr.flowmeet.api.project.dto.request.CreateProjectRequest;
 import kr.flowmeet.api.project.dto.response.CreateProjectResponse;
 import kr.flowmeet.api.project.dto.response.GetProjectResponse;
 import kr.flowmeet.api.project.dto.response.ProjectSummaryResponse;
 import kr.flowmeet.api.project.dto.request.UpdateProjectRequest;
+import org.springframework.context.ApplicationEventPublisher;
+import kr.flowmeet.domain.notification.entity.NotificationSetting;
+import kr.flowmeet.domain.notification.service.NotificationSettingService;
+import kr.flowmeet.domain.file.entity.FileDomainType;
 import kr.flowmeet.domain.project.entity.Project;
 import kr.flowmeet.domain.project.entity.ProjectMember;
 import kr.flowmeet.domain.project.entity.ProjectMemberRole;
@@ -22,6 +28,7 @@ import kr.flowmeet.domain.project.repository.projection.ProjectWithMemberCountPr
 import kr.flowmeet.domain.project.service.ProjectMemberService;
 import kr.flowmeet.domain.project.service.ProjectService;
 import kr.flowmeet.domain.project.service.ProjectSortType;
+import kr.flowmeet.domain.project.event.ProjectMemberJoinedEvent;
 import kr.flowmeet.domain.project.service.ProjectUrlService;
 import kr.flowmeet.domain.user.entity.User;
 import kr.flowmeet.domain.user.service.UserService;
@@ -36,6 +43,9 @@ public class ProjectFacade {
     private final ProjectMemberService projectMemberService;
     private final ProjectUrlService projectUrlService;
     private final ProjectPermissionValidator projectPermissionValidator;
+    private final NotificationSettingService notificationSettingService;
+    private final ApplicationEventPublisher eventPublisher;
+    private final ImageUploader imageUploader;
 
     @Transactional
     public CreateProjectResponse createProject(final Long userId, final CreateProjectRequest request) {
@@ -54,6 +64,8 @@ public class ProjectFacade {
                         .role(ProjectMemberRole.OWNER)
                         .build()
         );
+
+        eventPublisher.publishEvent(new ProjectMemberJoinedEvent(user.getId(), project.getId()));
 
         return CreateProjectResponse.from(project);
     }
@@ -97,6 +109,19 @@ public class ProjectFacade {
 
         List<ProjectUrl> urls = projectUrlService.findAllByProjectId(project.getId());
         urls.forEach(projectUrlService::delete);
+
+        List<NotificationSetting> settings = notificationSettingService.findAllByProjectId(project.getId());
+        settings.forEach(notificationSettingService::delete);
+    }
+
+    @Transactional
+    public void updateProfileImage(final Long userId, final Long projectId, final MultipartFile file) {
+        ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
+        validateMemberCanEdit(requesterMember);
+
+        Project project = projectService.findById(projectId);
+        String imageUrl = imageUploader.upload(file, "projects", FileDomainType.PROJECT_IMAGE, projectId);
+        project.updateProfileImageUrl(imageUrl);
     }
 
 }

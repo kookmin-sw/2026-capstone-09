@@ -10,7 +10,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
 import kr.flowmeet.api.common.dto.CommonResponse;
 import kr.flowmeet.api.common.dto.PageResponse;
 import kr.flowmeet.api.project.dto.request.CreateProjectRequest;
@@ -58,6 +61,14 @@ public class ProjectController implements ProjectApi {
     public CommonResponse<?> updateProject(@UserId Long userId, @PathVariable Long projectId,
                                            @Valid @RequestBody UpdateProjectRequest request) {
         projectFacade.updateProject(userId, projectId, request);
+        return CommonResponse.ok();
+    }
+
+    @Override
+    @PatchMapping(value = "/{projectId}/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public CommonResponse<?> updateProfileImage(@UserId Long userId, @PathVariable Long projectId,
+                                                @RequestPart MultipartFile profileImage) {
+        projectFacade.updateProfileImage(userId, projectId, profileImage);
         return CommonResponse.ok();
     }
 
