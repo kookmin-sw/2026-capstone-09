@@ -59,14 +59,7 @@ public class TagFacade {
     ) {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
-        Tag tag = tagService.findByIdAndProjectId(tagId, projectId);
-        String newName = request.name();
-
-        if (!tag.getName().equals(newName)) {
-            tagService.validateNameNotDuplicated(projectId, newName);
-        }
-
-        tag.update(newName, request.color());
+        tagService.update(projectId, tagId, request.toCommand());
     }
 
     @Transactional

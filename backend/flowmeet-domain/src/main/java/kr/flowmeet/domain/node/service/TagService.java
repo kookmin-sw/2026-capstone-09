@@ -1,6 +1,7 @@
 package kr.flowmeet.domain.node.service;
 
 import java.util.List;
+import kr.flowmeet.domain.node.service.vo.UpdateTagCommand;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,18 +27,6 @@ public class TagService {
                 .orElseThrow(() -> new BusinessException(TagErrorCode.TAG_NOT_FOUND));
     }
 
-    public void validateNameNotDuplicated(final Long projectId, final String name) {
-        if (tagRepository.existsByProjectIdAndName(projectId, name)) {
-            throw new BusinessException(TagErrorCode.TAG_NAME_DUPLICATED);
-        }
-    }
-
-    public void validateTagIsInProject(final Long tagId, final Long projectId) {
-        if (!tagRepository.existsByIdAndProjectId(tagId, projectId)) {
-            throw new BusinessException(TagErrorCode.TAG_NOT_FOUND);
-        }
-    }
-
     @Transactional
     public Tag create(final Long projectId, final CreateTagCommand command) {
         validateNameNotDuplicated(projectId, command.name());
@@ -54,5 +43,23 @@ public class TagService {
     @Transactional
     public void delete(final Tag tag) {
         tagRepository.delete(tag);
+    }
+
+    @Transactional
+    public void update(final Long projectId, final Long tagId, final UpdateTagCommand command) {
+        Tag tag = findByIdAndProjectId(tagId, projectId);
+        String newName = command.name();
+
+        if (!tag.getName().equals(newName)) {
+            validateNameNotDuplicated(projectId, newName);
+        }
+
+        tag.update(newName, command.color());
+    }
+
+    private void validateNameNotDuplicated(final Long projectId, final String name) {
+        if (tagRepository.existsByProjectIdAndName(projectId, name)) {
+            throw new BusinessException(TagErrorCode.TAG_NAME_DUPLICATED);
+        }
     }
 }
