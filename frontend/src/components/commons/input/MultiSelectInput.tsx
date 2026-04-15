@@ -179,11 +179,12 @@ export const MultiSelectInput = ({
       setMenuStage(null);
       setSearchQuery('');
 
+      const otherMentions = value.mentions.filter((m) => m.type !== currentType);
       const currentTypeMentions = tempSelectedIds.map((id) => ({ type: currentType, id }));
 
       onChange?.({
         text: newText,
-        mentions: currentTypeMentions,
+        mentions: [...otherMentions, ...currentTypeMentions],
       });
 
       setTempSelectedIds([]);
