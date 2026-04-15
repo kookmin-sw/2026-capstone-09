@@ -3,7 +3,6 @@ package kr.flowmeet.api.node.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,7 +17,6 @@ import kr.flowmeet.api.node.dto.response.GetNodeListResponse;
 import kr.flowmeet.api.node.dto.response.GetNodeResponse;
 import kr.flowmeet.api.node.dto.response.SearchNodeResponse;
 import kr.flowmeet.auth.annotation.UserId;
-import kr.flowmeet.domain.node.entity.NodeStatus;
 import kr.flowmeet.domain.meeting.exception.MeetingErrorCode;
 import kr.flowmeet.domain.node.exception.NodeErrorCode;
 
@@ -66,11 +64,7 @@ public interface NodeApi {
     CommonResponse<GetNodeListResponse> getNodeList(
             @UserId Long userId,
             @PathVariable Long projectId,
-            @RequestParam(required = false) String sort,
-            @RequestParam(required = false) List<NodeStatus> status,
-            @RequestParam(required = false) List<Long> tagId,
-            @RequestParam(required = false) List<Long> assigneeId,
-            @RequestParam(required = false) Boolean hasMeeting
+            @RequestParam(required = false) String sort
     );
 
     @Operation(summary = "칸반 보드 조회", description = "상태별 그룹으로 노드를 조회합니다.")
