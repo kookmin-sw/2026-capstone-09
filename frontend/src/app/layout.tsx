@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { Providers } from '@/components/Providers';
 import '@/styles/globals.css';
-import Providers from '@/components/Providers';
 
 export const metadata: Metadata = {
   title: 'FlowMeet',
