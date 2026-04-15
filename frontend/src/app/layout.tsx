@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import '@wanteddev/wds/theme.css';
 import '@/styles/globals.css';
 
 export const metadata: Metadata = {

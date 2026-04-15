@@ -23,6 +23,9 @@ importers:
       '@wanteddev/wds':
         specifier: 3.4.6
         version: 3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/utils@1.4.2)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))
+      '@wanteddev/wds-engine':
+        specifier: ^3.4.7
+        version: 3.4.7(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)
       '@wanteddev/wds-icon':
         specifier: 3.4.6
         version: 3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)
@@ -1399,11 +1402,24 @@ packages:
       '@types/react': ^18.0.0 || ^19.0.0
       react: ^18.0.0 || ^19.0.0
 
+  '@wanteddev/wds-engine@3.4.7':
+    resolution: {integrity: sha512-TooQSCpMmle4noba5hGrjecibHoXDU9WTMhElA4zLZHbMhzVS+FyuaATWnJ/fCGIxiQopGb6o+3IswB1f5njRQ==, tarball: https://npm.pkg.github.com/download/@wanteddev/wds-engine/3.4.7/6dc871dc376dc654b6388d1c462f92eb7aee37a6}
+    peerDependencies:
+      '@emotion/cache': ^11.11.0
+      '@emotion/react': ^11.11.0
+      '@emotion/serialize': ^1.1.0
+      '@emotion/utils': ^1.2.0
+      '@types/react': ^18.0.0 || ^19.0.0
+      react: ^18.0.0 || ^19.0.0
+
   '@wanteddev/wds-icon@3.4.6':
     resolution: {integrity: sha512-1j9Lj/IRfaTzBsKnHdvfwgKOoNIcWwxzFnxnn4W7uw4sUlBaMA07dRA5ZLX2jVhCVNij+GCsDNkEJA/KybDIsg==, tarball: https://npm.pkg.github.com/download/@wanteddev/wds-icon/3.4.6/ebb0699423a2ccf0fa569cdc579da3f83429d873}
     peerDependencies:
       '@types/react': ^18.0.0 || ^19.0.0
       react: ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   '@wanteddev/wds-nextjs@3.4.6':
     resolution: {integrity: sha512-qcV2XKytAnLijLg1ZTfHUOgoolKdmIZJ9qSdVyIvxhdXBDaTOkYYU+Q2LOtJp13AlzCiTx5HZSVZFm/VvQXfgQ==, tarball: https://npm.pkg.github.com/download/@wanteddev/wds-nextjs/3.4.6/7d6b422142e3e89683062a7c0fae336510f24d92}
@@ -1423,6 +1439,9 @@ packages:
 
   '@wanteddev/wds-theme@3.4.6':
     resolution: {integrity: sha512-3P9itxg03EDIzLAj9xfOPk7gtJWwDvI+VjIqxs3m1aKRzQUw6k+d3DzwSRJJEqUBc4iJojveRSMPVauHFiswzg==, tarball: https://npm.pkg.github.com/download/@wanteddev/wds-theme/3.4.6/0176efd2b96e5420ce00ea9ce55cfad2a7f87ea4}
+
+  '@wanteddev/wds-theme@3.4.7':
+    resolution: {integrity: sha512-2BoeQmkPZzcSlkH7tAtG76R8CXz84QMGl5r3wYIHY9BEO8Odkapo2BdJIeav7jaYrleu1OH4vvDvgnj7SwqNdg==, tarball: https://npm.pkg.github.com/download/@wanteddev/wds-theme/3.4.7/6453b3e1e904573f3ef1fd02fd9f3fc8c7bd36e6}
 
   '@wanteddev/wds@3.4.6':
     resolution: {integrity: sha512-S/KN0fLN9qT97iVsuBJsON5QRGV/dthgPfSNb8ODC5E2GVZ1n/O/kiU1/xhQHCqeiHv263RX+HPxatMbjV5tYQ==, tarball: https://npm.pkg.github.com/download/@wanteddev/wds/3.4.6/350338e60030d411758d45c7004d5e9c3bf42073}
@@ -4670,11 +4689,23 @@ snapshots:
       csstype: 3.2.3
       react: 19.2.3
 
+  '@wanteddev/wds-engine@3.4.7(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)':
+    dependencies:
+      '@emotion/cache': 11.14.0
+      '@emotion/react': 11.14.0(@types/react@19.2.14)(react@19.2.3)
+      '@emotion/serialize': 1.3.3
+      '@emotion/utils': 1.4.2
+      '@types/react': 19.2.14
+      '@wanteddev/wds-theme': 3.4.7
+      csstype: 3.2.3
+      react: 19.2.3
+
   '@wanteddev/wds-icon@3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)':
     dependencies:
-      '@types/react': 19.2.14
       '@wanteddev/wds-engine': 3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)
       react: 19.2.3
+    optionalDependencies:
+      '@types/react': 19.2.14
     transitivePeerDependencies:
       - '@emotion/cache'
       - '@emotion/react'
@@ -4696,6 +4727,10 @@ snapshots:
       - '@emotion/utils'
 
   '@wanteddev/wds-theme@3.4.6':
+    dependencies:
+      object-path: 0.11.8
+
+  '@wanteddev/wds-theme@3.4.7':
     dependencies:
       object-path: 0.11.8
 

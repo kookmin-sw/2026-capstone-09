@@ -1,153 +1,111 @@
-import { IconPersonFill } from '@wanteddev/wds-icon';
-import { useRef, useState } from 'react';
-
-import { cn } from '@/utils/cn';
+import {
+    Avatar,
+    AvatarGroup,
+    Tooltip,
+    TooltipContent,
+    TooltipGroup,
+    TooltipTrigger,
+    Typography,
+} from '@wanteddev/wds';
 
 export interface UserInfo {
     email: string;
     name: string;
 }
 
-type UserDisplayMode = 'viewer' | 'active';
-
 interface UsersProps {
     users: readonly UserInfo[];
-    mode?: UserDisplayMode;
 }
 
-const MAX_VISIBLE_ACTIVE_USERS = 5;
-const MAX_VISIBLE_VIEWER_USERS = 3;
-
-interface UserAvatarProps {
-    className?: string;
-    iconClassName?: string;
-}
-
-const UserAvatar = ({ className, iconClassName }: UserAvatarProps) => {
-    return (
-        <div
-            className={cn(
-                'flex h-7 w-7 items-center justify-center rounded-full border border-neutral-99 bg-cool-neutral-96',
-                className,
-            )}
-        >
-            <IconPersonFill
-                className={cn('h-4 w-4 text-static-white', iconClassName)}
-                aria-hidden="true"
-            />
-        </div>
-    );
-};
+const MAX_VISIBLE_ONLINE_USERS = 5;
 
 interface UserAvatarWithTooltipProps {
     user: UserInfo;
+    position: 'bottom-center' | 'bottom-end';
 }
 
-const UserAvatarWithTooltip = ({ user }: UserAvatarWithTooltipProps) => {
-    const triggerRef = useRef<HTMLDivElement>(null);
-    const tooltipRef = useRef<HTMLDivElement>(null);
-    const [tooltipAlign, setTooltipAlign] = useState<'center' | 'end'>('center');
+const tooltipTextColor = 'text-[var(--color-neutral-100)]';
 
-    const handleMouseEnter = () => {
-        const triggerElement = triggerRef.current;
-        const tooltipElement = tooltipRef.current;
+const UserAvatarWithTooltip = ({ user, position }: UserAvatarWithTooltipProps) => {
+    return (
+        <Tooltip>
+            <TooltipTrigger>
+                <div>
+                    <Avatar variant="person" size="xsmall" />
+                </div>
+            </TooltipTrigger>
 
-        if (!triggerElement || !tooltipElement) return;
+            <TooltipContent size="small" position={position}>
+                <div className="flex min-w-[140px] items-center gap-2 px-1 py-1.5">
+                    <Avatar variant="person" size="xsmall" />
+                    <div className="flex flex-col">
+                        <span className={`text-caption-1 font-medium ${tooltipTextColor}`}>{user.name}</span>
+                        <span className={`text-caption-2 font-normal ${tooltipTextColor}`}>{user.email}</span>
+                    </div>
+                </div>
+            </TooltipContent>
+        </Tooltip>
+    );
+};
 
-        const triggerRect = triggerElement.getBoundingClientRect();
-        const tooltipWidth = tooltipElement.offsetWidth;
-        const viewportWidth = window.innerWidth;
-        const centeredRightEdge = triggerRect.left + triggerRect.width / 2 + tooltipWidth / 2;
+interface AllUsersTooltipProps {
+    users: readonly UserInfo[];
+}
 
-        setTooltipAlign(centeredRightEdge > viewportWidth - 8 ? 'end' : 'center');
-    };
+const AllUsersTooltip = ({ users }: AllUsersTooltipProps) => {
+    return (
+        <Tooltip>
+            <TooltipTrigger>
+                <div>
+                    <Typography variant="label1" weight="bold" color="semantic.label.alternative">
+                        외 {users.length - MAX_VISIBLE_ONLINE_USERS}명
+                    </Typography>
+                </div>
+            </TooltipTrigger>
+
+            <TooltipContent size="small" position="bottom-end">
+                <div className="flex min-w-[160px] flex-col gap-2 px-1 py-1.5">
+                    {users.map((user) => (
+                        <div key={user.email} className="flex items-center gap-2">
+                            <Avatar variant="person" size="xsmall" />
+                            <div className="flex flex-col">
+                                <span className={`text-caption-1 font-medium ${tooltipTextColor}`}>
+                                    {user.name}
+                                </span>
+                                <span className={`text-caption-2 font-normal ${tooltipTextColor}`}>
+                                    {user.email}
+                                </span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </TooltipContent>
+        </Tooltip>
+    );
+};
+
+export const Users = ({ users }: UsersProps) => {
+    const visibleUsers = users.slice(0, MAX_VISIBLE_ONLINE_USERS);
 
     return (
-        <div className="group relative" onMouseEnter={handleMouseEnter}>
-            <div ref={triggerRef}>
-                <UserAvatar />
-            </div>
-
-            <div
-                ref={tooltipRef}
-                className={
-                    tooltipAlign === 'end'
-                        ? 'pointer-events-none absolute top-full right-0 z-10 mt-2 min-w-max rounded-md border border-line-normal-neutral bg-static-white px-3.5 py-2.5 opacity-0 shadow-sm transition-opacity group-hover:opacity-100'
-                        : 'pointer-events-none absolute top-full left-1/2 z-10 mt-2 min-w-max -translate-x-1/2 rounded-md border border-line-normal-neutral bg-static-white px-3.5 py-2.5 opacity-0 shadow-sm transition-opacity group-hover:opacity-100'
+        <TooltipGroup>
+            <AvatarGroup
+                size="small"
+                trailingContent={
+                    users.length > MAX_VISIBLE_ONLINE_USERS ? (
+                        <AllUsersTooltip users={users} />
+                    ) : undefined
                 }
             >
-                <div className="flex items-center gap-2">
-                    <UserAvatar className="h-8 w-8" iconClassName="h-5 w-5" />
-                    <div className="flex flex-col">
-                        <p className="text-caption-1 font-medium text-label-normal">{user.name}</p>
-                        <p className="text-caption-2 font-normal text-label-alternative">{user.email}</p>
+                {visibleUsers.map((user, index) => (
+                    <div key={user.email} className={index === 0 ? '' : '-ml-1'}>
+                        <UserAvatarWithTooltip
+                            user={user}
+                            position={index === visibleUsers.length - 1 ? 'bottom-end' : 'bottom-center'}
+                        />
                     </div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-interface UserAvatarGroupProps {
-    users: readonly UserInfo[];
-    maxVisibleUsers: number;
-    showUserTooltip: boolean;
-    showHiddenUsersTooltip: boolean;
-}
-
-const UserAvatarGroup = ({
-                             users,
-                             maxVisibleUsers,
-                             showUserTooltip,
-                             showHiddenUsersTooltip,
-                         }: UserAvatarGroupProps) => {
-    const visibleUsers = users.slice(0, maxVisibleUsers);
-    const hiddenUserCount = Math.max(users.length - maxVisibleUsers, 0);
-
-    return (
-        <div className="flex items-center">
-            {visibleUsers.map((user) => (
-                <div key={user.email} className="-ml-2.5 first:ml-0" aria-label={user.name}>
-                    {showUserTooltip ? <UserAvatarWithTooltip user={user} /> : <UserAvatar />}
-                </div>
-            ))}
-
-            {hiddenUserCount > 0 && showHiddenUsersTooltip && (
-                <div className="group relative ml-2">
-          <span className="cursor-default text-body-2 font-medium text-label-alternative">
-            외 {hiddenUserCount}명
-          </span>
-
-                    <div className="pointer-events-none absolute top-full right-0 z-10 mt-2 min-w-max rounded-md border border-line-normal-neutral bg-static-white px-3.5 py-3.5 opacity-0 shadow-sm transition-opacity group-hover:opacity-100">
-                        <div className="flex min-w-44 flex-col gap-2.5">
-                            {users.map((user) => (
-                                <div key={user.email} className="flex items-center gap-2">
-                                    <UserAvatar className="h-8 w-8" iconClassName="h-5 w-5" />
-                                    <div className="flex flex-col">
-                                        <p className="text-caption-1 font-medium text-label-normal">{user.name}</p>
-                                        <p className="text-caption-2 font-normal text-label-alternative">
-                                            {user.email}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-};
-
-export const Users = ({ users, mode = 'viewer' }: UsersProps) => {
-    const isActiveMode = mode === 'active';
-
-    return (
-        <UserAvatarGroup
-            users={users}
-            maxVisibleUsers={isActiveMode ? MAX_VISIBLE_ACTIVE_USERS : MAX_VISIBLE_VIEWER_USERS}
-            showUserTooltip={isActiveMode}
-            showHiddenUsersTooltip={isActiveMode}
-        />
+                ))}
+            </AvatarGroup>
+        </TooltipGroup>
     );
 };
