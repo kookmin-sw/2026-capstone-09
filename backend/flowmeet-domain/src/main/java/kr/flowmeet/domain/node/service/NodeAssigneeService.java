@@ -47,6 +47,8 @@ public class NodeAssigneeService {
 
     @Transactional
     public NodeAssignee create(final Long nodeId, final Long userId) {
+        validateNotDuplicated(nodeId, userId);
+
         return nodeAssigneeRepository.save(
                 NodeAssignee.builder()
                         .nodeId(nodeId)
