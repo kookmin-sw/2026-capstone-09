@@ -6,6 +6,13 @@ export const EXAMPLE_PROJECT_SIDEBAR_PROFILE = {
   userEmail: 'tnals655@naver.com',
 } as const;
 
+export const EXAMPLE_PROJECT_DETAIL_LINKS = [
+  { id: 'link-1', label: 'Notion', href: 'https://www.notion.so/' },
+  { id: 'link-2', label: 'Figma', href: 'https://www.figma.com/' },
+  { id: 'link-3', label: 'Docs', href: 'https://docs.google.com/' },
+  { id: 'link-4', label: 'Vercel', href: 'https://vercel.com/dashboard' },
+] as const;
+
 export const EXAMPLE_ONLINE_USERS: OnlineUserTypes[] = [
   { name: '황수민', email: 'tnals655@kookmin.ac.kr' },
   { name: '박건민', email: 'parkkunmin@kookmin.ac.kr' },
