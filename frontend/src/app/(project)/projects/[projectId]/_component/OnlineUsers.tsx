@@ -1,6 +1,8 @@
 import { IconPersonFill } from '@wanteddev/wds-icon';
 import { useRef, useState } from 'react';
 
+import { cn } from '@/utils/cn';
+
 export interface OnlineUserTypes {
   email: string;
   name: string;
@@ -12,10 +14,23 @@ interface OnlineUsersProps {
 
 const MAX_VISIBLE_USERS = 5;
 
-const OnlineUserAvatar = () => {
+interface OnlineUserAvatarProps {
+  className?: string;
+  iconClassName?: string;
+}
+
+const OnlineUserAvatar = ({ className, iconClassName }: OnlineUserAvatarProps) => {
   return (
-    <div className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-99 bg-cool-neutral-96">
-      <IconPersonFill className="h-5 w-5 text-static-white" aria-hidden="true" />
+    <div
+      className={cn(
+        'flex h-7 w-7 items-center justify-center rounded-full border border-neutral-99 bg-cool-neutral-96',
+        className,
+      )}
+    >
+      <IconPersonFill
+        className={cn('h-4 w-4 text-static-white', iconClassName)}
+        aria-hidden="true"
+      />
     </div>
   );
 };
@@ -58,8 +73,8 @@ const OnlineUserAvatarWithTooltip = ({ user }: OnlineUserAvatarWithTooltipProps)
             : 'pointer-events-none absolute top-full left-1/2 z-10 mt-2 min-w-max -translate-x-1/2 rounded-md border border-line-normal-neutral bg-static-white px-3.5 py-2.5 opacity-0 shadow-sm transition-opacity group-hover:opacity-100'
         }
       >
-        <div className="flex items-center gap-2.5">
-          <OnlineUserAvatar />
+        <div className="flex items-center gap-2">
+          <OnlineUserAvatar className="h-8 w-8" iconClassName="h-5 w-5" />
           <div className="flex flex-col">
             <p className="text-caption-1 font-medium text-label-normal">{user.name}</p>
             <p className="text-caption-2 font-normal text-label-alternative">{user.email}</p>
@@ -97,8 +112,8 @@ export const OnlineUsers = ({ users }: OnlineUsersProps) => {
           <div className="pointer-events-none absolute top-full right-0 z-10 mt-2 min-w-max rounded-md border border-line-normal-neutral bg-static-white px-3.5 py-3.5 opacity-0 shadow-sm transition-opacity group-hover:opacity-100">
             <div className="flex min-w-44 flex-col gap-2.5">
               {users.map((user) => (
-                <div key={user.email} className="flex items-center gap-2.5">
-                  <OnlineUserAvatar />
+                <div key={user.email} className="flex items-center gap-2">
+                  <OnlineUserAvatar className="h-8 w-8" iconClassName="h-5 w-5" />
                   <div className="flex flex-col">
                     <p className="text-caption-1 font-medium text-label-normal">{user.name}</p>
                     <p className="text-caption-2 font-normal text-label-alternative">{user.email}</p>
