@@ -88,9 +88,8 @@ public class TagFacade {
     ) {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
         nodeValidator.validateIsIn(nodeId, projectId);
-        tagService.validateTagIsInProject(request.tagId(), projectId);
 
-        nodeTagService.create(nodeId, request.tagId());
+        nodeTagService.create(projectId, nodeId, request.tagId());
     }
 
     @Transactional
@@ -101,8 +100,8 @@ public class TagFacade {
             final Long tagId
     ) {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
+        nodeValidator.validateIsIn(nodeId, projectId);
 
-        nodeService.findByIdAndProjectId(nodeId, projectId);
         nodeTagService.deleteByNodeIdAndTagId(nodeId, tagId);
     }
 }

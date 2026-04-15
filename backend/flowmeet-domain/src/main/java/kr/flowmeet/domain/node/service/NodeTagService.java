@@ -3,6 +3,7 @@ package kr.flowmeet.domain.node.service;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import kr.flowmeet.domain.node.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,7 @@ import kr.flowmeet.domain.node.repository.NodeTagRepository;
 public class NodeTagService {
 
     private final NodeTagRepository nodeTagRepository;
+    private final TagRepository tagRepository;
 
     public List<NodeTag> findAllByNodeId(final Long nodeId) {
         return nodeTagRepository.findAllWithTagByNodeId(nodeId);
@@ -47,7 +49,8 @@ public class NodeTagService {
     }
 
     @Transactional
-    public NodeTag create(final Long nodeId, final Long tagId) {
+    public NodeTag create(final Long projectId, final Long nodeId, final Long tagId) {
+        validateTagIsInProject(tagId, projectId);
         validateNotDuplicated(nodeId, tagId);
 
         return nodeTagRepository.save(
@@ -68,5 +71,11 @@ public class NodeTagService {
     @Transactional
     public void deleteAllByTagId(final Long tagId) {
         nodeTagRepository.deleteAllByTagId(tagId);
+    }
+
+    private void validateTagIsInProject(final Long tagId, final Long projectId) {
+        if (!tagRepository.existsByIdAndProjectId(tagId, projectId)) {
+            throw new BusinessException(TagErrorCode.TAG_NOT_FOUND);
+        }
     }
 }
