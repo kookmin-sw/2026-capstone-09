@@ -5,6 +5,7 @@ import { useState } from 'react';
 
 import { EXAMPLE_ONLINE_USERS } from '@/constants/exampleConstant';
 import { ProjectDetailHeader } from './ProjectDetailHeader';
+import { ProjectDetailLinks } from './ProjectDetailLinks';
 import type { ProjectViewTypes } from './ProjectViewTabs';
 
 const VIEW_LABELS: Record<ProjectViewTypes, string> = {
@@ -23,7 +24,7 @@ export const ProjectDetailPageContent = () => {
         onlineUsers={EXAMPLE_ONLINE_USERS}
         onViewChange={setActiveView}
       />
-      <section className="flex h-12 shrink-0 items-center justify-between border-b border-line-soft bg-static-white p-3" />
+      <ProjectDetailLinks />
       <section className="bg-surface-canvas flex flex-1 flex-col items-center justify-center gap-3 overflow-hidden px-20 py-24">
         <p className="text-body-1 font-medium text-label-neutral">{VIEW_LABELS[activeView]}</p>
         <Link
