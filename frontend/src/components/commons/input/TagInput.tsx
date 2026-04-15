@@ -19,13 +19,13 @@ export interface TagInputProps {
 }
 
 export const TagInput = ({
-                              nodeInfo,
-                              heading,
-                              disabled = true,
-                              width = '100%',
-                              height,
-                              className,
-                          }: TagInputProps) => {
+    nodeInfo,
+    heading,
+    disabled = true,
+    width = '100%',
+    height,
+    className,
+}: TagInputProps) => {
     return (
         <FormField className="gap-2">
             {heading && (
