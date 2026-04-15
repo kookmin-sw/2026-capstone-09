@@ -125,6 +125,36 @@ Controller → Facade → Service 호출 구조:
 - Facade에서 여러 도메인 Service를 조합
 - 메서드 파라미터에 `final` 키워드 사용
 
+## Service 입력 파라미터
+
+Presentation 레이어와 Business 레이어의 의존성을 격리하기 위해 Service 메서드 입력은 다음 규칙을 따른다. Create, Update 등 모든 쓰기 작업에 동일하게 적용한다.
+
+- **클라이언트가 요청 Body로 보낸 값**은 `{Action}{Domain}Command` 형태의 VO(record)로 묶어 전달한다.
+- **경로 변수와 인증 컨텍스트에서 주입된 값**(인증된 `userId`, URL의 `projectId`·`edgeId` 등)은 Command에 포함하지 않고 별도 파라미터로 전달한다.
+
+```java
+public Edge create(final Long projectId, final Long createdById, final CreateEdgeCommand command) { ... }
+
+public record CreateEdgeCommand(
+        Long startNodeId,
+        Long endNodeId,
+        String comment
+) {}
+```
+
+이유:
+- Command만 보면 **클라이언트가 조작 가능한 값**이 한눈에 드러나 권한/보안 검토에 유리하다.
+- 인증된 `userId` 같은 컨텍스트 값이 Command 안에 있으면 "클라이언트가 전달한 값"처럼 보여 혼동을 일으킨다.
+
+필드 수에 따른 적용 기준:
+- **Request Body 필드가 1개**인 경우: Command를 만들지 않고 원시 값 그대로 Service에 전달한다.
+- **Request Body 필드가 2개 이상**인 경우: Command로 묶어 전달한다.
+- 단, 필드가 1개여도 값 자체에 검증/정규화 규칙이 있거나 다른 같은 타입 값과 혼동될 위험이 크면(예: `Email`, `ProjectId` vs `UserId`) VO로 감싸는 것을 고려한다.
+
+Command 위치:
+- 패키지: `kr.flowmeet.domain.{도메인}.service.vo`
+- 변환 책임: Facade에서 `Request` → `Command`로 변환해 Service에 넘긴다.
+
 ## Validation (유효성 검증)
 
 - Request DTO 필드에 Jakarta Validation 어노테이션 사용 (`@NotBlank`, `@NotNull`, `@Size` 등)
