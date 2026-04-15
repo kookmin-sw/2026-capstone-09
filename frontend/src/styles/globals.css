@@ -1,13 +1,15 @@
-/* @import 'pretendard/dist/web/variable/pretendardvariable.css'; */
-/* @import 'pretendard/dist/web/static/pretendard.css'; */
+@import '@wanteddev/wds/global.css';
+@import "tailwindcss/utilities";
+@import "tailwindcss/theme";
 @import './variables.css';
-@import 'tailwindcss';
+@import 'pretendard/dist/web/variable/pretendardvariable.css';
+@import 'pretendard/dist/web/static/pretendard.css';
 
 @theme inline {
   /* Fonts */
   --font-pretendard:
-    'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
-    sans-serif;
+          'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+          sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 
   /* Colors: app code should use these aliases */
