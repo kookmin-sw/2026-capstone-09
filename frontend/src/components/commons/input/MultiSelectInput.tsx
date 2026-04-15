@@ -42,7 +42,7 @@ export interface MultiSelectInputProps {
   className?: string;
 }
 
-type MenuStage = 'category' | 'user-list' | 'node-list' | null;
+type MenuStage = 'category' | 'user-list' | 'node-list' | 'combined-list' | null;
 
 const MENU_ITEM_STYLES = {
   padding: '0.75rem 0.75rem',
@@ -105,7 +105,6 @@ export const MultiSelectInput = ({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newText = e.target.value;
-
     setInputText(newText);
 
     const atIndex = newText.lastIndexOf('@');
@@ -129,14 +128,25 @@ export const MultiSelectInput = ({
           node.label.toLowerCase().includes(query.toLowerCase())
         );
 
-        if (matchingUsers.length > 0) {
-          setMenuStage('user-list');
-          setCurrentType('user');
+        if (matchingUsers.length > 0 && matchingNodes.length > 0 && menuStage !== 'user-list' && menuStage !== 'node-list') {
+          if (menuStage !== 'combined-list') {
+            setMenuStage('combined-list');
+            setSelectedIndex(0);
+          }
+        } else if (matchingUsers.length > 0) {
+          if (menuStage !== 'user-list') {
+            setMenuStage('user-list');
+            setCurrentType('user');
+            setSelectedIndex(0);
+          }
         } else if (matchingNodes.length > 0) {
-          setMenuStage('node-list');
-          setCurrentType('node');
+          if (menuStage !== 'node-list') {
+            setMenuStage('node-list');
+            setCurrentType('node');
+            setSelectedIndex(0);
+          }
         } else {
-          setMenuStage('category');
+          setMenuStage(null);
         }
       }
     } else {
@@ -155,10 +165,13 @@ export const MultiSelectInput = ({
     setMenuStage(category === 'user' ? 'user-list' : 'node-list');
     setSelectedIndex(0);
     setSearchQuery('');
-    const alreadySelected = value.mentions
-      .filter((m) => m.type === category)
-      .map((m) => m.id);
-    setTempSelectedIds(alreadySelected);
+
+    if (currentType !== category) {
+      const alreadySelected = value.mentions
+        .filter((m) => m.type === category)
+        .map((m) => m.id);
+      setTempSelectedIds(alreadySelected);
+    }
   };
 
   const handleItemToggle = (itemId: string) => {
@@ -169,10 +182,12 @@ export const MultiSelectInput = ({
     );
   };
 
-  const confirmSelection = useCallback(() => {
-    if ((menuStage === 'user-list' || menuStage === 'node-list') && currentType) {
+  const confirmSelection = useCallback((appendSpace = false) => {
+    if (menuStage === 'user-list' || menuStage === 'node-list') {
+      if (!currentType) return;
+
       const atIndex = inputText.lastIndexOf('@');
-      const newText = inputText.slice(0, atIndex);
+      const newText = inputText.slice(0, atIndex) + (appendSpace ? ' ' : '');
 
       setInputText(newText);
       setSelectedIndex(0);
@@ -193,8 +208,40 @@ export const MultiSelectInput = ({
       setTimeout(() => {
         inputRef.current?.focus();
       }, 0);
+    } else if (menuStage === 'combined-list') {
+      const atIndex = inputText.lastIndexOf('@');
+      const newText = inputText.slice(0, atIndex) + (appendSpace ? ' ' : '');
+
+      setInputText(newText);
+      setSelectedIndex(0);
+      setMenuStage(null);
+      setSearchQuery('');
+
+      let mergedMentions = value.mentions;
+
+      if (currentType) {
+        const otherMentions = value.mentions.filter((m) => m.type !== currentType);
+        const currentTypeMentions = tempSelectedIds.map((id) => ({
+          type: currentType,
+          id,
+        }));
+
+        mergedMentions = [...otherMentions, ...currentTypeMentions];
+      }
+
+      onChange?.({
+        text: newText,
+        mentions: mergedMentions,
+      });
+
+      setTempSelectedIds([]);
+      setCurrentType(null);
+
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 0);
     }
-  }, [menuStage, currentType, inputText, tempSelectedIds, onChange]);
+  }, [menuStage, currentType, inputText, tempSelectedIds, onChange, value.mentions]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -203,8 +250,7 @@ export const MultiSelectInput = ({
         !menuRef.current.contains(event.target as Node) &&
         inputRef.current &&
         !inputRef.current.contains(event.target as Node) &&
-        (menuStage === 'user-list' || menuStage === 'node-list') &&
-        currentType
+        (menuStage === 'user-list' || menuStage === 'node-list' || menuStage === 'combined-list')
       ) {
         confirmSelection();
       }
@@ -217,7 +263,7 @@ export const MultiSelectInput = ({
   }, [menuStage, currentType, confirmSelection]);
 
   const handleInputClick = () => {
-    if (menuStage === 'user-list' || menuStage === 'node-list') {
+    if (menuStage === 'user-list' || menuStage === 'node-list' || menuStage === 'combined-list') {
       confirmSelection();
     }
   };
@@ -238,7 +284,7 @@ export const MultiSelectInput = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (isComposing) return
+    if (isComposing) return;
 
     if (menuStage === 'category') {
       if (e.key === 'ArrowDown') {
@@ -258,7 +304,11 @@ export const MultiSelectInput = ({
       const options = menuStage === 'user-list' ? filteredUserOptions : filteredNodeOptions;
       const atIndex = inputText.lastIndexOf('@');
 
-      if (e.key === 'ArrowDown') {
+      if (e.key === ' ') {
+        e.preventDefault();
+        confirmSelection(true);
+        return;
+      } else if (e.key === 'ArrowDown') {
         e.preventDefault();
         setSelectedIndex((prev) => Math.min(prev + 1, options.length - 1));
       } else if (e.key === 'ArrowUp') {
@@ -275,18 +325,58 @@ export const MultiSelectInput = ({
         e.preventDefault();
         confirmSelection();
       }
+    }
+
+    else if (menuStage === 'combined-list') {
+      const combinedOptions = [
+        ...filteredUserOptions.map(item => ({ ...item, type: 'user' as const })),
+        ...filteredNodeOptions.map(item => ({ ...item, type: 'node' as const }))
+      ];
+
+      if (e.key === ' ') {
+        e.preventDefault();
+        confirmSelection(true);
+        return;
+      } else if (e.key === 'Tab') {
+        e.preventDefault();
+        confirmSelection();
+        return;
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedIndex((prev) => Math.min(prev + 1, combinedOptions.length - 1));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedIndex((prev) => Math.max(prev - 1, 0));
+      } else if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        if (combinedOptions.length > 0) {
+          const selectedItem = combinedOptions[selectedIndex];
+
+          if (currentType === selectedItem.type) {
+            handleItemToggle(selectedItem.id);
+            return;
+          }
+
+          const otherMentions = value.mentions.filter(
+              (m) => !(m.type === selectedItem.type && m.id === selectedItem.id)
+          );
+          const isSelected = value.mentions.some(
+              (m) => m.type === selectedItem.type && m.id === selectedItem.id
+          );
+          const newMentions = isSelected
+              ? otherMentions
+              : [...otherMentions, { type: selectedItem.type, id: selectedItem.id }];
+
+          onChange?.({ text: inputText, mentions: newMentions });
+        }
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        confirmSelection();
+      }
     } else if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
     }
-  };
-
-  const handleRemoveItem = (index: number) => {
-    const newMentions = value.mentions.filter((_, i) => i !== index);
-    onChange?.({
-      text: value.text,
-      mentions: newMentions,
-    });
   };
 
   return (
@@ -393,26 +483,88 @@ export const MultiSelectInput = ({
                     fontSize: '0.75rem',
                   })}
                 >
-                  {selectedItems[0]?.type === 'node'
-                    ? `참조된 노드 ${selectedItems.length}개`
-                    : `참조된 사용자 ${selectedItems.length}명`}
+                  {(() => {
+                    const userCount = selectedItems.filter(i => i.type === 'user').length;
+                    const nodeCount = selectedItems.filter(i => i.type === 'node').length;
+
+                    if (userCount > 0 && nodeCount > 0) {
+                      return `참조된 사용자 ${userCount}명, 노드 ${nodeCount}개`;
+                    } else if (userCount > 0) {
+                      return `참조된 사용자 ${userCount}명`;
+                    } else {
+                      return `참조된 노드 ${nodeCount}개`;
+                    }
+                  })()}
                 </Box>
               </ListCell>
 
-              {isListExpanded &&
-                selectedItems.map((item, index) => (
-                  <ListCell
-                    key={`${item.type}-${item.id}-${index}`}
-                    onClick={() => handleRemoveItem(index)}
-                    leadingContent={item.leadingContent}
-                    sx={{
-                      cursor: 'pointer',
-                      padding: '0.75rem',
-                    }}
-                  >
-                    {item.label}
-                  </ListCell>
-                ))}
+              {isListExpanded && (() => {
+                const hasUsers = selectedItems.some(i => i.type === 'user');
+                const hasNodes = selectedItems.some(i => i.type === 'node');
+                const showHeaders = hasUsers && hasNodes;
+
+                return (
+                  <>
+                    {hasUsers && (
+                      <>
+                        {showHeaders && (
+                          <Box sx={(theme: Theme) => ({
+                            padding: '0.5rem 0.75rem',
+                            fontSize: '0.75rem',
+                            color: theme.semantic.label.alternative,
+                            fontWeight: 600
+                          })}>
+                            사용자
+                          </Box>
+                        )}
+                        {selectedItems
+                          .map((item, index) => ({ item, index }))
+                          .filter(({ item }) => item.type === 'user')
+                          .map(({ item, index }) => (
+                            <ListCell
+                              key={`${item.type}-${item.id}-${index}`}
+                              leadingContent={item.leadingContent}
+                              sx={{
+                                padding: '0.75rem',
+                              }}
+                            >
+                              {item.label}
+                            </ListCell>
+                          ))}
+                      </>
+                    )}
+                    {hasNodes && (
+                      <>
+                        {showHeaders && (
+                          <Box sx={(theme: Theme) => ({
+                            padding: '0.5rem 0.75rem',
+                            fontSize: '0.75rem',
+                            color: theme.semantic.label.alternative,
+                            fontWeight: 600,
+                            marginTop: '0.5rem'
+                          })}>
+                            노드
+                          </Box>
+                        )}
+                        {selectedItems
+                          .map((item, index) => ({ item, index }))
+                          .filter(({ item }) => item.type === 'node')
+                          .map(({ item, index }) => (
+                            <ListCell
+                              key={`${item.type}-${item.id}-${index}`}
+                              leadingContent={item.leadingContent}
+                              sx={{
+                                padding: '0.75rem',
+                              }}
+                            >
+                              {item.label}
+                            </ListCell>
+                          ))}
+                      </>
+                    )}
+                  </>
+                );
+              })()}
             </List>
           </Box>
         )}
@@ -514,6 +666,119 @@ export const MultiSelectInput = ({
                       </Box>
                     );
                   })()}
+                </Box>
+              )}
+
+              {menuStage === 'combined-list' && (
+                <Box sx={{ maxHeight: '12.5rem', overflowY: 'auto' }}>
+                  {filteredUserOptions.length > 0 && (
+                    <>
+                      <Box sx={(theme: Theme) => ({
+                        padding: '0.5rem 0.75rem',
+                        fontSize: '0.75rem',
+                        color: theme.semantic.label.alternative,
+                        fontWeight: 600
+                      })}>
+                        사용자
+                      </Box>
+                      {filteredUserOptions.map((item, index) => {
+                        const isSelected =
+                            currentType === 'user'
+                                ? tempSelectedIds.includes(item.id)
+                                : value.mentions.some((m) => m.type === 'user' && m.id === item.id);
+
+                        const isSelectedIndex = index === selectedIndex;
+                        return (
+                          <Box
+                            as="button"
+                            type="button"
+                            role="menuitemcheckbox"
+                            aria-checked={isSelected}
+                            key={`user-${item.id}`}
+                            onClick={() => {
+                              if (currentType === 'user') {
+                                handleItemToggle(item.id);
+                                return;
+                              }
+
+                              const otherMentions = value.mentions.filter(m => !(m.type === 'user' && m.id === item.id));
+                              const newMentions = isSelected
+                                ? otherMentions
+                                : [...otherMentions, { type: 'user' as const, id: item.id }];
+                              onChange?.({ text: inputText, mentions: newMentions });
+                            }}
+                            sx={(theme: Theme) => ({
+                              ...MENU_ITEM_STYLES,
+                              backgroundColor: isSelected || isSelectedIndex ? theme.semantic.background.normal.alternative : 'transparent',
+                              '&:hover': {
+                                backgroundColor: theme.semantic.background.normal.alternative,
+                              },
+                            })}
+                          >
+                            {item.leadingContent}
+                            <Box sx={{ flex: 1 }}>{item.label}</Box>
+                            {item.trailingContent}
+                            {isSelected && <IconCheck width={16} height={16} style={{ color: '#33EBC3' }} />}
+                          </Box>
+                        );
+                      })}
+                    </>
+                  )}
+                  {filteredNodeOptions.length > 0 && (
+                    <>
+                      <Box sx={(theme: Theme) => ({
+                        padding: '0.5rem 0.75rem',
+                        fontSize: '0.75rem',
+                        color: theme.semantic.label.alternative,
+                        fontWeight: 600,
+                        marginTop: '0.5rem'
+                      })}>
+                        노드
+                      </Box>
+                      {filteredNodeOptions.map((item, index) => {
+                        const isSelected =
+                            currentType === 'node'
+                                ? tempSelectedIds.includes(item.id)
+                                : value.mentions.some((m) => m.type === 'node' && m.id === item.id);
+
+                        const globalIndex = filteredUserOptions.length + index;
+                        const isSelectedIndex = globalIndex === selectedIndex;
+                        return (
+                          <Box
+                            as="button"
+                            type="button"
+                            role="menuitemcheckbox"
+                            aria-checked={isSelected}
+                            key={`node-${item.id}`}
+                            onClick={() => {
+                              if (currentType === 'node') {
+                                handleItemToggle(item.id);
+                                return;
+                              }
+
+                              const otherMentions = value.mentions.filter(m => !(m.type === 'node' && m.id === item.id));
+                              const newMentions = isSelected
+                                ? otherMentions
+                                : [...otherMentions, { type: 'node' as const, id: item.id }];
+                              onChange?.({ text: inputText, mentions: newMentions });
+                            }}
+                            sx={(theme: Theme) => ({
+                              ...MENU_ITEM_STYLES,
+                              backgroundColor: isSelected || isSelectedIndex ? theme.semantic.background.normal.alternative : 'transparent',
+                              '&:hover': {
+                                backgroundColor: theme.semantic.background.normal.alternative,
+                              },
+                            })}
+                          >
+                            {item.leadingContent}
+                            <Box sx={{ flex: 1 }}>{item.label}</Box>
+                            {item.trailingContent}
+                            {isSelected && <IconCheck width={16} height={16} style={{ color: '#33EBC3' }} />}
+                          </Box>
+                        );
+                      })}
+                    </>
+                  )}
                 </Box>
               )}
             </Box>

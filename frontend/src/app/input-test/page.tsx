@@ -82,13 +82,13 @@ export default function Home() {
         },
         {
             id: 'user2',
-            label: '황수민',
+            label: '백채린',
             leadingContent: <Avatar size="xsmall" />,
             trailingContent: <span style={{ fontSize: '12px', color: '#999' }}>sinji1012@kookmin.ac.kr</span>,
         },
         {
             id: 'user3',
-            label: '황수민',
+            label: '윤신지',
             leadingContent: <Avatar size="xsmall" />,
             trailingContent: <span style={{ fontSize: '12px', color: '#999' }}>sinji1012@kookmin.ac.kr</span>,
         },
@@ -106,7 +106,7 @@ export default function Home() {
         },
         {
             id: 'node2',
-            label: '디자인 회의',
+            label: '황수민 바보',
             leadingContent: <ContentBadge
                 size="xsmall"
                 variant="solid"
