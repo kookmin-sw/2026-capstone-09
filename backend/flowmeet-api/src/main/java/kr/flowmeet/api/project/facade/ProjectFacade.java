@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import kr.flowmeet.api.common.dto.PageResponse;
-import kr.flowmeet.api.common.exception.ApiException;
 import kr.flowmeet.api.file.ImageUploader;
 import kr.flowmeet.api.project.dto.request.CreateProjectRequest;
 import kr.flowmeet.api.project.dto.response.CreateProjectResponse;
@@ -85,7 +84,6 @@ public class ProjectFacade {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.OWNER);
 
         Project project = projectService.findById(projectId);
-        projectService.delete(project);
 
         List<ProjectMember> members = projectMemberService.findAllByProjectId(project.getId());
         members.forEach(projectMemberService::delete);
@@ -95,6 +93,8 @@ public class ProjectFacade {
 
         List<NotificationSetting> settings = notificationSettingService.findAllByProjectId(project.getId());
         settings.forEach(notificationSettingService::delete);
+
+        projectService.delete(project);
     }
 
     @Transactional
