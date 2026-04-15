@@ -1,27 +1,23 @@
 package kr.flowmeet.api.node.facade;
 
+import kr.flowmeet.domain.node.service.NodeValidator;
 import kr.flowmeet.domain.project.entity.ProjectMemberRole;
 import kr.flowmeet.domain.project.service.ProjectPermissionValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import kr.flowmeet.api.common.exception.ApiException;
 import kr.flowmeet.api.node.dto.request.CreateAssigneeRequest;
 import kr.flowmeet.domain.node.entity.NodeAssignee;
-import kr.flowmeet.domain.node.exception.NodeErrorCode;
 import kr.flowmeet.domain.node.service.NodeAssigneeService;
-import kr.flowmeet.domain.node.service.NodeService;
-import kr.flowmeet.domain.project.entity.ProjectMember;
-import kr.flowmeet.domain.project.service.ProjectMemberService;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class NodeAssigneeFacade {
 
-    private final NodeService nodeService;
     private final NodeAssigneeService nodeAssigneeService;
     private final ProjectPermissionValidator projectPermissionValidator;
+    private final NodeValidator nodeValidator;
 
     @Transactional
     public void createAssignee(
@@ -34,16 +30,10 @@ public class NodeAssigneeFacade {
 
         Long assigneeUserId = request.userId();
 
-        nodeService.validateNodeIsInProject(projectId, nodeId);
+        nodeValidator.validateIsIn(nodeId, projectId);
         projectPermissionValidator.validate(projectId, assigneeUserId);
-        nodeAssigneeService.validateNotDuplicated(nodeId, assigneeUserId);
 
-        nodeAssigneeService.create(
-                NodeAssignee.builder()
-                        .nodeId(nodeId)
-                        .userId(assigneeUserId)
-                        .build()
-        );
+        nodeAssigneeService.create(nodeId, assigneeUserId);
     }
 
     @Transactional

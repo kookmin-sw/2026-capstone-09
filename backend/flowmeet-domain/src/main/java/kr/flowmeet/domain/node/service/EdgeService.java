@@ -25,15 +25,19 @@ public class EdgeService {
                 .orElseThrow(() -> new BusinessException(EdgeErrorCode.EDGE_NOT_FOUND));
     }
 
-    public void validateNotDuplicated(final Long startNodeId, final Long endNodeId) {
-        if (edgeRepository.existsByStartNodeIdAndEndNodeId(startNodeId, endNodeId)) {
-            throw new BusinessException(EdgeErrorCode.EDGE_DUPLICATE);
-        }
-    }
-
     @Transactional
-    public Edge create(final Edge edge) {
-        return edgeRepository.save(edge);
+    public Edge create(final Long projectId, final Long startNodeId, final Long endNodeId, final Long createdById, final String comment) {
+        validateNotDuplicated(startNodeId, endNodeId);
+
+        return edgeRepository.save(
+                Edge.builder()
+                        .projectId(projectId)
+                        .startNodeId(startNodeId)
+                        .endNodeId(endNodeId)
+                        .createdById(createdById)
+                        .comment(comment)
+                        .build()
+        );
     }
 
     @Transactional
@@ -45,5 +49,11 @@ public class EdgeService {
     public void deleteAllByNodeIds(final List<Long> nodeIds) {
         List<Edge> edges = edgeRepository.findAllByStartNodeIdInOrEndNodeIdIn(nodeIds, nodeIds);
         edgeRepository.deleteAll(edges);
+    }
+
+    private void validateNotDuplicated(final Long startNodeId, final Long endNodeId) {
+        if (edgeRepository.existsByStartNodeIdAndEndNodeId(startNodeId, endNodeId)) {
+            throw new BusinessException(EdgeErrorCode.EDGE_DUPLICATE);
+        }
     }
 }
