@@ -26,8 +26,26 @@ public class ProjectUrlService {
     }
 
     @Transactional
-    public ProjectUrl create(final ProjectUrl projectUrl) {
-        return projectUrlRepository.save(projectUrl);
+    public ProjectUrl create(final Long projectId, final String url) {
+        return projectUrlRepository.save(
+                ProjectUrl.builder()
+                        .projectId(projectId)
+                        .url(url)
+                        .build()
+        );
+    }
+
+    @Transactional
+    public ProjectUrl updateUrl(final Long projectId, final Long urlId, final String url) {
+        ProjectUrl projectUrl = findByIdAndProjectId(urlId, projectId);
+        projectUrl.updateUrl(url);
+        return projectUrl;
+    }
+
+    @Transactional
+    public void deleteByProjectIdAndUrlId(final Long projectId, final Long urlId) {
+        ProjectUrl projectUrl = findByIdAndProjectId(urlId, projectId);
+        projectUrlRepository.delete(projectUrl);
     }
 
     @Transactional
