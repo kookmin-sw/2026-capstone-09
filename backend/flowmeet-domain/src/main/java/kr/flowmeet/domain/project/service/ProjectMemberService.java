@@ -69,4 +69,9 @@ public class ProjectMemberService {
     public void delete(final ProjectMember projectMember) {
         projectMemberRepository.delete(projectMember);
     }
+
+    @Transactional
+    public void deleteAllByProjectId(final Long projectId) {
+        projectMemberRepository.softDeleteAllByProjectId(projectId);
+    }
 }

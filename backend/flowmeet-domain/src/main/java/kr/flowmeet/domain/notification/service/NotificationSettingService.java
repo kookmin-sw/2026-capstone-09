@@ -39,4 +39,9 @@ public class NotificationSettingService {
     public void delete(final NotificationSetting notificationSetting) {
         notificationSettingRepository.delete(notificationSetting);
     }
+
+    @Transactional
+    public void deleteAllByProjectId(final Long projectId) {
+        notificationSettingRepository.deleteAllByProjectId(projectId);
+    }
 }
