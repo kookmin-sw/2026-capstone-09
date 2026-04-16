@@ -14,7 +14,6 @@ public enum ProjectErrorCode implements ErrorCode {
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 멤버입니다."),
     MEMBER_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 프로젝트에 소속된 멤버입니다."),
     MEMBER_CANNOT_CHANGE_OWNER(HttpStatus.BAD_REQUEST, "OWNER 권한은 변경할 수 없습니다."),
-    MEMBER_DELETE_FORBIDDEN(HttpStatus.FORBIDDEN, "OWNER만 멤버를 삭제할 수 있습니다."),
     MEMBER_CANNOT_DELETE_OWNER(HttpStatus.BAD_REQUEST, "OWNER는 삭제할 수 없습니다."),
     PROJECT_URL_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 URL입니다.");
 

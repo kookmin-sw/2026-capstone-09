@@ -61,44 +61,18 @@ public class ProjectMemberFacade {
                                  final UpdateProjectMemberRoleRequest request) {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
-        ProjectMember targetMember = projectMemberService.findByIdAndProjectId(memberId, projectId);
-
-        if (targetMember.isOwner()) {
-            throw new ApiException(ProjectErrorCode.MEMBER_CANNOT_CHANGE_OWNER);
-        }
-
-        if (request.role() == ProjectMemberRole.OWNER) {
-            throw new ApiException(ProjectErrorCode.MEMBER_CANNOT_CHANGE_OWNER);
-        }
-
-        targetMember.updateRole(request.role());
+        projectMemberService.updateRole(projectId, memberId, request.role());
     }
 
     @Transactional
     public void deleteMember(final Long userId, final Long projectId, final Long memberId) {
-        ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-
-        if (!requesterMember.isOwner()) {
-            throw new ApiException(ProjectErrorCode.MEMBER_DELETE_FORBIDDEN);
-        }
-
-        ProjectMember targetMember = projectMemberService.findByIdAndProjectId(memberId, projectId);
-
-        if (targetMember.isOwner()) {
-            throw new ApiException(ProjectErrorCode.MEMBER_CANNOT_DELETE_OWNER);
-        }
-
-        projectMemberService.delete(targetMember);
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.OWNER);
+        projectMemberService.deleteByProjectIdAndMemberId(projectId, memberId);
     }
 
     @Transactional
     public void leaveProject(final Long userId, final Long projectId) {
-        ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
-        if (requesterMember.isOwner()) {
-            throw new ApiException(ProjectErrorCode.PROJECT_OWNER_CANNOT_LEAVE);
-        }
-
-        projectMemberService.delete(requesterMember);
+        projectMemberService.leave(projectId, userId);
     }
 
 }
