@@ -10,6 +10,7 @@ import kr.flowmeet.domain.file.entity.FileDomainType;
 import kr.flowmeet.domain.file.entity.FileInformation;
 import kr.flowmeet.domain.file.exception.FileErrorCode;
 import kr.flowmeet.domain.file.repository.FileInformationRepository;
+import kr.flowmeet.domain.file.service.vo.CreateFileInformationCommand;
 
 @Service
 @RequiredArgsConstructor
@@ -24,8 +25,24 @@ public class FileInformationService {
     }
 
     @Transactional
-    public FileInformation create(final FileInformation fileInformation) {
-        return fileInformationRepository.save(fileInformation);
+    public FileInformation create(final String uploadUrl, final CreateFileInformationCommand command) {
+        return fileInformationRepository.save(
+                FileInformation.builder()
+                        .fileKey(command.fileKey())
+                        .name(command.name())
+                        .extension(command.extension())
+                        .size(command.size())
+                        .contentType(command.contentType())
+                        .domainType(FileDomainType.TEMP)
+                        .uploadUrl(uploadUrl)
+                        .build()
+        );
+    }
+
+    @Transactional
+    public void attach(final String fileKey, final FileDomainType domainType, final Long entityId) {
+        FileInformation fileInformation = findByFileKey(fileKey);
+        fileInformation.updateDomain(domainType, entityId);
     }
 
     public Optional<FileInformation> findByDomainTypeAndEntityId(final FileDomainType domainType, final Long entityId) {
