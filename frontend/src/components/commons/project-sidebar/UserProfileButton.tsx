@@ -22,8 +22,8 @@ export const UserProfileButton = ({
       type="button"
       onClick={onClick}
       className={cn(
-        'flex w-full items-center border-t border-line-normal-neutral py-4',
-        isCollapsed ? 'justify-center px-0' : 'gap-2 px-0.5',
+        'flex w-full appearance-none items-center border-x-0 border-b-0 border-t border-line-normal-neutral bg-transparent py-4 leading-normal',
+        isCollapsed ? 'justify-center px-0 py-5' : 'gap-2 px-1 py-5',
       )}
     >
       <div className="relative flex aspect-square h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full border border-line-solid-normal bg-cool-neutral-96">
@@ -31,9 +31,15 @@ export const UserProfileButton = ({
       </div>
       {shouldShowUserInfo && (
         <div className="flex flex-col gap-0">
-          {userName && <div className="text-left text-label-1 font-medium text-label-alternative">{userName}</div>}
+          {userName && (
+            <div className="text-left text-caption-2 font-normal text-label-alternative">
+              {userName}
+            </div>
+          )}
           {userEmail && (
-            <div className="text-left text-caption-1 font-normal text-label-alternative">{userEmail}</div>
+            <div className="text-left text-caption-1 font-normal text-label-alternative">
+              {userEmail}
+            </div>
           )}
         </div>
       )}
