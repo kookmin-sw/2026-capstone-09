@@ -2,6 +2,7 @@
 
 import { Button } from '@wanteddev/wds';
 import { IconFolder, IconBell, IconPerson } from '@wanteddev/wds-icon';
+import { useDialog } from '@/components/commons/dialog/DialogContext';
 import { useModal } from '@/components/commons/modal/ModalContext';
 
 // ── 사이드바 예시 컴포넌트 ──────────────────────────────────
@@ -84,6 +85,7 @@ function ProjectSettingsContent({ onClose }: { onClose: () => void }) {
 // ── Demo Page ─────────────────────────────────────────────
 export default function DemoPage() {
   const { openModal, closeModal } = useModal()!;
+  const { openDialog } = useDialog();
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-6 bg-gray-50 p-8">
@@ -114,22 +116,28 @@ export default function DemoPage() {
 
         {/* ② compact 모달 */}
         <button
-          onClick={() =>
+          onClick={() => {
             openModal({
-              variant: 'compact',
+              variant: 'default',
               content: (
                 <p className="text-sm leading-relaxed text-gray-600">
-                  좌우 <strong>36px</strong>, 상하 <strong>24px</strong> 패딩의 컴팩트 모달입니다.
-                  검색 모달에 적합합니다.
+                  상하좌우 패딩이 모두 <strong>48px</strong>인 기본 모달입니다. 본문에는 어떤
+                  콘텐츠든 자유롭게 채울 수 있습니다.
                 </p>
               ),
-            })
-          }
+            });
+            openDialog({
+              content: (
+                <p className="text-sm leading-relaxed text-gray-600">
+                  좌우 <strong>20px</strong>, 상하 <strong>20-12px</strong> 다이얼로그 모달입니다.
+                </p>
+              ),
+            });
+          }}
           className="rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-teal-500"
         >
-          Compact 모달 열기
+          다이얼로그 열기
         </button>
-
         {/* ③ sidebar 모달 */}
         <button
           onClick={() =>

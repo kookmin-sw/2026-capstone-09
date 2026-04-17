@@ -5,6 +5,8 @@ import { AppRouterCacheProvider } from '@wanteddev/wds-nextjs';
 
 import Modal from '@/components/commons/modal/Modal';
 import { ModalProvider } from '@/components/commons/modal/ModalContext';
+import Dialog from './commons/dialog/Dialog';
+import { DialogProvider } from './commons/dialog/DialogContext';
 import { ToastProvider } from './commons/toast/ToastProvider';
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -13,8 +15,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <AppRouterCacheProvider>
         <ToastProvider>
           <ModalProvider>
-            {children}
-            <Modal />
+            <DialogProvider>
+              {children}
+              <Modal />
+              <Dialog />
+            </DialogProvider>
           </ModalProvider>
         </ToastProvider>
       </AppRouterCacheProvider>

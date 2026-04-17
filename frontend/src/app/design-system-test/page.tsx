@@ -1,33 +1,41 @@
 'use client';
 
-import { Button, ToastContainer, ToastContent, ToastIcon } from '@wanteddev/wds';
+import {
+  Alert,
+  AlertActionArea,
+  AlertActionAreaButton,
+  AlertContainer,
+  AlertContent,
+  AlertDescription,
+  AlertHeading,
+  Button,
+} from '@wanteddev/wds';
 import { useState } from 'react';
-import { PositionedToast } from '@/components/commons/toast/PositionedToast';
-import { usePositionedToast } from '@/components/commons/toast/usePositionedToast';
 
 const Demo = () => {
   const [open, setOpen] = useState(false);
-  const toast = usePositionedToast();
-
-  const handleClick = () => {
-    toast({
-      variant: 'normal',
-      content: '우측 아래',
-      placement: 'bottom-right',
-    });
-  };
+  const [result, setResult] = useState<string | null>(null);
 
   return (
     <>
-      <PositionedToast open={open} onOpenChange={setOpen} duration="short" placement="top-right">
-        <ToastContainer>
-          <ToastIcon />
-          <ToastContent>Content</ToastContent>
-        </ToastContainer>
-      </PositionedToast>
+      <Alert open={open} onOpenChange={setOpen}>
+        <AlertContainer onDismiss={() => setResult('Dismissed')}>
+          <AlertContent>
+            <AlertHeading>Heading</AlertHeading>
+            <AlertDescription>Description</AlertDescription>
+          </AlertContent>
+          <AlertActionArea>
+            <AlertActionAreaButton variant="assistive" onClick={() => setResult('Cancel')}>
+              Cancel
+            </AlertActionAreaButton>
+            <AlertActionAreaButton variant="normal" onClick={() => setResult('Confirm')}>
+              Confirm
+            </AlertActionAreaButton>
+          </AlertActionArea>
+        </AlertContainer>
+      </Alert>
 
-      <Button onClick={() => setOpen(true)}>JSX 테스트</Button>
-      <Button onClick={handleClick}>훅 테스트</Button>
+      <Button onClick={() => setOpen(true)}>Alert 테스트</Button>
     </>
   );
 };
