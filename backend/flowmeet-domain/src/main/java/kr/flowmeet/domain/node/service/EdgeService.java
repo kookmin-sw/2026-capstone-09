@@ -1,6 +1,7 @@
 package kr.flowmeet.domain.node.service;
 
 import java.util.List;
+import kr.flowmeet.domain.node.service.vo.CreateEdgeCommand;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,15 +26,22 @@ public class EdgeService {
                 .orElseThrow(() -> new BusinessException(EdgeErrorCode.EDGE_NOT_FOUND));
     }
 
-    public void validateNotDuplicated(final Long startNodeId, final Long endNodeId) {
-        if (edgeRepository.existsByStartNodeIdAndEndNodeId(startNodeId, endNodeId)) {
-            throw new BusinessException(EdgeErrorCode.EDGE_DUPLICATE);
-        }
-    }
-
     @Transactional
-    public Edge create(final Edge edge) {
-        return edgeRepository.save(edge);
+    public Edge create(final Long projectId, final Long createdById, final CreateEdgeCommand command) {
+        Long startNodeId = command.startNodeId();
+        Long endNodeId = command.endNodeId();
+
+        validateNotDuplicated(startNodeId, endNodeId);
+
+        return edgeRepository.save(
+                Edge.builder()
+                        .projectId(projectId)
+                        .startNodeId(startNodeId)
+                        .endNodeId(endNodeId)
+                        .createdById(createdById)
+                        .comment(command.comment())
+                        .build()
+        );
     }
 
     @Transactional
@@ -45,5 +53,11 @@ public class EdgeService {
     public void deleteAllByNodeIds(final List<Long> nodeIds) {
         List<Edge> edges = edgeRepository.findAllByStartNodeIdInOrEndNodeIdIn(nodeIds, nodeIds);
         edgeRepository.deleteAll(edges);
+    }
+
+    private void validateNotDuplicated(final Long startNodeId, final Long endNodeId) {
+        if (edgeRepository.existsByStartNodeIdAndEndNodeId(startNodeId, endNodeId)) {
+            throw new BusinessException(EdgeErrorCode.EDGE_DUPLICATE);
+        }
     }
 }

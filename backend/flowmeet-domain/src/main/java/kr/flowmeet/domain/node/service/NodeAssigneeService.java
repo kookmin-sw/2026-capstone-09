@@ -45,19 +45,26 @@ public class NodeAssigneeService {
                 .orElseThrow(() -> new BusinessException(AssigneeErrorCode.ASSIGNEE_NOT_FOUND));
     }
 
-    public void validateNotDuplicated(final Long nodeId, final Long userId) {
-        if (nodeAssigneeRepository.existsByNodeIdAndUserId(nodeId, userId)) {
-            throw new BusinessException(AssigneeErrorCode.ASSIGNEE_ALREADY_EXISTS);
-        }
-    }
-
     @Transactional
-    public NodeAssignee create(final NodeAssignee nodeAssignee) {
-        return nodeAssigneeRepository.save(nodeAssignee);
+    public NodeAssignee create(final Long nodeId, final Long userId) {
+        validateNotDuplicated(nodeId, userId);
+
+        return nodeAssigneeRepository.save(
+                NodeAssignee.builder()
+                        .nodeId(nodeId)
+                        .userId(userId)
+                        .build()
+        );
     }
 
     @Transactional
     public void delete(final NodeAssignee nodeAssignee) {
         nodeAssigneeRepository.delete(nodeAssignee);
+    }
+
+    private void validateNotDuplicated(final Long nodeId, final Long userId) {
+        if (nodeAssigneeRepository.existsByNodeIdAndUserId(nodeId, userId)) {
+            throw new BusinessException(AssigneeErrorCode.ASSIGNEE_ALREADY_EXISTS);
+        }
     }
 }

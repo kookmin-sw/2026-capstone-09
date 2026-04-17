@@ -33,8 +33,6 @@ public class ProjectMemberFacade {
     private final ProjectService projectService;
     private final ProjectMemberService projectMemberService;
     private final ProjectPermissionValidator projectPermissionValidator;
-    private final NotificationService notificationService;
-    private final ApplicationEventPublisher eventPublisher;
 
     public GetAllProjectMembersResponse getAllMembers(final Long userId, final Long projectId) {
         projectPermissionValidator.validate(projectId, userId);
@@ -48,31 +46,14 @@ public class ProjectMemberFacade {
     public void inviteMember(final Long userId, final Long projectId, final InviteProjectMemberRequest request) {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
-        User requester = userService.findById(userId);
-        User invitee = userService.findByEmail(request.email());
-        Long inviteeId = invitee.getId();
-        Project project = projectService.findById(projectId);
+        User inviter = userService.findById(userId);
+        String email = request.email();
 
-        projectPermissionValidator.validateNotIn(projectId, inviteeId);
+        userService.findOptionalByEmail(email)
+                .ifPresent((u) -> projectPermissionValidator.validateNotIn(projectId, u.getId()));
 
-        projectMemberService.create(
-                ProjectMember.builder()
-                        .projectId(projectId)
-                        .userId(inviteeId)
-                        .role(ProjectMemberRole.MEMBER)
-                        .build()
-        );
-
-        eventPublisher.publishEvent(new ProjectMemberJoinedEvent(invitee.getId(), projectId));
-
-        notificationService.create(
-                Notification.builder()
-                        .userId(invitee.getId())
-                        .type(NotificationType.MEMBER_INVITE)
-                        .content(NotificationType.MEMBER_INVITE.formatContent(requester.getNickname(), project.getName()))
-                        .projectId(projectId)
-                        .build()
-        );
+        //TODO: 초대만 하고 등록은 API 따로 만들기 + 초대 관리 테이블 따로 만들어야 함
+        projectService.invite(email, projectId, inviter);
     }
 
     @Transactional

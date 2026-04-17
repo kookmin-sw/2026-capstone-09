@@ -2,6 +2,7 @@ package kr.flowmeet.api.node.facade;
 
 import java.util.List;
 import kr.flowmeet.domain.node.exception.TagErrorCode;
+import kr.flowmeet.domain.node.service.NodeValidator;
 import kr.flowmeet.domain.project.entity.ProjectMemberRole;
 import kr.flowmeet.domain.project.service.ProjectPermissionValidator;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +13,6 @@ import kr.flowmeet.api.node.dto.request.AddNodeTagRequest;
 import kr.flowmeet.api.node.dto.request.CreateTagRequest;
 import kr.flowmeet.api.node.dto.request.UpdateTagRequest;
 import kr.flowmeet.api.node.dto.response.GetAllTagsResponse;
-import kr.flowmeet.domain.node.entity.NodeTag;
 import kr.flowmeet.domain.node.entity.Tag;
 import kr.flowmeet.domain.node.exception.NodeErrorCode;
 import kr.flowmeet.domain.node.service.NodeService;
@@ -30,6 +30,7 @@ public class TagFacade {
     private final NodeTagService nodeTagService;
     private final NodeService nodeService;
     private final ProjectPermissionValidator projectPermissionValidator;
+    private final NodeValidator nodeValidator;
 
     public GetAllTagsResponse getAllTags(final Long userId, final Long projectId) {
         projectPermissionValidator.validate(projectId, userId);
@@ -46,15 +47,7 @@ public class TagFacade {
     ) {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
-        tagService.validateNameNotDuplicated(projectId, request.name());
-
-        tagService.create(
-                Tag.builder()
-                        .projectId(projectId)
-                        .name(request.name())
-                        .color(request.color())
-                        .build()
-        );
+        tagService.create(projectId, request.toCommand());
     }
 
     @Transactional
@@ -66,14 +59,7 @@ public class TagFacade {
     ) {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
-        Tag tag = tagService.findByIdAndProjectId(tagId, projectId);
-        String newName = request.name();
-
-        if (!tag.getName().equals(newName)) {
-            tagService.validateNameNotDuplicated(projectId, newName);
-        }
-
-        tag.update(newName, request.color());
+        tagService.update(projectId, tagId, request.toCommand());
     }
 
     @Transactional
@@ -94,16 +80,9 @@ public class TagFacade {
             final AddNodeTagRequest request
     ) {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
-        nodeService.validateNodeIsInProject(projectId, nodeId);
-        tagService.validateTagIsInProject(request.tagId(), projectId);
-        nodeTagService.validateNotDuplicated(nodeId, request.tagId());
+        nodeValidator.validateIsIn(nodeId, projectId);
 
-        nodeTagService.create(
-                NodeTag.builder()
-                        .nodeId(nodeId)
-                        .tagId(request.tagId())
-                        .build()
-        );
+        nodeTagService.create(projectId, nodeId, request.tagId());
     }
 
     @Transactional
@@ -114,8 +93,8 @@ public class TagFacade {
             final Long tagId
     ) {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
+        nodeValidator.validateIsIn(nodeId, projectId);
 
-        nodeService.findByIdAndProjectId(nodeId, projectId);
         nodeTagService.deleteByNodeIdAndTagId(nodeId, tagId);
     }
 }

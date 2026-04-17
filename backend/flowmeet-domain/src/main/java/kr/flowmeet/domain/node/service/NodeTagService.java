@@ -3,6 +3,7 @@ package kr.flowmeet.domain.node.service;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import kr.flowmeet.domain.node.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,7 @@ import kr.flowmeet.domain.node.repository.NodeTagRepository;
 public class NodeTagService {
 
     private final NodeTagRepository nodeTagRepository;
+    private final TagRepository tagRepository;
 
     public List<NodeTag> findAllByNodeId(final Long nodeId) {
         return nodeTagRepository.findAllWithTagByNodeId(nodeId);
@@ -40,15 +42,23 @@ public class NodeTagService {
                 .collect(Collectors.groupingBy(NodeTag::getNodeId));
     }
 
-    public void validateNotDuplicated(final Long nodeId, final Long tagId) {
+    private void validateNotDuplicated(final Long nodeId, final Long tagId) {
         if (nodeTagRepository.existsByNodeIdAndTagId(nodeId, tagId)) {
             throw new BusinessException(TagErrorCode.NODE_TAG_ALREADY_EXISTS);
         }
     }
 
     @Transactional
-    public NodeTag create(final NodeTag nodeTag) {
-        return nodeTagRepository.save(nodeTag);
+    public NodeTag create(final Long projectId, final Long nodeId, final Long tagId) {
+        validateTagIsInProject(tagId, projectId);
+        validateNotDuplicated(nodeId, tagId);
+
+        return nodeTagRepository.save(
+                NodeTag.builder()
+                        .nodeId(nodeId)
+                        .tagId(tagId)
+                        .build()
+        );
     }
 
     @Transactional
@@ -61,5 +71,11 @@ public class NodeTagService {
     @Transactional
     public void deleteAllByTagId(final Long tagId) {
         nodeTagRepository.deleteAllByTagId(tagId);
+    }
+
+    private void validateTagIsInProject(final Long tagId, final Long projectId) {
+        if (!tagRepository.existsByIdAndProjectId(tagId, projectId)) {
+            throw new BusinessException(TagErrorCode.TAG_NOT_FOUND);
+        }
     }
 }

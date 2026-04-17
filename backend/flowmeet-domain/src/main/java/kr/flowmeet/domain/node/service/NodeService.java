@@ -8,13 +8,20 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import kr.flowmeet.domain.node.entity.NodeStatus;
 import kr.flowmeet.domain.node.entity.NodeType;
+import kr.flowmeet.domain.node.service.vo.CreateNodeCommand;
+import kr.flowmeet.domain.node.service.vo.UpdateNodeCommand;
+import kr.flowmeet.domain.node.service.vo.UpdateNodeStatusCommand;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import kr.flowmeet.domain.common.exception.BusinessException;
 import kr.flowmeet.domain.node.entity.Node;
 import kr.flowmeet.domain.node.exception.NodeErrorCode;
+import kr.flowmeet.domain.node.repository.EdgeRepository;
+import kr.flowmeet.domain.node.repository.NodeAssigneeRepository;
 import kr.flowmeet.domain.node.repository.NodeRepository;
+import kr.flowmeet.domain.node.repository.NodeTagRepository;
+import kr.flowmeet.domain.node.repository.TagRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +29,10 @@ import kr.flowmeet.domain.node.repository.NodeRepository;
 public class NodeService {
 
     private final NodeRepository nodeRepository;
+    private final EdgeRepository edgeRepository;
+    private final TagRepository tagRepository;
+    private final NodeAssigneeRepository nodeAssigneeRepository;
+    private final NodeTagRepository nodeTagRepository;
 
     public Node findByIdAndProjectId(final Long nodeId, final Long projectId) {
         return nodeRepository.findByIdAndProjectId(nodeId, projectId)
@@ -32,8 +43,10 @@ public class NodeService {
         return nodeRepository.findAllByProjectId(projectId);
     }
 
-    public List<Node> findAllByParentId(final Long parentId) {
-        return nodeRepository.findAllByParentId(parentId);
+    public List<Long> findAllIdsByProjectId(final Long projectId) {
+        return findAllByProjectId(projectId).stream()
+                .map(Node::getId)
+                .toList();
     }
 
     public List<Node> searchByQuery(final Long projectId, final String query) {
@@ -56,14 +69,19 @@ public class NodeService {
     }
 
     @Transactional
-    public void create(Long projectId, Long parentId, String title, String description, NodeType type, int sortOrder) {
+    public void create(final Long projectId, final CreateNodeCommand command) {
+
+        Long parentId = command.parentId();
+        int sortOrder = parentId != null ? countChildNodes(parentId)
+                : countRootNodes(projectId);
+
         Node node = Node.builder()
                 .projectId(projectId)
                 .parentId(parentId)
-                .title(title)
-                .description(description)
+                .title(command.title())
+                .description(command.description())
                 .status(NodeStatus.WAITING)
-                .type(type)
+                .type(command.type())
                 .sortOrder(sortOrder)
                 .build();
 
@@ -84,10 +102,17 @@ public class NodeService {
         nodeRepository.delete(node);
     }
 
-    public void validateNodeIsInProject(Long projectId, Long nodeId) {
-        if (!nodeRepository.existsByIdAndProjectId(nodeId, projectId)) {
-            throw new BusinessException(NodeErrorCode.NODE_NOT_FOUND);
+    @Transactional
+    public void deleteAllByProjectId(final Long projectId) {
+        List<Long> nodeIds = findAllIdsByProjectId(projectId);
+
+        if (!nodeIds.isEmpty()) {
+            nodeAssigneeRepository.softDeleteAllByNodeIdIn(nodeIds);
+            nodeTagRepository.deleteAllByNodeIdIn(nodeIds);
         }
+        edgeRepository.softDeleteAllByProjectId(projectId);
+        tagRepository.softDeleteAllByProjectId(projectId);
+        nodeRepository.softDeleteAllByProjectId(projectId);
     }
 
     private List<Node> findAllDescendants(Long projectId, Long nodeId) {
@@ -111,5 +136,25 @@ public class NodeService {
         }
 
         return descendants;
+    }
+
+    @Transactional
+    public void updateNode(final Long projectId, final Long nodeId, final UpdateNodeCommand command) {
+        Node node = findByIdAndProjectId(nodeId, projectId);
+
+        node.update(
+                command.title(),
+                command.description(),
+                command.noteContent(),
+                command.status(),
+                command.sortOrder()
+        );
+    }
+
+    @Transactional
+    public void updateNodeStatus(final Long projectId, final Long nodeId, final UpdateNodeStatusCommand command) {
+        Node node = findByIdAndProjectId(nodeId, projectId);
+
+        node.updateStatus(command.status(), command.sortOrder());
     }
 }

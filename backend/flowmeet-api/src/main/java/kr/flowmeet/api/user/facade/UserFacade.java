@@ -56,9 +56,10 @@ public class UserFacade {
         projectMemberService.validateUserIsNotProjectOwner(userId);
 
         User user = userService.findById(userId);
-        userService.delete(user);
 
         projectMemberService.findAllByUserId(user.getId())
                 .forEach(projectMemberService::delete);
+
+        userService.delete(user);
     }
 }

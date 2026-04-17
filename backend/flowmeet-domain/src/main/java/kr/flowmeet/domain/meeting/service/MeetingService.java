@@ -11,6 +11,7 @@ import kr.flowmeet.domain.common.exception.BusinessException;
 import kr.flowmeet.domain.meeting.entity.Meeting;
 import kr.flowmeet.domain.meeting.entity.MeetingStatus;
 import kr.flowmeet.domain.meeting.exception.MeetingErrorCode;
+import kr.flowmeet.domain.meeting.repository.MeetingParticipantRepository;
 import kr.flowmeet.domain.meeting.repository.MeetingRepository;
 
 @Service
@@ -19,6 +20,7 @@ import kr.flowmeet.domain.meeting.repository.MeetingRepository;
 public class MeetingService {
 
     private final MeetingRepository meetingRepository;
+    private final MeetingParticipantRepository meetingParticipantRepository;
 
     public Optional<Meeting> findByNodeId(final Long nodeId) {
         return meetingRepository.findByNodeId(nodeId);
@@ -28,18 +30,13 @@ public class MeetingService {
         return meetingRepository.findAllByNodeIdIn(nodeIds);
     }
 
-    public boolean existsByNodeId(final Long nodeId) {
-        return meetingRepository.existsByNodeId(nodeId);
-    }
-
-    public boolean hasActiveMeeting(final Long nodeId) {
-        return meetingRepository.existsByNodeIdAndStatus(nodeId, MeetingStatus.IN_PROGRESS);
-    }
-
-    public void validateNoActiveMeeting(final Long nodeId) {
-        if (meetingRepository.existsByNodeIdAndStatus(nodeId, MeetingStatus.IN_PROGRESS)) {
-            throw new BusinessException(MeetingErrorCode.ACTIVE_MEETING_EXISTS);
+    public List<Long> findAllIdsByNodeIds(final List<Long> nodeIds) {
+        if (nodeIds.isEmpty()) {
+            return List.of();
         }
+        return findAllByNodeIds(nodeIds).stream()
+                .map(Meeting::getId)
+                .toList();
     }
 
     public Set<Long> findAllMeetingNodeIds(final List<Long> nodeIds) {
@@ -47,5 +44,14 @@ public class MeetingService {
                 .stream()
                 .map(Meeting::getNodeId)
                 .collect(Collectors.toSet());
+    }
+
+    @Transactional
+    public void deleteAllByIds(final List<Long> meetingIds) {
+        if (meetingIds.isEmpty()) {
+            return;
+        }
+        meetingParticipantRepository.softDeleteAllByMeetingIdIn(meetingIds);
+        meetingRepository.softDeleteAllByIdIn(meetingIds);
     }
 }

@@ -12,7 +12,6 @@ import kr.flowmeet.api.notification.dto.response.GetNotificationSettingResponse;
 import kr.flowmeet.api.notification.dto.response.GetUnreadCountResponse;
 import kr.flowmeet.domain.notification.entity.Notification;
 import kr.flowmeet.domain.notification.entity.NotificationSetting;
-import kr.flowmeet.domain.notification.entity.NotificationType;
 import kr.flowmeet.domain.notification.exception.NotificationErrorCode;
 import kr.flowmeet.domain.notification.service.NotificationService;
 import kr.flowmeet.domain.notification.service.NotificationSettingService;
@@ -24,20 +23,6 @@ public class NotificationFacade {
 
     private final NotificationService notificationService;
     private final NotificationSettingService notificationSettingService;
-
-    @Transactional
-    public void createNotification(final Long userId, final NotificationType type,
-                                    final String content, final Long projectId, final Long nodeId) {
-        notificationService.create(
-                Notification.builder()
-                        .userId(userId)
-                        .type(type)
-                        .content(content)
-                        .projectId(projectId)
-                        .nodeId(nodeId)
-                        .build()
-        );
-    }
 
     public PageResponse<NotificationSummaryResponse> getAllNotifications(final Long userId, final Boolean isRead,
                                                                          final int page, final int size) {

@@ -26,12 +26,22 @@ public class NotificationSettingService {
     }
 
     @Transactional
-    public NotificationSetting create(final NotificationSetting notificationSetting) {
-        return notificationSettingRepository.save(notificationSetting);
+    public NotificationSetting create(final Long userId, final Long projectId) {
+        return notificationSettingRepository.save(
+                NotificationSetting.builder()
+                        .userId(userId)
+                        .projectId(projectId)
+                        .build()
+        );
     }
 
     @Transactional
     public void delete(final NotificationSetting notificationSetting) {
         notificationSettingRepository.delete(notificationSetting);
+    }
+
+    @Transactional
+    public void deleteAllByProjectId(final Long projectId) {
+        notificationSettingRepository.deleteAllByProjectId(projectId);
     }
 }

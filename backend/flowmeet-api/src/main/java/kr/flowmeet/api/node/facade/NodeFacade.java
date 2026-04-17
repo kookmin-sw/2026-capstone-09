@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import kr.flowmeet.domain.common.BaseTimeEntity;
+import kr.flowmeet.domain.node.service.NodeValidator;
 import kr.flowmeet.domain.project.entity.ProjectMember;
 import kr.flowmeet.domain.project.entity.ProjectMemberRole;
 import kr.flowmeet.domain.project.service.ProjectPermissionValidator;
@@ -50,6 +51,7 @@ public class NodeFacade {
     private final NodeAssigneeService nodeAssigneeService;
     private final MeetingService meetingService;
     private final ProjectPermissionValidator projectPermissionValidator;
+    private final NodeValidator nodeValidator;
 
     public GetFlowchartResponse getFlowchart(final Long userId, final Long projectId) {
         projectPermissionValidator.validate(projectId, userId);
@@ -85,21 +87,10 @@ public class NodeFacade {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         if (request.parentId() != null) {
-            nodeService.findByIdAndProjectId(request.parentId(), projectId);
+            nodeValidator.validateIsIn(request.parentId(), projectId);
         }
 
-        int sortOrder = request.parentId() != null
-                ? nodeService.countChildNodes(request.parentId())
-                : nodeService.countRootNodes(projectId);
-
-        nodeService.create(
-                projectId,
-                request.parentId(),
-                request.title(),
-                request.description(),
-                request.type(),
-                sortOrder
-        );
+        nodeService.create(projectId, request.toCommand());
     }
 
     @Transactional
@@ -111,15 +102,7 @@ public class NodeFacade {
     ) {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
-        Node node = nodeService.findByIdAndProjectId(nodeId, projectId);
-
-        node.update(
-                request.title(),
-                request.description(),
-                request.noteContent(),
-                request.status(),
-                request.sortOrder()
-        );
+        nodeService.updateNode(projectId, nodeId, request.toCommand());
     }
 
     @Transactional
@@ -128,7 +111,7 @@ public class NodeFacade {
 
         Node node = nodeService.findByIdAndProjectId(nodeId, projectId);
 
-        meetingService.validateNoActiveMeeting(nodeId);
+        nodeValidator.validateNoActiveMeeting(node);
 
         List<Long> descendantIds = nodeService.findAllDescendantIds(node);
         List<Long> allNodeIds = new ArrayList<>(descendantIds);
@@ -182,8 +165,7 @@ public class NodeFacade {
     ) {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
-        Node node = nodeService.findByIdAndProjectId(nodeId, projectId);
-        node.updateStatus(request.status(), request.sortOrder());
+        nodeService.updateNodeStatus(projectId, nodeId, request.toCommand());
     }
 
     public SearchNodeResponse search(final Long userId, final Long projectId, final String query) {

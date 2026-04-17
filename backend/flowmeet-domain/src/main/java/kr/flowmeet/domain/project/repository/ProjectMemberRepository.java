@@ -3,6 +3,7 @@ package kr.flowmeet.domain.project.repository;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import kr.flowmeet.domain.project.entity.ProjectMember;
@@ -29,4 +30,8 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
     boolean existsByUserIdAndRole(Long userId, ProjectMemberRole role);
 
     int countByProjectId(Long projectId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE ProjectMember pm SET pm.deletedAt = CURRENT_TIMESTAMP WHERE pm.projectId = :projectId")
+    int softDeleteAllByProjectId(@Param("projectId") Long projectId);
 }
