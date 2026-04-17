@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,7 +16,13 @@ import org.hibernate.annotations.SQLRestriction;
 import kr.flowmeet.domain.common.BaseTimeEntity;
 
 @Entity
-@Table(name = "users")
+@Table(
+        name = "users",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_users_social_email", columnNames = "social_email"),
+                @UniqueConstraint(name = "uk_users_email", columnNames = "email")
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLDelete(sql = "UPDATE users SET deleted_at = CURRENT_TIMESTAMP WHERE user_id = ?")
@@ -27,10 +34,10 @@ public class User extends BaseTimeEntity {
     @Column(name = "user_id")
     private Long id;
 
-    @Column(name = "social_email", nullable = false, unique = true)
+    @Column(name = "social_email", nullable = false)
     private String socialEmail;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(name = "email", nullable = false)
     private String email;
 
     @Column(name = "social_id", nullable = false)

@@ -8,6 +8,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -21,7 +22,13 @@ import kr.flowmeet.domain.common.BaseTimeEntity;
 import kr.flowmeet.domain.user.entity.User;
 
 @Entity
-@Table(name = "project_members")
+@Table(
+        name = "project_members",
+        indexes = {
+                @Index(name = "idx_project_members_project_id", columnList = "project_id"),
+                @Index(name = "idx_project_members_user_id", columnList = "user_id")
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLDelete(sql = "UPDATE project_members SET deleted_at = CURRENT_TIMESTAMP WHERE project_member_id = ?")
