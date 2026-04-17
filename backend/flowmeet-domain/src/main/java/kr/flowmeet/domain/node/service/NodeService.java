@@ -17,7 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 import kr.flowmeet.domain.common.exception.BusinessException;
 import kr.flowmeet.domain.node.entity.Node;
 import kr.flowmeet.domain.node.exception.NodeErrorCode;
+import kr.flowmeet.domain.node.repository.EdgeRepository;
+import kr.flowmeet.domain.node.repository.NodeAssigneeRepository;
 import kr.flowmeet.domain.node.repository.NodeRepository;
+import kr.flowmeet.domain.node.repository.NodeTagRepository;
+import kr.flowmeet.domain.node.repository.TagRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +29,10 @@ import kr.flowmeet.domain.node.repository.NodeRepository;
 public class NodeService {
 
     private final NodeRepository nodeRepository;
+    private final EdgeRepository edgeRepository;
+    private final TagRepository tagRepository;
+    private final NodeAssigneeRepository nodeAssigneeRepository;
+    private final NodeTagRepository nodeTagRepository;
 
     public Node findByIdAndProjectId(final Long nodeId, final Long projectId) {
         return nodeRepository.findByIdAndProjectId(nodeId, projectId)
@@ -33,6 +41,12 @@ public class NodeService {
 
     public List<Node> findAllByProjectId(final Long projectId) {
         return nodeRepository.findAllByProjectId(projectId);
+    }
+
+    public List<Long> findAllIdsByProjectId(final Long projectId) {
+        return findAllByProjectId(projectId).stream()
+                .map(Node::getId)
+                .toList();
     }
 
     public List<Node> searchByQuery(final Long projectId, final String query) {
@@ -86,6 +100,19 @@ public class NodeService {
 
         nodeRepository.deleteAll(descendants);
         nodeRepository.delete(node);
+    }
+
+    @Transactional
+    public void deleteAllByProjectId(final Long projectId) {
+        List<Long> nodeIds = findAllIdsByProjectId(projectId);
+
+        if (!nodeIds.isEmpty()) {
+            nodeAssigneeRepository.softDeleteAllByNodeIdIn(nodeIds);
+            nodeTagRepository.deleteAllByNodeIdIn(nodeIds);
+        }
+        edgeRepository.softDeleteAllByProjectId(projectId);
+        tagRepository.softDeleteAllByProjectId(projectId);
+        nodeRepository.softDeleteAllByProjectId(projectId);
     }
 
     private List<Node> findAllDescendants(Long projectId, Long nodeId) {

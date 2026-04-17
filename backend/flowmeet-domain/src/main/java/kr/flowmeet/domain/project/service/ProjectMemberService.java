@@ -100,4 +100,9 @@ public class ProjectMemberService {
             throw new BusinessException(ProjectErrorCode.MEMBER_CANNOT_CHANGE_OWNER);
         }
     }
+
+    @Transactional
+    public void deleteAllByProjectId(final Long projectId) {
+        projectMemberRepository.softDeleteAllByProjectId(projectId);
+    }
 }

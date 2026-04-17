@@ -54,4 +54,9 @@ public class NotificationService {
     public void markAllAsRead(final Long userId) {
         notificationRepository.markAllAsRead(userId);
     }
+
+    @Transactional
+    public void deleteAllByProjectId(final Long projectId) {
+        notificationRepository.deleteAllByProjectId(projectId);
+    }
 }

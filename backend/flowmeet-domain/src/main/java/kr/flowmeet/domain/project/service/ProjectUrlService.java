@@ -52,4 +52,9 @@ public class ProjectUrlService {
     public void delete(final ProjectUrl projectUrl) {
         projectUrlRepository.delete(projectUrl);
     }
+
+    @Transactional
+    public void deleteAllByProjectId(final Long projectId) {
+        projectUrlRepository.softDeleteAllByProjectId(projectId);
+    }
 }

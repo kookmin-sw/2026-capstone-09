@@ -1,5 +1,6 @@
 package kr.flowmeet.domain.file.service;
 
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,5 +35,39 @@ public class FileInformationService {
     @Transactional
     public void delete(final FileInformation fileInformation) {
         fileInformationRepository.delete(fileInformation);
+    }
+
+    public List<String> findAllFileKeysByProjectScope(final Long projectId,
+                                                      final List<Long> nodeIds,
+                                                      final List<Long> meetingIds) {
+        List<String> fileKeys = new java.util.ArrayList<>(
+                fileInformationRepository.findFileKeysByDomainTypeAndEntityId(FileDomainType.PROJECT_IMAGE, projectId));
+
+        if (!nodeIds.isEmpty()) {
+            fileKeys.addAll(fileInformationRepository
+                    .findFileKeysByDomainTypeAndEntityIdIn(FileDomainType.NODE_ATTACHMENT, nodeIds));
+            fileKeys.addAll(fileInformationRepository
+                    .findFileKeysByDomainTypeAndEntityIdIn(FileDomainType.NODE_NOTE_IMAGE, nodeIds));
+        }
+        if (!meetingIds.isEmpty()) {
+            fileKeys.addAll(fileInformationRepository
+                    .findFileKeysByDomainTypeAndEntityIdIn(FileDomainType.MEETING_SUMMARY, meetingIds));
+        }
+        return fileKeys;
+    }
+
+    @Transactional
+    public void deleteAllByProjectScope(final Long projectId,
+                                        final List<Long> nodeIds,
+                                        final List<Long> meetingIds) {
+        fileInformationRepository.deleteAllByDomainTypeAndEntityId(FileDomainType.PROJECT_IMAGE, projectId);
+
+        if (!nodeIds.isEmpty()) {
+            fileInformationRepository.deleteAllByDomainTypeAndEntityIdIn(FileDomainType.NODE_ATTACHMENT, nodeIds);
+            fileInformationRepository.deleteAllByDomainTypeAndEntityIdIn(FileDomainType.NODE_NOTE_IMAGE, nodeIds);
+        }
+        if (!meetingIds.isEmpty()) {
+            fileInformationRepository.deleteAllByDomainTypeAndEntityIdIn(FileDomainType.MEETING_SUMMARY, meetingIds);
+        }
     }
 }

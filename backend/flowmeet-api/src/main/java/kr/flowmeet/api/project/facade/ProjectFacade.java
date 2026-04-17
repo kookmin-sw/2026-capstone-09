@@ -14,8 +14,6 @@ import kr.flowmeet.api.project.dto.response.CreateProjectResponse;
 import kr.flowmeet.api.project.dto.response.GetProjectResponse;
 import kr.flowmeet.api.project.dto.response.ProjectSummaryResponse;
 import kr.flowmeet.api.project.dto.request.UpdateProjectRequest;
-import kr.flowmeet.domain.notification.entity.NotificationSetting;
-import kr.flowmeet.domain.notification.service.NotificationSettingService;
 import kr.flowmeet.domain.file.entity.FileDomainType;
 import kr.flowmeet.domain.project.entity.Project;
 import kr.flowmeet.domain.project.entity.ProjectMember;
@@ -33,10 +31,10 @@ import kr.flowmeet.domain.project.service.ProjectUrlService;
 public class ProjectFacade {
 
     private final ProjectService projectService;
+    private final ProjectEraser projectEraser;
     private final ProjectMemberService projectMemberService;
     private final ProjectUrlService projectUrlService;
     private final ProjectPermissionValidator projectPermissionValidator;
-    private final NotificationSettingService notificationSettingService;
     private final ImageUploader imageUploader;
 
     @Transactional
@@ -78,17 +76,7 @@ public class ProjectFacade {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.OWNER);
 
         Project project = projectService.findById(projectId);
-
-        List<ProjectMember> members = projectMemberService.findAllByProjectId(project.getId());
-        members.forEach(projectMemberService::delete);
-
-        List<ProjectUrl> urls = projectUrlService.findAllByProjectId(project.getId());
-        urls.forEach(projectUrlService::delete);
-
-        List<NotificationSetting> settings = notificationSettingService.findAllByProjectId(project.getId());
-        settings.forEach(notificationSettingService::delete);
-
-        projectService.delete(project);
+        projectEraser.erase(project);
     }
 
     @Transactional

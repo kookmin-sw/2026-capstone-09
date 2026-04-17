@@ -20,8 +20,8 @@ import kr.flowmeet.domain.project.repository.projection.ProjectWithMemberCountPr
 @Transactional(readOnly = true)
 public class ProjectService {
 
-    private final ProjectRepository projectRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final ProjectRepository projectRepository;
 
     public Project findById(final Long projectId) {
         return projectRepository.findById(projectId)
