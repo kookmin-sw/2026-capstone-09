@@ -5,9 +5,9 @@ import { AppRouterCacheProvider } from '@wanteddev/wds-nextjs';
 
 import Modal from '@/components/commons/modal/Modal';
 import { ModalProvider } from '@/components/commons/modal/ModalContext';
-import Dialog from './commons/dialog/Dialog';
-import { DialogProvider } from './commons/dialog/DialogContext';
-import { ToastProvider } from './commons/toast/ToastProvider';
+import Dialog from './commons/custom-dialog/Dialog';
+import { DialogProvider } from './commons/custom-dialog/DialogContext';
+import { ToastProvider } from './commons/custom-toast/ToastProvider';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (

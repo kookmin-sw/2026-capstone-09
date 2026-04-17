@@ -2,7 +2,7 @@
 
 import { useEffect, useCallback, useRef, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { useDialog } from '@/components/commons/dialog/DialogContext';
+import { useDialog } from '@/components/commons/custom-dialog/DialogContext';
 
 function DefaultDialog({ content }: { content: ReactNode }) {
   return (

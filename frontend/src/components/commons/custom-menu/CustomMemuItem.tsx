@@ -6,7 +6,7 @@ type CustomMenuProps = ComponentProps<typeof MenuItem> & {
   icon?: ReactNode;
 };
 
-export const CustomMenu = ({ icon, ...props }: CustomMenuProps) => {
+export const CustomMenuItem = ({ icon, ...props }: CustomMenuProps) => {
   return (
     <MenuItem
       verticalPadding="small"
