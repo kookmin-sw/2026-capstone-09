@@ -12,7 +12,7 @@ import kr.flowmeet.api.notification.dto.response.GetUnreadCountResponse;
 import kr.flowmeet.auth.annotation.UserId;
 import kr.flowmeet.domain.notification.exception.NotificationErrorCode;
 
-@Tag(name = "Notification")
+@Tag(name = "알림")
 public interface NotificationApi {
 
     @Operation(summary = "알림 목록 조회",

@@ -11,7 +11,7 @@ import kr.flowmeet.api.notification.dto.response.GetNotificationSettingResponse;
 import kr.flowmeet.auth.annotation.UserId;
 import kr.flowmeet.domain.notification.exception.NotificationErrorCode;
 
-@Tag(name = "Notification Setting")
+@Tag(name = "알림 설정")
 public interface NotificationSettingApi {
 
     @Operation(summary = "프로젝트별 알림 설정 조회")

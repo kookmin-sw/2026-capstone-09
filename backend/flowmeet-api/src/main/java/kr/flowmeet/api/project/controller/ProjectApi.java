@@ -20,7 +20,7 @@ import kr.flowmeet.domain.file.exception.FileErrorCode;
 import kr.flowmeet.domain.project.exception.ProjectErrorCode;
 import kr.flowmeet.domain.project.service.ProjectSortType;
 
-@Tag(name = "Project")
+@Tag(name = "프로젝트")
 public interface ProjectApi {
 
     @Operation(summary = "프로젝트 생성")

@@ -13,10 +13,10 @@ import kr.flowmeet.auth.annotation.UserId;
 import kr.flowmeet.domain.node.exception.EdgeErrorCode;
 import kr.flowmeet.domain.node.exception.NodeErrorCode;
 
-@Tag(name = "Edge")
+@Tag(name = "연결선")
 public interface EdgeApi {
 
-    @Operation(summary = "엣지 생성", description = "노드 간 연결선을 추가합니다.")
+    @Operation(summary = "연결선 생성", description = "노드 간 연결선을 추가합니다.")
     @ApiErrorCode(code = NodeErrorCode.class, names = {"NODE_NOT_FOUND"})
     @ApiErrorCode(code = EdgeErrorCode.class, names = {"EDGE_DUPLICATE"})
     CommonResponse<?> createEdge(
@@ -25,7 +25,7 @@ public interface EdgeApi {
             @Valid @RequestBody CreateEdgeRequest request
     );
 
-    @Operation(summary = "엣지 삭제", description = "연결선을 삭제합니다.")
+    @Operation(summary = "연결선 삭제", description = "연결선을 삭제합니다.")
     @ApiErrorCode(code = EdgeErrorCode.class, names = {"EDGE_NOT_FOUND"})
     CommonResponse<?> deleteEdge(
             @UserId Long userId,
