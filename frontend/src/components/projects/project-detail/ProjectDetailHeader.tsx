@@ -2,7 +2,7 @@ import { SegmentedControl, SegmentedControlItem } from '@wanteddev/wds';
 import { Box } from '@wanteddev/wds-engine';
 
 import type { ProjectViewTypes } from '@/app/(project)/projects/[projectId]/layout';
-import { Users, type UserInfo } from '@/components/commons/UserAvatarGroup';
+import { type UserInfo, Users } from '@/components/commons/user/UserAvatarGroup';
 
 interface ProjectDetailHeaderProps {
   activeView: ProjectViewTypes;
@@ -25,10 +25,10 @@ export const ProjectDetailHeader = ({
   onViewChange,
 }: ProjectDetailHeaderProps) => {
   return (
-    <header className="relative z-10 flex h-14 shrink-0 items-center justify-between overflow-visible border-b border-line-soft bg-static-white px-4 pb-4 pt-4.5">
+    <header className="border-line-soft bg-static-white relative z-10 flex h-14 shrink-0 items-center justify-between overflow-visible border-b px-4 pt-4.5 pb-4">
       <div className="shrink-0">
         <Box
-          className="inline-flex w-[300px] shrink-0 rounded-md bg-fill-normal p-0.5"
+          className="bg-fill-normal inline-flex w-[300px] shrink-0 rounded-md p-0.5"
           sx={{
             '& button': {
               flex: 1,
