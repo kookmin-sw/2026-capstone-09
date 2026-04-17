@@ -2,7 +2,10 @@ name: Backend CI/CD
 
 on:
   push:
-    branches: [backend/develop, main]
+    branches: [backend/develop]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
 concurrency:
@@ -46,7 +49,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./backend
           platforms: linux/amd64
           push: true
           tags: |
