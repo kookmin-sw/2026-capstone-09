@@ -1,5 +1,5 @@
 import { SegmentedControl, SegmentedControlItem } from '@wanteddev/wds';
-import { Box } from '@wanteddev/wds-engine';
+import { Box, type Theme } from '@wanteddev/wds-engine';
 
 import type { ProjectViewTypes } from '@/app/(project)/projects/[projectId]/layout';
 import { type UserInfo, Users } from '@/components/commons/user/UserAvatarGroup';
@@ -29,22 +29,18 @@ export const ProjectDetailHeader = ({
       <div className="shrink-0">
         <Box
           className="bg-fill-normal inline-flex w-[300px] shrink-0 rounded-md p-0.5"
-          sx={{
+          sx={(theme: Theme) => ({
             '& button': {
               flex: 1,
               minWidth: 0,
               justifyContent: 'center',
-              color: 'var(--color-label-alternative)',
-              fontSize: 'var(--typography---label2---font-size)',
-              lineHeight: 'var(--typography---label2---line-height)',
-              letterSpacing: 'var(--typography---label2---letter-spacing)',
-              fontFamily: 'var(--font-pretendard)',
+              color: theme.semantic.label.alternative,
             },
             '& button[data-state="on"]': {
-              backgroundColor: 'var(--color-background-elevated-normal)',
-              color: 'var(--color-label-normal)',
+              backgroundColor: theme.semantic.background.elevated.normal,
+              color: theme.semantic.label.normal,
             },
-          }}
+          })}
         >
           <SegmentedControl
             size="small"

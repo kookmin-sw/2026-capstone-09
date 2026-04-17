@@ -24,8 +24,6 @@ interface UserAvatarWithTooltipProps {
   position: 'bottom-center' | 'bottom-end';
 }
 
-const tooltipTextColor = 'text-[var(--color-neutral-100)]';
-
 const UserAvatarWithTooltip = ({ user, position }: UserAvatarWithTooltipProps) => {
   return (
     <Tooltip>
@@ -39,8 +37,8 @@ const UserAvatarWithTooltip = ({ user, position }: UserAvatarWithTooltipProps) =
         <div className="flex min-w-[140px] items-center gap-2 px-1 py-1.5">
           <Avatar variant="person" size="xsmall" />
           <div className="flex flex-col">
-            <span className={`text-caption-1 font-medium ${tooltipTextColor}`}>{user.name}</span>
-            <span className={`text-caption-2 font-normal ${tooltipTextColor}`}>{user.email}</span>
+            <span className="text-caption-1 text-neutral-100 font-medium">{user.name}</span>
+            <span className="text-caption-2 text-neutral-100 font-normal">{user.email}</span>
           </div>
         </div>
       </TooltipContent>
@@ -75,12 +73,8 @@ const AllUsersTooltip = ({ users }: AllUsersTooltipProps) => {
             <div key={user.email} className="flex items-center gap-2">
               <Avatar variant="person" size="xsmall" />
               <div className="flex flex-col">
-                <span className={`text-caption-1 font-medium ${tooltipTextColor}`}>
-                  {user.name}
-                </span>
-                <span className={`text-caption-2 font-normal ${tooltipTextColor}`}>
-                  {user.email}
-                </span>
+                <span className="text-caption-1 text-neutral-100 font-medium">{user.name}</span>
+                <span className="text-caption-2 text-neutral-100 font-normal">{user.email}</span>
               </div>
             </div>
           ))}
