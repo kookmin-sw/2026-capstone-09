@@ -55,7 +55,8 @@ public class ProjectFacade {
     }
 
     public GetProjectResponse getProject(final Long userId, final Long projectId) {
-        ProjectMemberRole myRole = projectPermissionValidator.validateAndGetRole(projectId, userId);
+        projectPermissionValidator.validate(projectId, userId);
+        ProjectMemberRole myRole = projectMemberService.findByProjectIdAndUserId(projectId, userId).getRole();
 
         Project project = projectService.findById(projectId);
         int memberCount = projectMemberService.countByProjectId(projectId);

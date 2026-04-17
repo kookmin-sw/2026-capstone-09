@@ -18,10 +18,6 @@ public class ProjectPermissionValidator {
         validate(projectId, userId, ProjectMemberRole.VIEWER);
     }
 
-    public ProjectMemberRole validateAndGetRole(Long projectId, Long userId) {
-        return projectMemberService.findByProjectIdAndUserId(projectId, userId).getRole();
-    }
-
     public void validateNotIn(Long projectId, Long userId) {
         if (projectMemberRepository.existsByProjectIdAndUserId(projectId, userId)) {
             throw new BusinessException(ProjectErrorCode.MEMBER_ALREADY_EXISTS);
