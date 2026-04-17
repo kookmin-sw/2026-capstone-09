@@ -92,7 +92,7 @@ export const ProjectSidebar = ({
   };
 
   return (
-    <div ref={containerRef} className="relative flex shrink-0">
+    <div ref={containerRef} className="relative z-20 flex shrink-0">
       <motion.aside
         className="border-line-normal-neutral bg-background-normal-alternative font-pretendard text-body-2 text-label-alternative relative z-10 h-screen shrink-0 overflow-hidden border-r px-2.5 pt-2 pb-0"
         initial={false}
