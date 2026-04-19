@@ -40,11 +40,19 @@ export interface NodeDetail extends Node {
   createdAt: string;
 }
 
+export interface EdgeCreator {
+  userId: number;
+  nickname: string;
+  email: string;
+  profileImageUrl: string;
+}
+
 export interface Edge {
   edgeId: number;
   startNodeId: number;
   endNodeId: number;
-  lineType: 'SOLID' | 'DASHED';
+  createdBy: EdgeCreator;
+  comment: string;
 }
 
 export interface FlowChart {
