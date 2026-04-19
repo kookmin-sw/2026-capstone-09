@@ -1,0 +1,40 @@
+name: Deploy to AWS Lambda
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'ai/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build and push Docker image
+        run: |
+          cd ai
+          docker build --platform linux/amd64 -t llm-summary .
+          docker tag llm-summary:latest 575078236077.dkr.ecr.ap-northeast-2.amazonaws.com/llm-summary:latest
+          docker push 575078236077.dkr.ecr.ap-northeast-2.amazonaws.com/llm-summary:latest
+
+      - name: Update Lambda function
+        run: |
+          aws lambda update-function-code \
+            --function-name llm_summary_func \
+            --image-uri 575078236077.dkr.ecr.ap-northeast-2.amazonaws.com/llm-summary:latest \
+            --region ap-northeast-2
