@@ -1,17 +1,20 @@
 package kr.flowmeet.api.node.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import java.util.Map;
 import kr.flowmeet.domain.node.entity.Node;
 import kr.flowmeet.domain.node.entity.NodeAssignee;
 import kr.flowmeet.domain.node.entity.NodeStatus;
 import kr.flowmeet.domain.node.entity.NodeTag;
-import kr.flowmeet.domain.node.entity.Tag;
-import kr.flowmeet.domain.user.entity.User;
 
+@Schema(description = "칸반 보드 조회 응답 (상태별 그룹핑)")
 public record GetKanbanResponse(
+        @Schema(description = "대기 상태의 노드 목록")
         List<KanbanItem> waiting,
+        @Schema(description = "진행 중 상태의 노드 목록")
         List<KanbanItem> inProgress,
+        @Schema(description = "완료 상태의 노드 목록")
         List<KanbanItem> done
 ) {
 
@@ -41,11 +44,17 @@ public record GetKanbanResponse(
                 .toList();
     }
 
+    @Schema(description = "칸반 보드의 개별 노드 카드")
     public record KanbanItem(
+            @Schema(description = "노드 ID", example = "101")
             Long nodeId,
+            @Schema(description = "노드 제목", example = "로그인 화면 기획")
             String title,
+            @Schema(description = "같은 상태 내 정렬 순서", example = "1024")
             int sortOrder,
+            @Schema(description = "부여된 태그 목록")
             List<TagItem> tags,
+            @Schema(description = "담당자 목록")
             List<AssigneeItem> assignees
     ) {
 

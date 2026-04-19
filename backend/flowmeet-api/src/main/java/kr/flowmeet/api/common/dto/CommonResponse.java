@@ -1,12 +1,18 @@
 package kr.flowmeet.api.common.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import kr.flowmeet.common.exception.ErrorCode;
 import org.springframework.http.HttpStatus;
 
+@Schema(description = "공통 응답 형식")
 public record CommonResponse<T>(
+        @Schema(description = "HTTP 상태 코드", example = "200")
         int status,
+        @Schema(description = "응답 코드", example = "OK")
         String code,
+        @Schema(description = "응답 메시지", example = "요청에 성공했습니다.")
         String message,
+        @Schema(description = "응답 데이터")
         T data
 ) {
     private static final String SUCCESS_CODE = "OK";

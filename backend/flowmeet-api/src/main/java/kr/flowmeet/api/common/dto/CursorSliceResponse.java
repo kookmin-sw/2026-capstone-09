@@ -1,13 +1,20 @@
 package kr.flowmeet.api.common.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import java.util.function.Function;
 
+@Schema(description = "커서 기반 페이지 응답")
 public record CursorSliceResponse<T>(
+        @Schema(description = "조회된 데이터 목록")
         List<T> content,
+        @Schema(description = "요청한 페이지 크기", example = "20")
         int size,
+        @Schema(description = "다음 페이지 존재 여부", example = "true")
         boolean hasNext,
+        @Schema(description = "다음 페이지 조회용 커서 ID", example = "42")
         Long nextCursorId,
+        @Schema(description = "다음 페이지 조회용 커서 값(정렬 기준 값)", example = "2026-04-19T10:00:00")
         String nextCursorValue
 ) {
 

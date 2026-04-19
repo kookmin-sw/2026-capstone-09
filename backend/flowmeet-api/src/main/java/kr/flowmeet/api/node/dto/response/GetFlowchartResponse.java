@@ -1,5 +1,6 @@
 package kr.flowmeet.api.node.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -8,11 +9,13 @@ import kr.flowmeet.domain.node.entity.Edge;
 import kr.flowmeet.domain.node.entity.Node;
 import kr.flowmeet.domain.node.entity.NodeAssignee;
 import kr.flowmeet.domain.node.entity.NodeTag;
-import kr.flowmeet.domain.node.entity.Tag;
 import kr.flowmeet.domain.user.entity.User;
 
+@Schema(description = "플로우차트 조회 응답 (노드와 엣지)")
 public record GetFlowchartResponse(
+        @Schema(description = "노드 목록")
         List<NodeItem> nodes,
+        @Schema(description = "노드 간 엣지 목록")
         List<EdgeItem> edges
 ) {
 
@@ -41,17 +44,29 @@ public record GetFlowchartResponse(
         return new GetFlowchartResponse(nodeItems, edgeItems);
     }
 
+    @Schema(description = "플로우차트의 노드 항목")
     public record NodeItem(
+            @Schema(description = "노드 ID", example = "101")
             Long nodeId,
+            @Schema(description = "상위 노드 ID (루트인 경우 null)", example = "100")
             Long parentId,
+            @Schema(description = "노드 제목", example = "로그인 화면 기획")
             String title,
+            @Schema(description = "노드 설명", example = "OAuth2 로그인 플로우 정리")
             String description,
+            @Schema(description = "노드 상태", example = "IN_PROGRESS", allowableValues = {"WAITING", "IN_PROGRESS", "DONE"})
             String status,
+            @Schema(description = "같은 상태 내 정렬 순서", example = "1024")
             int sortOrder,
+            @Schema(description = "부여된 태그 목록")
             List<TagItem> tags,
+            @Schema(description = "담당자 목록")
             List<AssigneeItem> assignees,
+            @Schema(description = "연결된 회의 존재 여부", example = "true")
             boolean hasMeeting,
+            @Schema(description = "하위 노드 ID 목록", example = "[110, 111]")
             List<Long> childNodeIds,
+            @Schema(description = "마지막 수정 시각", example = "2026-04-19T10:15:30")
             LocalDateTime updatedAt
     ) {
 
@@ -78,11 +93,17 @@ public record GetFlowchartResponse(
         }
     }
 
+    @Schema(description = "노드 간 엣지 항목")
     public record EdgeItem(
+            @Schema(description = "엣지 ID", example = "9001")
             Long edgeId,
+            @Schema(description = "시작 노드 ID", example = "101")
             Long startNodeId,
+            @Schema(description = "종료 노드 ID", example = "102")
             Long endNodeId,
+            @Schema(description = "엣지를 생성한 사용자 정보")
             EdgeCreatorItem createdBy,
+            @Schema(description = "엣지 설명", example = "로그인 성공 시 대시보드로 이동")
             String comment
     ) {
 
@@ -96,10 +117,15 @@ public record GetFlowchartResponse(
             );
         }
 
+        @Schema(description = "엣지 생성자 정보")
         public record EdgeCreatorItem(
+                @Schema(description = "사용자 ID", example = "91")
                 Long userId,
+                @Schema(description = "닉네임", example = "플로우민")
                 String nickname,
+                @Schema(description = "이메일", example = "flowmin@flowmeet.kr")
                 String email,
+                @Schema(description = "프로필 이미지 URL", example = "https://cdn.flowmeet.kr/profile/91.png")
                 String profileImageUrl
         ) {
 
