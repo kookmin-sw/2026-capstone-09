@@ -23,6 +23,7 @@ import kr.flowmeet.api.project.dto.response.GetProjectResponse;
 import kr.flowmeet.api.project.dto.response.ProjectSummaryResponse;
 import kr.flowmeet.api.project.dto.request.UpdateProjectRequest;
 import kr.flowmeet.auth.annotation.UserId;
+import kr.flowmeet.domain.common.vo.CursorSlice;
 import kr.flowmeet.domain.project.service.ProjectSortType;
 
 @RestController
@@ -47,7 +48,8 @@ public class ProjectController implements ProjectApi {
             @RequestParam(defaultValue = "LATEST") ProjectSortType sort,
             @RequestParam(required = false) Long cursorId,
             @RequestParam(required = false) String cursorValue,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "20") int size
+    ) {
         return CommonResponse.ok(projectFacade.getAllProjects(userId, search, sort, cursorId, cursorValue, size));
     }
 

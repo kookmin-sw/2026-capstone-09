@@ -1,5 +1,6 @@
 package kr.flowmeet.api.notification.controller;
 
+import kr.flowmeet.domain.common.vo.CursorSlice;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -27,7 +28,8 @@ public class NotificationController implements NotificationApi {
             @UserId Long userId,
             @RequestParam(required = false) Boolean isRead,
             @RequestParam(required = false) Long cursorId,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "20") int size
+    ) {
         return CommonResponse.ok(notificationFacade.getAllNotifications(userId, isRead, cursorId, size));
     }
 

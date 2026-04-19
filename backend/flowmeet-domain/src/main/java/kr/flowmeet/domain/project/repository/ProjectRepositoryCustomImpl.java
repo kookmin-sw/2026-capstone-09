@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
+import kr.flowmeet.domain.common.vo.CursorSlice;
 import kr.flowmeet.domain.project.entity.QProjectMember;
 import kr.flowmeet.domain.project.repository.projection.ProjectWithMemberCountProjection;
 import kr.flowmeet.domain.project.service.ProjectSortType;
@@ -26,9 +27,7 @@ public class ProjectRepositoryCustomImpl implements ProjectRepositoryCustom {
             final Long userId,
             final String search,
             final ProjectSortType sort,
-            final Long cursorId,
-            final String cursorValue,
-            final int size
+            final CursorSlice cursorSlice
     ) {
         return queryFactory
                 .select(Projections.constructor(
@@ -42,11 +41,11 @@ public class ProjectRepositoryCustomImpl implements ProjectRepositoryCustom {
                 .where(
                         memberFilter.userId.eq(userId),
                         nameContains(search),
-                        afterCursor(cursorId, cursorValue, sort)
+                        afterCursor(cursorSlice.cursorId(), cursorSlice.cursorValue(), sort)
                 )
                 .groupBy(project)
                 .orderBy(sort.toOrderSpecifier(), project.id.desc())
-                .limit(size + 1L)
+                .limit(cursorSlice.size() + 1L)
                 .fetch();
     }
 

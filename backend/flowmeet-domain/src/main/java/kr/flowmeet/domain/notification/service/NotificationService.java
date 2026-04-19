@@ -1,6 +1,7 @@
 package kr.flowmeet.domain.notification.service;
 
 import java.util.List;
+import kr.flowmeet.domain.common.vo.CursorSlice;
 import kr.flowmeet.domain.notification.entity.NotificationType;
 import kr.flowmeet.domain.notification.service.vo.NotificationCommand;
 import lombok.RequiredArgsConstructor;
@@ -29,10 +30,9 @@ public class NotificationService {
     public List<Notification> findAllByUserId(
             final Long userId,
             final Boolean isRead,
-            final Long cursorId,
-            final int size
+            final CursorSlice cursorSlice
     ) {
-        return notificationRepository.findAllByUserId(userId, isRead, cursorId, size);
+        return notificationRepository.findAllByUserId(userId, isRead, cursorSlice.cursorId(), cursorSlice.size());
     }
 
     public long countUnread(final Long userId) {

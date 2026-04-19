@@ -1,6 +1,7 @@
 package kr.flowmeet.api.notification.facade;
 
 import java.util.List;
+import kr.flowmeet.domain.common.vo.CursorSlice;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +31,11 @@ public class NotificationFacade {
             final Long cursorId,
             final int size
     ) {
-        List<Notification> notifications = notificationService.findAllByUserId(userId, isRead, cursorId, size);
+        List<Notification> notifications = notificationService.findAllByUserId(
+                userId,
+                isRead,
+                CursorSlice.of(cursorId, size)
+        );
 
         return CursorSliceResponse.of(
                 notifications,
