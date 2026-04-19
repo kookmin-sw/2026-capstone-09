@@ -45,11 +45,11 @@ export function NodeFlowView() {
 
   return (
     <div className="w-full h-full overflow-auto bg-surface-canvas p-6">
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-8 min-w-max">
         {/* 메인 노드 */}
         <div className="flex flex-col gap-4">
           <h2 className="text-body-1 font-semibold text-neutral-90">메인 노드</h2>
-          <div className="flex flex-wrap gap-4">
+          <div className="flex gap-4">
             {mainNodes.map((node) => (
               <MainNode key={node.nodeId} node={node} />
             ))}
@@ -69,7 +69,7 @@ export function NodeFlowView() {
         {/* 점선 코멘트 - Default */}
         <div className="flex flex-col gap-4">
           <h2 className="text-body-1 font-semibold text-neutral-90">점선 코멘트 (Default)</h2>
-          <div className="flex flex-wrap gap-4">
+          <div className="flex gap-4">
             {commentEdges.map((edge) => (
               <DashedComment key={edge.edgeId} edge={edge} isCreateMode={false} />
             ))}
@@ -79,7 +79,7 @@ export function NodeFlowView() {
         {/* 점선 코멘트 - Create */}
         <div className="flex flex-col gap-4">
           <h2 className="text-body-1 font-semibold text-neutral-90">점선 코멘트 (Create)</h2>
-          <div className="flex flex-wrap gap-4">
+          <div className="flex gap-4">
             <DashedComment isCreateMode={true} />
           </div>
         </div>
