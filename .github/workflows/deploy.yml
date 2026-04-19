@@ -12,29 +12,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: 코드 체크아웃
         uses: actions/checkout@v3
 
-      - name: Configure AWS credentials
+      - name: AWS CLI 설정
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
 
-      - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v1
-
-      - name: Build and push Docker image
+      - name: 패키지 설치
         run: |
           cd ai
-          docker build --platform linux/amd64 -t llm-summary .
-          docker tag llm-summary:latest 575078236077.dkr.ecr.ap-northeast-2.amazonaws.com/llm-summary:latest
-          docker push 575078236077.dkr.ecr.ap-northeast-2.amazonaws.com/llm-summary:latest
+          pip install -r requirements.txt -t ./package
+          cp -r app ./package/
 
-      - name: Update Lambda function
+      - name: zip 패키징
+        run: |
+          cd ai/package
+          zip -r ../function.zip .
+
+      - name: Lambda 배포
         run: |
           aws lambda update-function-code \
             --function-name llm_summary_func \
-            --image-uri 575078236077.dkr.ecr.ap-northeast-2.amazonaws.com/llm-summary:latest \
-            --region ap-northeast-
+            --zip-file fileb://ai/function.zip \
+            --region ap-northeast-2
