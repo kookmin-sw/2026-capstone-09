@@ -82,6 +82,7 @@ public record GetFlowchartResponse(
             Long edgeId,
             Long startNodeId,
             Long endNodeId,
+            EdgeCreatorItem createdBy,
             String comment
     ) {
 
@@ -90,8 +91,26 @@ public record GetFlowchartResponse(
                     edge.getId(),
                     edge.getStartNodeId(),
                     edge.getEndNodeId(),
+                    EdgeCreatorItem.from(edge.getCreatedBy()),
                     edge.getComment()
             );
+        }
+
+        public record EdgeCreatorItem(
+                Long userId,
+                String nickname,
+                String email,
+                String profileImageUrl
+        ) {
+
+            public static EdgeCreatorItem from(final User user) {
+                return new EdgeCreatorItem(
+                        user.getId(),
+                        user.getNickname(),
+                        user.getEmail(),
+                        user.getProfileImageUrl()
+                );
+            }
         }
     }
 }
