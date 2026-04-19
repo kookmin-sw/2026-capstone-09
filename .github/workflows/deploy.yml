@@ -72,7 +72,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "backend/docker-compose.yml,backend/docker/nginx/**"
+          source: "backend/docker-compose.yml,backend/docker/nginx/**,backend/docker/scripts/**"
           target: "/home/ubuntu"
           strip_components: 1
 
