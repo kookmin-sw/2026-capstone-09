@@ -1,18 +1,32 @@
 package kr.flowmeet.domain.project.service;
 
-import org.springframework.data.domain.Sort;
+import com.querydsl.core.types.OrderSpecifier;
+import kr.flowmeet.domain.project.entity.Project;
+import kr.flowmeet.domain.project.entity.QProject;
 
 public enum ProjectSortType {
-    LATEST(Sort.by(Sort.Direction.DESC, "updatedAt")),
-    NAME(Sort.by(Sort.Direction.ASC, "name"));
+    LATEST(QProject.project.updatedAt.desc()) {
+        @Override
+        public String extractValue(final Project project) {
+            return project.getUpdatedAt().toString();
+        }
+    },
+    NAME(QProject.project.name.asc()) {
+        @Override
+        public String extractValue(final Project project) {
+            return project.getName();
+        }
+    };
 
-    private final Sort sort;
+    private final OrderSpecifier<?> orderSpecifier;
 
-    ProjectSortType(final Sort sort) {
-        this.sort = sort;
+    ProjectSortType(final OrderSpecifier<?> orderSpecifier) {
+        this.orderSpecifier = orderSpecifier;
     }
 
-    public Sort toSort() {
-        return sort;
+    public OrderSpecifier<?> toOrderSpecifier() {
+        return orderSpecifier;
     }
+
+    public abstract String extractValue(Project project);
 }

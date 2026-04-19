@@ -11,4 +11,26 @@ dependencies {
     // Database
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'org.postgresql:postgresql'
+
+    // QueryDSL (OpenFeign fork — Jakarta-only)
+    implementation 'io.github.openfeign.querydsl:querydsl-jpa:7.1'
+    annotationProcessor 'io.github.openfeign.querydsl:querydsl-apt:7.1:jakarta'
+    annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
+    annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
+}
+
+def querydslSrcDir = layout.buildDirectory.dir('generated/sources/annotationProcessor/java/main')
+
+sourceSets {
+    main {
+        java {
+            srcDir querydslSrcDir
+        }
+    }
+}
+
+tasks.named('clean') {
+    doLast {
+        delete querydslSrcDir
+    }
 }

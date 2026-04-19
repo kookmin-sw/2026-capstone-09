@@ -21,4 +21,7 @@ public interface EdgeRepository extends JpaRepository<Edge, Long> {
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Edge e SET e.deletedAt = CURRENT_TIMESTAMP WHERE e.projectId = :projectId")
     int softDeleteAllByProjectId(@Param("projectId") Long projectId);
+
+    @Query("SELECT e FROM Edge e JOIN FETCH e.createdBy WHERE e.projectId = :projectId")
+    List<Edge> findAllWithCreatedBy(@Param("projectId") Long projectId);
 }

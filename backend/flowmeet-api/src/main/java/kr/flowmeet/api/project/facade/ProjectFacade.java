@@ -3,17 +3,17 @@ package kr.flowmeet.api.project.facade;
 import java.util.List;
 import kr.flowmeet.domain.project.service.ProjectPermissionValidator;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import kr.flowmeet.api.common.dto.PageResponse;
-import kr.flowmeet.api.file.ImageUploader;
+import kr.flowmeet.api.common.dto.CursorSliceResponse;
+import kr.flowmeet.api.file.facade.ImageUploader;
 import kr.flowmeet.api.project.dto.request.CreateProjectRequest;
 import kr.flowmeet.api.project.dto.response.CreateProjectResponse;
 import kr.flowmeet.api.project.dto.response.GetProjectResponse;
 import kr.flowmeet.api.project.dto.response.ProjectSummaryResponse;
 import kr.flowmeet.api.project.dto.request.UpdateProjectRequest;
+import kr.flowmeet.domain.common.vo.CursorSlice;
 import kr.flowmeet.domain.file.entity.FileDomainType;
 import kr.flowmeet.domain.project.entity.Project;
 import kr.flowmeet.domain.project.entity.ProjectMember;
@@ -46,12 +46,24 @@ public class ProjectFacade {
         return CreateProjectResponse.from(project);
     }
 
-    public PageResponse<ProjectSummaryResponse> getAllProjects(final Long userId, final String search,
-                                                               final ProjectSortType sort,
-                                                               final int page, final int size) {
-        Page<ProjectWithMemberCountProjection> results = projectService.findAllByUserId(userId, search, sort, page, size);
+    public CursorSliceResponse<ProjectSummaryResponse> getAllProjects(
+            final Long userId,
+            final String search,
+            final ProjectSortType sort,
+            final Long cursorId,
+            final String cursorValue,
+            final int size
+    ) {
+        List<ProjectWithMemberCountProjection> projects =
+                projectService.findAllByUserId(userId, search, sort, CursorSlice.of(cursorId, cursorValue, size));
 
-        return PageResponse.from(results).map(ProjectSummaryResponse::from);
+        return CursorSliceResponse.of(
+                projects,
+                size,
+                ProjectSummaryResponse::from,
+                item -> item.project().getId(),
+                item -> sort.extractValue(item.project())
+        );
     }
 
     public GetProjectResponse getProject(final Long userId, final Long projectId) {

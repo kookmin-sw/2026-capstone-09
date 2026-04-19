@@ -18,7 +18,7 @@ public class EdgeService {
     private final EdgeRepository edgeRepository;
 
     public List<Edge> findAllByProjectId(final Long projectId) {
-        return edgeRepository.findAllByProjectId(projectId);
+        return edgeRepository.findAllWithCreatedBy(projectId);
     }
 
     public Edge findByIdAndProjectId(final Long edgeId, final Long projectId) {

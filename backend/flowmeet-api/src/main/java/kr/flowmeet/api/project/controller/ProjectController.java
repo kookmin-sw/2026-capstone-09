@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 import kr.flowmeet.api.common.dto.CommonResponse;
-import kr.flowmeet.api.common.dto.PageResponse;
+import kr.flowmeet.api.common.dto.CursorSliceResponse;
 import kr.flowmeet.api.project.dto.request.CreateProjectRequest;
 import kr.flowmeet.api.project.facade.ProjectFacade;
 import kr.flowmeet.api.project.dto.response.CreateProjectResponse;
@@ -23,6 +23,7 @@ import kr.flowmeet.api.project.dto.response.GetProjectResponse;
 import kr.flowmeet.api.project.dto.response.ProjectSummaryResponse;
 import kr.flowmeet.api.project.dto.request.UpdateProjectRequest;
 import kr.flowmeet.auth.annotation.UserId;
+import kr.flowmeet.domain.common.vo.CursorSlice;
 import kr.flowmeet.domain.project.service.ProjectSortType;
 
 @RestController
@@ -41,13 +42,15 @@ public class ProjectController implements ProjectApi {
 
     @Override
     @GetMapping
-    public CommonResponse<PageResponse<ProjectSummaryResponse>> getAllProjects(
+    public CommonResponse<CursorSliceResponse<ProjectSummaryResponse>> getAllProjects(
             @UserId Long userId,
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "LATEST") ProjectSortType sort,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        return CommonResponse.ok(projectFacade.getAllProjects(userId, search, sort, page, size));
+            @RequestParam(required = false) Long cursorId,
+            @RequestParam(required = false) String cursorValue,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        return CommonResponse.ok(projectFacade.getAllProjects(userId, search, sort, cursorId, cursorValue, size));
     }
 
     @Override
@@ -66,8 +69,10 @@ public class ProjectController implements ProjectApi {
 
     @Override
     @PatchMapping(value = "/{projectId}/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public CommonResponse<?> updateProfileImage(@UserId Long userId, @PathVariable Long projectId,
-                                                @RequestPart MultipartFile profileImage) {
+    public CommonResponse<?> updateProfileImage(
+            @UserId Long userId,
+            @PathVariable Long projectId,
+            @RequestPart("profileImage") MultipartFile profileImage) {
         projectFacade.updateProfileImage(userId, projectId, profileImage);
         return CommonResponse.ok();
     }

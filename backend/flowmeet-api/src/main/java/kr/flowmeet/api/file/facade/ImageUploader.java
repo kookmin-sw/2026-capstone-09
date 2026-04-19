@@ -1,4 +1,4 @@
-package kr.flowmeet.api.file;
+package kr.flowmeet.api.file.facade;
 
 import java.io.IOException;
 import java.util.List;

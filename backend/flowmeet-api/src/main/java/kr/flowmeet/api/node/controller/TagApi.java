@@ -14,7 +14,7 @@ import kr.flowmeet.api.node.dto.response.GetAllTagsResponse;
 import kr.flowmeet.auth.annotation.UserId;
 import kr.flowmeet.domain.node.exception.TagErrorCode;
 
-@Tag(name = "Tag")
+@Tag(name = "태그")
 public interface TagApi {
 
     @Operation(summary = "태그 목록 조회", description = "프로젝트의 전체 태그 목록을 조회합니다.")

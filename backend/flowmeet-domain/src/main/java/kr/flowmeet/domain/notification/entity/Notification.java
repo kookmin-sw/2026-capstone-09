@@ -8,6 +8,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -21,7 +22,14 @@ import kr.flowmeet.domain.project.entity.Project;
 import kr.flowmeet.domain.user.entity.User;
 
 @Entity
-@Table(name = "notifications")
+@Table(
+        name = "notifications",
+        indexes = {
+                @Index(name = "idx_notifications_user_id", columnList = "user_id"),
+                @Index(name = "idx_notifications_project_id", columnList = "project_id"),
+                @Index(name = "idx_notifications_node_id", columnList = "node_id")
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Notification extends BaseCreatedTimeEntity {

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import kr.flowmeet.api.common.dto.CommonResponse;
-import kr.flowmeet.api.common.dto.PageResponse;
+import kr.flowmeet.api.common.dto.CursorSliceResponse;
 import kr.flowmeet.api.common.swagger.ApiErrorCode;
 import kr.flowmeet.api.project.dto.request.CreateProjectRequest;
 import kr.flowmeet.api.project.dto.response.CreateProjectResponse;
@@ -20,19 +20,21 @@ import kr.flowmeet.domain.file.exception.FileErrorCode;
 import kr.flowmeet.domain.project.exception.ProjectErrorCode;
 import kr.flowmeet.domain.project.service.ProjectSortType;
 
-@Tag(name = "Project")
+@Tag(name = "프로젝트")
 public interface ProjectApi {
 
     @Operation(summary = "프로젝트 생성")
     CommonResponse<CreateProjectResponse> createProject(@UserId Long userId,
                                                         @Valid @RequestBody CreateProjectRequest request);
 
-    @Operation(summary = "프로젝트 목록 조회", description = "검색어, 정렬(LATEST/NAME), 페이징을 지원합니다.")
-    CommonResponse<PageResponse<ProjectSummaryResponse>> getAllProjects(
+    @Operation(summary = "프로젝트 목록 조회",
+            description = "검색어, 정렬(LATEST/NAME), 커서 기반 슬라이싱을 지원합니다. 첫 요청은 cursorId/cursorValue 생략, 이후 응답의 nextCursorId/nextCursorValue를 그대로 전달합니다.")
+    CommonResponse<CursorSliceResponse<ProjectSummaryResponse>> getAllProjects(
             @UserId Long userId,
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "LATEST") ProjectSortType sort,
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) Long cursorId,
+            @RequestParam(required = false) String cursorValue,
             @RequestParam(defaultValue = "20") int size);
 
     @Operation(summary = "프로젝트 상세 조회")

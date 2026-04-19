@@ -9,15 +9,9 @@ import org.springframework.data.repository.query.Param;
 import kr.flowmeet.domain.project.entity.ProjectMember;
 import kr.flowmeet.domain.project.entity.ProjectMemberRole;
 
-public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Long> {
+public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Long>, ProjectMemberRepositoryCustom {
 
     List<ProjectMember> findAllByProjectId(Long projectId);
-
-    @Query("SELECT pm FROM ProjectMember pm " +
-            "JOIN FETCH pm.user u " +
-            "WHERE pm.projectId = :projectId " +
-            "ORDER BY CASE pm.role WHEN 'OWNER' THEN 0 WHEN 'MEMBER' THEN 1 WHEN 'VIEWER' THEN 2 END, u.nickname ASC")
-    List<ProjectMember> findAllByProjectIdOrderByRole(@Param("projectId") Long projectId);
 
     Optional<ProjectMember> findByIdAndProjectId(Long id, Long projectId);
 

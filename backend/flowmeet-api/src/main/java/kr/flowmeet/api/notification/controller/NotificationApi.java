@@ -5,21 +5,22 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import kr.flowmeet.api.common.dto.CommonResponse;
-import kr.flowmeet.api.common.dto.PageResponse;
+import kr.flowmeet.api.common.dto.CursorSliceResponse;
 import kr.flowmeet.api.common.swagger.ApiErrorCode;
 import kr.flowmeet.api.notification.dto.response.NotificationSummaryResponse;
 import kr.flowmeet.api.notification.dto.response.GetUnreadCountResponse;
 import kr.flowmeet.auth.annotation.UserId;
 import kr.flowmeet.domain.notification.exception.NotificationErrorCode;
 
-@Tag(name = "Notification")
+@Tag(name = "알림")
 public interface NotificationApi {
 
-    @Operation(summary = "알림 목록 조회", description = "isRead 필터와 페이징을 지원합니다.")
-    CommonResponse<PageResponse<NotificationSummaryResponse>> getAllNotifications(
+    @Operation(summary = "알림 목록 조회",
+            description = "isRead 필터와 커서 기반 슬라이싱을 지원합니다. 첫 요청은 cursorId 생략, 이후 응답의 nextCursorId를 그대로 전달합니다.")
+    CommonResponse<CursorSliceResponse<NotificationSummaryResponse>> getAllNotifications(
             @UserId Long userId,
             @RequestParam(required = false) Boolean isRead,
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) Long cursorId,
             @RequestParam(defaultValue = "20") int size);
 
     @Operation(summary = "알림 읽음 처리")

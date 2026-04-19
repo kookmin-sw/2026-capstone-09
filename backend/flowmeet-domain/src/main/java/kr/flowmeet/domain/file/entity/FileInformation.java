@@ -7,7 +7,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import kr.flowmeet.domain.common.BaseCreatedTimeEntity;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -15,7 +17,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "file_information")
+@Table(
+        name = "file_information",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_file_information_file_key", columnNames = "file_key")
+        },
+        indexes = {
+                @Index(name = "idx_file_information_domain_entity", columnList = "domain_type, entity_id")
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class FileInformation extends BaseCreatedTimeEntity {
@@ -25,7 +35,7 @@ public class FileInformation extends BaseCreatedTimeEntity {
     @Column(name = "file_id")
     private Long id;
 
-    @Column(name = "file_key", nullable = false, unique = true)
+    @Column(name = "file_key", nullable = false)
     private String fileKey;
 
     @Column(nullable = false)
