@@ -16,14 +16,16 @@ import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 import kr.flowmeet.api.common.dto.CommonResponse;
 import kr.flowmeet.api.common.dto.CursorSliceResponse;
+import kr.flowmeet.api.project.dto.request.AcceptProjectInvitationRequest;
 import kr.flowmeet.api.project.dto.request.CreateProjectRequest;
-import kr.flowmeet.api.project.facade.ProjectFacade;
+import kr.flowmeet.api.project.dto.request.InviteProjectMemberRequest;
+import kr.flowmeet.api.project.dto.request.UpdateProjectRequest;
+import kr.flowmeet.api.project.dto.response.AcceptProjectInvitationResponse;
 import kr.flowmeet.api.project.dto.response.CreateProjectResponse;
 import kr.flowmeet.api.project.dto.response.GetProjectResponse;
 import kr.flowmeet.api.project.dto.response.ProjectSummaryResponse;
-import kr.flowmeet.api.project.dto.request.UpdateProjectRequest;
+import kr.flowmeet.api.project.facade.ProjectFacade;
 import kr.flowmeet.auth.annotation.UserId;
-import kr.flowmeet.domain.common.vo.CursorSlice;
 import kr.flowmeet.domain.project.service.ProjectSortType;
 
 @RestController
@@ -82,5 +84,20 @@ public class ProjectController implements ProjectApi {
     public CommonResponse<?> deleteProject(@UserId Long userId, @PathVariable Long projectId) {
         projectFacade.deleteProject(userId, projectId);
         return CommonResponse.ok();
+    }
+
+    @Override
+    @PostMapping("/{projectId}/invite")
+    public CommonResponse<?> inviteMember(@UserId Long userId, @PathVariable Long projectId,
+                                          @Valid @RequestBody InviteProjectMemberRequest request) {
+        projectFacade.inviteMember(userId, projectId, request);
+        return CommonResponse.ok();
+    }
+
+    @Override
+    @PostMapping("/invitations/accept")
+    public CommonResponse<AcceptProjectInvitationResponse> acceptInvitation(@UserId Long userId,
+                                                                            @Valid @RequestBody AcceptProjectInvitationRequest request) {
+        return CommonResponse.ok(projectFacade.acceptInvitation(userId, request));
     }
 }

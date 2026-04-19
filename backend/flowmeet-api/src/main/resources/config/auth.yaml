@@ -1,7 +1,12 @@
 jwt:
   secret-key: ${JWT_SECRET_KEY}
   access-token-expiry: 1800000
+  invitation-token-expiry: 604800000
   issuer: flowmeet
+
+frontend:
+  base-url: ${FRONTEND_URL:http://localhost:3000}
+  invitation-path: /invitations
 
 cors:
   allowed-origins: http://localhost:3000, http://localhost:8080, https://api.flowmeet.kr, https://flowmeet.kr, https://www.flowmeet.kr, https://app.flowmeet.kr

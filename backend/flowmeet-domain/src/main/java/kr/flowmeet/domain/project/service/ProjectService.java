@@ -63,7 +63,7 @@ public class ProjectService {
     }
 
     @Transactional
-    public void invite(String email, Long projectId, User inviter) {
+    public void invite(final String email, final Long projectId, final User inviter, final String inviteLink) {
         Project project = findById(projectId);
 
         eventPublisher.publishEvent(
@@ -71,7 +71,8 @@ public class ProjectService {
                         project.getId(),
                         project.getName(),
                         email,
-                        inviter.getNickname()
+                        inviter.getNickname(),
+                        inviteLink
                 )
         );
     }

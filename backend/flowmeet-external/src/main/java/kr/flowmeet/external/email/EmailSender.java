@@ -1,9 +1,8 @@
 package kr.flowmeet.external.email;
 
-import org.springframework.stereotype.Component;
+import java.util.Map;
 
-@Component
 public interface EmailSender {
 
-    void send(String toEmail, String title, String content);
+    void send(String toEmail, String title, String templateName, Map<String, Object> variables);
 }

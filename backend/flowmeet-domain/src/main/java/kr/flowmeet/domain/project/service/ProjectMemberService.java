@@ -2,6 +2,7 @@ package kr.flowmeet.domain.project.service;
 
 import java.util.List;
 import kr.flowmeet.domain.project.event.ProjectMemberJoinedEvent;
+import kr.flowmeet.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -108,5 +109,14 @@ public class ProjectMemberService {
     @Transactional
     public void deleteAllByProjectId(final Long projectId) {
         projectMemberRepository.softDeleteAllByProjectId(projectId);
+    }
+
+    @Transactional
+    public void acceptInvitation(User user, Long projectId, String inviteeEmail) {
+        if (!user.getEmail().equals(inviteeEmail)) {
+            throw new BusinessException(ProjectErrorCode.INVITATION_EMAIL_MISMATCH);
+        }
+
+        create(user.getId(), projectId, ProjectMemberRole.VIEWER);
     }
 }
