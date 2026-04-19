@@ -38,3 +38,4 @@ jobs:
             --function-name llm_summary_func \
             --image-uri 575078236077.dkr.ecr.ap-northeast-2.amazonaws.com/llm-summary:latest \
             --region ap-northeast-2
+            
