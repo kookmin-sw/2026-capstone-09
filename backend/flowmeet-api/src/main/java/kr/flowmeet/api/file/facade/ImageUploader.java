@@ -11,6 +11,7 @@ import kr.flowmeet.domain.file.entity.FileDomainType;
 import kr.flowmeet.domain.file.entity.FileInformation;
 import kr.flowmeet.domain.file.exception.FileErrorCode;
 import kr.flowmeet.domain.file.service.FileInformationService;
+import kr.flowmeet.domain.file.service.vo.CreateFileInformationCommand;
 import kr.flowmeet.external.file.FileStorageService;
 
 @Component
@@ -35,18 +36,17 @@ public class ImageUploader {
             String imageUrl = fileStorageService.upload(fileKey, file.getInputStream(),
                     file.getContentType(), file.getSize());
 
-            fileInformationService.create(
-                    FileInformation.builder()
-                            .fileKey(fileKey)
-                            .name(file.getOriginalFilename())
-                            .extension(extension)
-                            .size(file.getSize())
-                            .contentType(file.getContentType())
-                            .domainType(domainType)
-                            .entityId(entityId)
-                            .uploadUrl(imageUrl)
-                            .build()
+            FileInformation fileInformation = fileInformationService.create(
+                    imageUrl,
+                    CreateFileInformationCommand.of(
+                            fileKey,
+                            file.getOriginalFilename(),
+                            extension,
+                            file.getSize(),
+                            file.getContentType()
+                    )
             );
+            fileInformationService.attach(fileInformation.getFileKey(), domainType, entityId);
 
             return imageUrl;
         } catch (IOException e) {

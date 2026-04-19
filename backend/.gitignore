@@ -39,6 +39,10 @@ out/
 ### Environment ###
 *.env
 .env.*
+!.env.example
 **/application-local.yaml
+
+### Docker / certbot ###
+docker/certbot/
 
 docs

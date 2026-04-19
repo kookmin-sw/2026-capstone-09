@@ -24,15 +24,12 @@ import kr.flowmeet.domain.project.service.ProjectMemberService;
 import kr.flowmeet.domain.project.service.ProjectService;
 import kr.flowmeet.domain.project.service.ProjectSortType;
 import kr.flowmeet.domain.project.service.ProjectUrlService;
-import kr.flowmeet.domain.user.entity.User;
-import kr.flowmeet.domain.user.service.UserService;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ProjectFacade {
 
-    private final UserService userService;
     private final ProjectService projectService;
     private final ProjectEraser projectEraser;
     private final ProjectMemberService projectMemberService;
@@ -42,10 +39,9 @@ public class ProjectFacade {
 
     @Transactional
     public CreateProjectResponse createProject(final Long userId, final CreateProjectRequest request) {
-        User user = userService.findById(userId);
         Project project = projectService.create(request.name());
 
-        projectMemberService.create(user.getId(), project.getId(), ProjectMemberRole.OWNER);
+        projectMemberService.create(userId, project.getId(), ProjectMemberRole.OWNER);
 
         return CreateProjectResponse.from(project);
     }
@@ -71,22 +67,21 @@ public class ProjectFacade {
     }
 
     public GetProjectResponse getProject(final Long userId, final Long projectId) {
+        projectPermissionValidator.validate(projectId, userId);
+        ProjectMemberRole myRole = projectMemberService.findMemberRole(projectId, userId);
+
         Project project = projectService.findById(projectId);
+        int memberCount = projectMemberService.countByProjectId(projectId);
+        List<ProjectUrl> urls = projectUrlService.findAllByProjectId(projectId);
 
-        ProjectMember requesterMember = projectMemberService.findByProjectIdAndUserId(project.getId(), userId);
-
-        int memberCount = projectMemberService.countByProjectId(project.getId());
-        List<ProjectUrl> urls = projectUrlService.findAllByProjectId(project.getId());
-
-        return GetProjectResponse.of(project, requesterMember.getRole(), memberCount, urls);
+        return GetProjectResponse.of(project, myRole, memberCount, urls);
     }
 
     @Transactional
     public void updateProject(final Long userId, final Long projectId, final UpdateProjectRequest request) {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
-        Project project = projectService.findById(projectId);
-        project.updateName(request.name());
+        projectService.updateName(projectId, request.name());
     }
 
     @Transactional
@@ -101,9 +96,8 @@ public class ProjectFacade {
     public void updateProfileImage(final Long userId, final Long projectId, final MultipartFile file) {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.OWNER);
 
-        Project project = projectService.findById(projectId);
         String imageUrl = imageUploader.upload(file, "projects", FileDomainType.PROJECT_IMAGE, projectId);
-        project.updateProfileImageUrl(imageUrl);
+        projectService.updateProfileImageUrl(projectId, imageUrl);
     }
 
 }

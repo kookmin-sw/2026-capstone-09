@@ -2,6 +2,7 @@ package kr.flowmeet.api.file.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
+import kr.flowmeet.domain.file.service.vo.CreateFileInformationCommand;
 
 public record ConfirmFileUploadRequest(
         @NotBlank(message = "파일 키는 필수로 입력해 주세요.")
@@ -15,4 +16,8 @@ public record ConfirmFileUploadRequest(
         @NotBlank(message = "콘텐츠 타입은 필수로 입력해 주세요.")
         String contentType
 ) {
+
+    public CreateFileInformationCommand toCommand() {
+        return CreateFileInformationCommand.of(fileKey, fileName, extension, fileSize, contentType);
+    }
 }

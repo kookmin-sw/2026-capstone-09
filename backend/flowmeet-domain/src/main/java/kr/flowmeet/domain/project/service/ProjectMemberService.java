@@ -26,6 +26,10 @@ public class ProjectMemberService {
                 .orElseThrow(() -> new BusinessException(ProjectErrorCode.MEMBER_NOT_FOUND));
     }
 
+    public ProjectMemberRole findMemberRole(final Long projectId, final Long userId) {
+        return findByProjectIdAndUserId(projectId, userId).getRole();
+    }
+
     public ProjectMember findByIdAndProjectId(final Long memberId, final Long projectId) {
         return projectMemberRepository.findByIdAndProjectId(memberId, projectId)
                 .orElseThrow(() -> new BusinessException(ProjectErrorCode.MEMBER_NOT_FOUND));
@@ -66,8 +70,39 @@ public class ProjectMemberService {
     }
 
     @Transactional
+    public void updateRole(final Long projectId, final Long memberId, final ProjectMemberRole newRole) {
+        ProjectMember target = findByIdAndProjectId(memberId, projectId);
+        validateNotOwnerRoleChange(target, newRole);
+        target.updateRole(newRole);
+    }
+
+    @Transactional
+    public void deleteByProjectIdAndMemberId(final Long projectId, final Long memberId) {
+        ProjectMember target = findByIdAndProjectId(memberId, projectId);
+        if (target.isOwner()) {
+            throw new BusinessException(ProjectErrorCode.MEMBER_CANNOT_DELETE_OWNER);
+        }
+        projectMemberRepository.delete(target);
+    }
+
+    @Transactional
+    public void leave(final Long projectId, final Long userId) {
+        ProjectMember member = findByProjectIdAndUserId(projectId, userId);
+        if (member.isOwner()) {
+            throw new BusinessException(ProjectErrorCode.PROJECT_OWNER_CANNOT_LEAVE);
+        }
+        projectMemberRepository.delete(member);
+    }
+
+    @Transactional
     public void delete(final ProjectMember projectMember) {
         projectMemberRepository.delete(projectMember);
+    }
+
+    private void validateNotOwnerRoleChange(final ProjectMember target, final ProjectMemberRole newRole) {
+        if (target.isOwner() || newRole == ProjectMemberRole.OWNER) {
+            throw new BusinessException(ProjectErrorCode.MEMBER_CANNOT_CHANGE_OWNER);
+        }
     }
 
     @Transactional

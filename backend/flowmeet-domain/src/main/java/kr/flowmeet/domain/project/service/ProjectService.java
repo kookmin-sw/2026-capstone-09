@@ -46,6 +46,18 @@ public class ProjectService {
     }
 
     @Transactional
+    public void updateName(final Long projectId, final String name) {
+        Project project = findById(projectId);
+        project.updateName(name);
+    }
+
+    @Transactional
+    public void updateProfileImageUrl(final Long projectId, final String imageUrl) {
+        Project project = findById(projectId);
+        project.updateProfileImageUrl(imageUrl);
+    }
+
+    @Transactional
     public void delete(final Project project) {
         projectRepository.delete(project);
     }

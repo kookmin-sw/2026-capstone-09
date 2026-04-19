@@ -10,7 +10,6 @@ import kr.flowmeet.api.file.dto.request.ConfirmFileUploadRequest;
 import kr.flowmeet.api.file.dto.request.CreatePresignedUrlRequest;
 import kr.flowmeet.api.file.dto.response.CreatePresignedUrlResponse;
 import kr.flowmeet.api.file.dto.response.FileInformationResponse;
-import kr.flowmeet.domain.file.entity.FileDomainType;
 import kr.flowmeet.domain.file.entity.FileInformation;
 import kr.flowmeet.domain.file.exception.FileErrorCode;
 import kr.flowmeet.domain.file.service.FileInformationService;
@@ -43,15 +42,8 @@ public class FileFacade {
         }
 
         FileInformation fileInformation = fileInformationService.create(
-                FileInformation.builder()
-                        .fileKey(request.fileKey())
-                        .name(request.fileName())
-                        .extension(request.extension())
-                        .size(request.fileSize())
-                        .contentType(request.contentType())
-                        .domainType(FileDomainType.TEMP)
-                        .uploadUrl(fileStorageService.getPublicUrl(request.fileKey()))
-                        .build()
+                fileStorageService.getPublicUrl(request.fileKey()),
+                request.toCommand()
         );
 
         return FileInformationResponse.from(fileInformation);

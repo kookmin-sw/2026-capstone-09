@@ -31,7 +31,7 @@ public interface ProjectMemberApi {
                                        @Valid @RequestBody UpdateProjectMemberRoleRequest request);
 
     @Operation(summary = "멤버 삭제", description = "OWNER만 삭제할 수 있습니다.")
-    @ApiErrorCode(code = ProjectErrorCode.class, names = {"MEMBER_NOT_FOUND", "MEMBER_DELETE_FORBIDDEN", "MEMBER_CANNOT_DELETE_OWNER"})
+    @ApiErrorCode(code = ProjectErrorCode.class, names = {"MEMBER_NOT_FOUND", "PROJECT_ACCESS_DENIED", "MEMBER_CANNOT_DELETE_OWNER"})
     CommonResponse<?> deleteMember(@UserId Long userId, @PathVariable Long projectId,
                                    @PathVariable Long memberId);
 
