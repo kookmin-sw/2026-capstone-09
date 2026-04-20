@@ -37,6 +37,7 @@ import kr.flowmeet.domain.node.service.NodeAssigneeService;
 import kr.flowmeet.domain.node.service.NodeService;
 import kr.flowmeet.domain.node.service.NodeTagService;
 import kr.flowmeet.domain.project.service.ProjectMemberService;
+import kr.flowmeet.domain.project.service.ProjectService;
 import kr.flowmeet.domain.user.entity.User;
 import kr.flowmeet.domain.user.service.UserService;
 
@@ -50,6 +51,7 @@ public class NodeFacade {
     private final NodeTagService nodeTagService;
     private final NodeAssigneeService nodeAssigneeService;
     private final MeetingService meetingService;
+    private final ProjectService projectService;
     private final ProjectPermissionValidator projectPermissionValidator;
     private final NodeValidator nodeValidator;
 
@@ -86,11 +88,16 @@ public class NodeFacade {
     public void createNode(final Long userId, final Long projectId, final CreateNodeRequest request) {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
+        String number;
+
         if (request.parentId() != null) {
             nodeValidator.validateIsIn(request.parentId(), projectId);
+            number = nodeService.issueChildNumber(request.parentId(), projectId);
+        } else {
+            number = String.valueOf(projectService.issueRootNodeSeq(projectId));
         }
 
-        nodeService.create(projectId, request.toCommand());
+        nodeService.create(projectId, number, request.toCommand());
     }
 
     @Transactional

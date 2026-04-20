@@ -69,7 +69,14 @@ public class NodeService {
     }
 
     @Transactional
-    public void create(final Long projectId, final CreateNodeCommand command) {
+    public String issueChildNumber(final Long parentId, final Long projectId) {
+        Node parent = nodeRepository.findByIdAndProjectIdWithLock(parentId, projectId)
+                .orElseThrow(() -> new BusinessException(NodeErrorCode.NODE_NOT_FOUND));
+        return parent.getNumber() + "." + parent.issueChildSeq();
+    }
+
+    @Transactional
+    public void create(final Long projectId, final String number, final CreateNodeCommand command) {
 
         Long parentId = command.parentId();
         int sortOrder = parentId != null ? countChildNodes(parentId)
@@ -78,6 +85,7 @@ public class NodeService {
         Node node = Node.builder()
                 .projectId(projectId)
                 .parentId(parentId)
+                .number(number)
                 .title(command.title())
                 .description(command.description())
                 .status(NodeStatus.WAITING)
