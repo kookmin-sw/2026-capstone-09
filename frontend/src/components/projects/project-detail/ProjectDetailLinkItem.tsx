@@ -19,7 +19,12 @@ export const ProjectDetailLinkItem = ({
       onContextMenu={onContextMenu}
       className="hover:bg-fill-normal flex items-center gap-2 rounded-md px-2 py-1 transition-colors"
     >
-      <img src={faviconUrl} alt={`${label} favicon`} className="h-5 w-5 shrink-0" />
+      <img
+        src={faviconUrl}
+        alt={`${label} favicon`}
+        draggable={false}
+        className="pointer-events-none h-5 w-5 shrink-0 select-none"
+      />
       <span className="text-caption-1 text-label-neutral font-semibold">{label}</span>
     </a>
   );

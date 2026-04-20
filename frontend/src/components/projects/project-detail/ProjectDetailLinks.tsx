@@ -7,6 +7,7 @@ import { useState } from 'react';
 
 import { useDialog } from '@/components/commons/custom-dialog/DialogContext';
 import { CustomMenuItem } from '@/components/commons/custom-menu/CustomMemuItem';
+import { toastStore } from '@/components/commons/custom-toast/toastStore';
 import { usePositionedToast } from '@/components/commons/custom-toast/usePositionedToast';
 import { ProjectDetailLinkItem } from '@/components/projects/project-detail/ProjectDetailLinkItem';
 import { EXAMPLE_PROJECT_DETAIL_LINKS } from '@/constants/exampleConstant';
@@ -55,10 +56,36 @@ export const ProjectDetailLinks = () => {
   };
 
   const removeLink = (id: string) => {
-    const target = links.find((item) => item.id === id);
+    const targetIndex = links.findIndex((item) => item.id === id);
+    if (targetIndex < 0) return;
+    const target = links[targetIndex];
     setLinks((prev) => prev.filter((item) => item.id !== id));
+
+    const toastId = `link-delete-${target.id}-${Date.now()}`;
+    const handleUndo = () => {
+      setLinks((prev) => {
+        if (prev.some((item) => item.id === target.id)) return prev;
+        const next = [...prev];
+        next.splice(Math.min(targetIndex, next.length), 0, target);
+        return next;
+      });
+      toastStore.startClose(toastId);
+    };
+
     showToast({
-      content: target ? `'${target.label}' 링크를 삭제했어요` : '링크를 삭제했어요',
+      id: toastId,
+      content: (
+        <div className="flex min-w-75 items-center justify-between gap-4">
+          <span>{`'${target.label}' 링크를 삭제했어요`}</span>
+          <button
+            type="button"
+            onClick={handleUndo}
+            className="text-primary-40 hover:text-primary-50 shrink-0 border-none bg-transparent p-0 font-semibold"
+          >
+            취소하기
+          </button>
+        </div>
+      ),
       variant: 'normal',
       placement: 'bottom-left',
       duration: 'short',

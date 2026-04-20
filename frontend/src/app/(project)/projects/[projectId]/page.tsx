@@ -66,6 +66,12 @@ export default function ProjectDetailPage() {
           onConfirm={() => {
             closeDialog();
             setNode(null);
+            showToast({
+              content: '노드를 삭제했어요',
+              variant: 'normal',
+              placement: 'top-center',
+              duration: 'short',
+            });
           }}
           onClose={closeDialog}
         />
@@ -111,7 +117,7 @@ export default function ProjectDetailPage() {
             showToast({
               content: '회의를 생성했어요',
               variant: 'normal',
-              placement: 'bottom-left',
+              placement: 'top-center',
               duration: 'short',
             });
           }}

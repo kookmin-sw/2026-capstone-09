@@ -15,6 +15,20 @@ const textFieldPrimaryFocusSx = {
   },
 } as const;
 
+// 입력값이 확인용 이름과 다를 때: negative 토큰으로 테두리·캐럿을 바꿔 즉시 에러 피드백.
+const textFieldNegativeSx = {
+  '[data-role="text-field-wrapper"]': {
+    boxShadow: 'inset 0 0 0 1px var(--color-status-negative) !important',
+  },
+  '&:has(input:focus) [data-role="text-field-wrapper"]': {
+    boxShadow:
+      'inset 0 0 0 2px color-mix(in srgb, var(--color-status-negative) 43%, transparent) !important',
+  },
+  '[data-role="text-field-wrapper"] input': {
+    caretColor: 'var(--color-status-negative)',
+  },
+} as const;
+
 interface NodeDeleteConfirmContentProps {
   nodeName: string;
   onConfirm: () => void;
@@ -27,7 +41,9 @@ export const NodeDeleteConfirmContent = ({
   onClose,
 }: NodeDeleteConfirmContentProps) => {
   const [nameInput, setNameInput] = useState('');
-  const canDelete = nameInput.trim() === nodeName.trim() && nodeName.trim().length > 0;
+  const trimmedInput = nameInput.trim();
+  const canDelete = trimmedInput === nodeName.trim() && nodeName.trim().length > 0;
+  const isInvalid = trimmedInput.length > 0 && !canDelete;
 
   return (
     <div className="flex w-90 flex-col gap-4 pb-2">
@@ -54,7 +70,7 @@ export const NodeDeleteConfirmContent = ({
         onChange={(event) => setNameInput(event.target.value)}
         placeholder={nodeName}
         width="100%"
-        sx={textFieldPrimaryFocusSx}
+        sx={isInvalid ? textFieldNegativeSx : textFieldPrimaryFocusSx}
       />
       <Button
         variant="solid"

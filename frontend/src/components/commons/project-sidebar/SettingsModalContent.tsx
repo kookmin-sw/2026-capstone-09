@@ -47,6 +47,20 @@ const textFieldPrimaryFocusSx = {
   },
 } as const;
 
+// 입력값이 확인용 이름과 다를 때: negative 토큰으로 테두리·캐럿을 바꿔 즉시 에러 피드백.
+const textFieldNegativeSx = {
+  '[data-role="text-field-wrapper"]': {
+    boxShadow: 'inset 0 0 0 1px var(--color-status-negative) !important',
+  },
+  '&:has(input:focus) [data-role="text-field-wrapper"]': {
+    boxShadow:
+      'inset 0 0 0 2px color-mix(in srgb, var(--color-status-negative) 43%, transparent) !important',
+  },
+  '[data-role="text-field-wrapper"] input': {
+    caretColor: 'var(--color-status-negative)',
+  },
+} as const;
+
 type SettingsTab = 'project' | 'members' | 'notifications';
 
 interface TabItem {
@@ -125,7 +139,9 @@ const ProjectDeleteConfirmContent = ({
   onClose,
 }: ProjectDeleteConfirmContentProps) => {
   const [nameInput, setNameInput] = useState('');
-  const canDelete = nameInput.trim() === projectName.trim() && projectName.trim().length > 0;
+  const trimmedInput = nameInput.trim();
+  const canDelete = trimmedInput === projectName.trim() && projectName.trim().length > 0;
+  const isInvalid = trimmedInput.length > 0 && !canDelete;
 
   return (
     <div className="flex w-90 flex-col gap-4 pb-2">
@@ -152,7 +168,7 @@ const ProjectDeleteConfirmContent = ({
         onChange={(event) => setNameInput(event.target.value)}
         placeholder={projectName}
         width="100%"
-        sx={textFieldPrimaryFocusSx}
+        sx={isInvalid ? textFieldNegativeSx : textFieldPrimaryFocusSx}
       />
       <Button
         variant="solid"
@@ -290,9 +306,7 @@ const ProjectSettingsPanel = () => {
           size="small"
           color="assistive"
           onClick={handleDeleteProjectClick}
-          leadingContent={
-            <IconTrash className="text-status-negative h-4 w-4" aria-hidden="true" />
-          }
+          leadingContent={<IconTrash className="text-status-negative h-4 w-4" aria-hidden="true" />}
           sx={{
             color: 'var(--color-status-negative) !important',
             '&:hover, &:focus-visible, &:active': {
@@ -445,12 +459,9 @@ const MembersSettingsPanel = () => {
       {/* 멤버 목록 */}
       <div className="flex min-h-0 flex-1 flex-col gap-2">
         <span className="text-label-1 text-label-neutral font-normal">멤버 목록</span>
-        <ul className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto [scrollbar-color:transparent_transparent] [scrollbar-gutter:stable] [scrollbar-width:thin] hover:[scrollbar-color:color-mix(in_srgb,var(--color-label-alternative)_30%,transparent)_transparent] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-transparent [&::-webkit-scrollbar-thumb]:transition-colors [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar]:w-1.5 hover:[&::-webkit-scrollbar-thumb]:bg-label-alternative/30 hover:[&::-webkit-scrollbar-thumb:hover]:bg-label-alternative/50">
+        <ul className="hover:[&::-webkit-scrollbar-thumb]:bg-label-alternative/30 hover:[&::-webkit-scrollbar-thumb:hover]:bg-label-alternative/50 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto [scrollbar-color:transparent_transparent] [scrollbar-gutter:stable] [scrollbar-width:thin] hover:[scrollbar-color:color-mix(in_srgb,var(--color-label-alternative)_30%,transparent)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-transparent [&::-webkit-scrollbar-thumb]:transition-colors [&::-webkit-scrollbar-track]:bg-transparent">
           {members.map((member) => (
-            <li
-              key={member.id}
-              className="flex items-center justify-between gap-4 rounded-md py-2"
-            >
+            <li key={member.id} className="flex items-center justify-between gap-4 rounded-md py-2">
               <div className="flex min-w-0 items-center gap-1.5">
                 <Avatar variant="person" size="medium" alt={member.name} />
                 <div className="flex min-w-0 flex-col gap-0.5">
@@ -556,11 +567,7 @@ const NotificationsSettingsPanel = () => {
           checked={meetingEnabled}
           onCheckedChange={setMeetingEnabled}
         />
-        <NotificationRow
-          label="노드 알림"
-          checked={nodeEnabled}
-          onCheckedChange={setNodeEnabled}
-        />
+        <NotificationRow label="노드 알림" checked={nodeEnabled} onCheckedChange={setNodeEnabled} />
       </div>
 
       <div aria-hidden="true" className="bg-line-normal-normal h-px w-full" />
@@ -578,12 +585,7 @@ const NotificationsSettingsPanel = () => {
             <span className="text-caption-1 text-label-normal">데스크톱</span>
           </label>
           <label className="flex items-center gap-2 py-3">
-            <Checkbox
-              size="small"
-              checked={emailEnabled}
-              onCheckedChange={setEmailEnabled}
-              tight
-            />
+            <Checkbox size="small" checked={emailEnabled} onCheckedChange={setEmailEnabled} tight />
             <span className="text-caption-1 text-label-normal">이메일</span>
           </label>
         </div>
