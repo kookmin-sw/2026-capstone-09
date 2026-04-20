@@ -4,12 +4,6 @@ import { Button, TextField } from '@wanteddev/wds';
 import { IconClose } from '@wanteddev/wds-icon';
 import { useState } from 'react';
 
-interface NodeDeleteConfirmContentProps {
-  nodeName: string;
-  onConfirm: () => void;
-  onClose: () => void;
-}
-
 // WDS TextField 포커스 테두리·캐럿 색을 FlowMeet Primary 토큰으로 스코프드 오버라이드
 const textFieldPrimaryFocusSx = {
   '&:has(input:focus) [data-role="text-field-wrapper"]': {
@@ -20,6 +14,12 @@ const textFieldPrimaryFocusSx = {
     caretColor: 'var(--color-primary-40)',
   },
 } as const;
+
+interface NodeDeleteConfirmContentProps {
+  nodeName: string;
+  onConfirm: () => void;
+  onClose: () => void;
+}
 
 export const NodeDeleteConfirmContent = ({
   nodeName,

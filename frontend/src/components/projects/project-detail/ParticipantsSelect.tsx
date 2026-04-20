@@ -221,19 +221,27 @@ export const ParticipantsSelect = ({
                 disableInteraction
                 leadingContent={<Avatar variant="person" size="xsmall" alt={item.name} />}
                 trailingContent={
-                  <button
-                    type="button"
+                  <span
+                    role="button"
+                    tabIndex={0}
                     onClick={(event) => {
                       event.preventDefault();
                       event.stopPropagation();
                       removeParticipant(item.id);
                     }}
                     onMouseDown={(event) => event.stopPropagation()}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        removeParticipant(item.id);
+                      }
+                    }}
                     aria-label={`${item.name} 제거`}
-                    className="text-label-alternative hover:text-label-neutral relative z-10 flex h-4 w-4 cursor-pointer items-center justify-center border-none bg-transparent p-0"
+                    className="text-label-alternative hover:text-label-neutral relative z-10 flex h-4 w-4 cursor-pointer items-center justify-center"
                   >
                     <IconClose className="h-4 w-4" aria-hidden="true" />
-                  </button>
+                  </span>
                 }
               >
                 <span className="text-caption-1 text-label-alternative font-medium">

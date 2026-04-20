@@ -3,6 +3,17 @@
 import { TextButton, TextField } from '@wanteddev/wds';
 import { useState } from 'react';
 
+// WDS TextField 포커스 테두리·캐럿 색을 FlowMeet Primary 토큰으로 스코프드 오버라이드
+const textFieldPrimaryFocusSx = {
+  '&:has(input:focus) [data-role="text-field-wrapper"]': {
+    boxShadow:
+      'inset 0 0 0 2px color-mix(in srgb, var(--color-primary-40) 43%, transparent) !important',
+  },
+  '[data-role="text-field-wrapper"] input': {
+    caretColor: 'var(--color-primary-40)',
+  },
+} as const;
+
 export interface LinkEditPayload {
   id: string;
   label: string;
@@ -18,17 +29,6 @@ interface LinkEditDialogContentProps {
   onDelete?: (id: string) => void;
   onClose: () => void;
 }
-
-// WDS TextField 포커스 테두리·캐럿 색을 FlowMeet Primary 토큰으로 스코프드 오버라이드
-const textFieldPrimaryFocusSx = {
-  '&:has(input:focus) [data-role="text-field-wrapper"]': {
-    boxShadow:
-      'inset 0 0 0 2px color-mix(in srgb, var(--color-primary-40) 43%, transparent) !important',
-  },
-  '[data-role="text-field-wrapper"] input': {
-    caretColor: 'var(--color-primary-40)',
-  },
-} as const;
 
 export const LinkEditDialogContent = ({
   mode = 'edit',

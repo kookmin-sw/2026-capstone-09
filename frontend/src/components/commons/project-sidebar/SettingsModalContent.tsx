@@ -187,38 +187,11 @@ const ProjectDeleteConfirmContent = ({
 // =============================================================
 // 프로젝트 탭
 // =============================================================
-interface ProjectSettingsPanelProps {
-  projectImageUrl?: string;
-  onProjectImageChange?: (file: File) => void;
-  onDeleteProjectClick?: () => void;
-}
-
-const ProjectSettingsPanel = ({
-  projectImageUrl,
-  onProjectImageChange,
-  onDeleteProjectClick,
-}: ProjectSettingsPanelProps) => {
+const ProjectSettingsPanel = () => {
   const { openDialog, closeDialog } = useDialog();
   const [projectName, setProjectName] = useState<string>(EXAMPLE_PROJECT_SETTINGS.projectName);
-  const [projectPreviewUrl, setProjectPreviewUrl] = useState<string | undefined>(projectImageUrl);
+  const [projectPreviewUrl, setProjectPreviewUrl] = useState<string | undefined>(undefined);
   const objectUrlRef = useRef<string | null>(null);
-
-  const handleDeleteProjectClick = () => {
-    openDialog({
-      closeOnBackdrop: true,
-      closeOnEsc: true,
-      content: (
-        <ProjectDeleteConfirmContent
-          projectName={projectName}
-          onConfirm={() => {
-            closeDialog();
-            onDeleteProjectClick?.();
-          }}
-          onClose={closeDialog}
-        />
-      ),
-    });
-  };
 
   useEffect(() => {
     return () => {
@@ -227,6 +200,20 @@ const ProjectSettingsPanel = ({
       }
     };
   }, []);
+
+  const handleDeleteProjectClick = () => {
+    openDialog({
+      closeOnBackdrop: true,
+      closeOnEsc: true,
+      content: (
+        <ProjectDeleteConfirmContent
+          projectName={projectName}
+          onConfirm={closeDialog}
+          onClose={closeDialog}
+        />
+      ),
+    });
+  };
 
   const handleProjectImageChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -237,7 +224,6 @@ const ProjectSettingsPanel = ({
     const url = URL.createObjectURL(file);
     objectUrlRef.current = url;
     setProjectPreviewUrl(url);
-    onProjectImageChange?.(file);
     event.target.value = '';
   };
 
@@ -331,22 +317,12 @@ interface MemberRow {
   role: string;
 }
 
-interface MembersSettingsPanelProps {
-  onMemberRoleChangeClick?: (memberId: string) => void;
-  onMemberRemoveClick?: (memberId: string) => void;
-  onInviteSendClick?: (emails: readonly string[]) => void;
-}
-
 const ROLE_LABEL_MAP: Record<string, string> = {
   admin: '관리자',
   member: '멤버',
 };
 
-const MembersSettingsPanel = ({
-  onMemberRoleChangeClick,
-  onMemberRemoveClick,
-  onInviteSendClick,
-}: MembersSettingsPanelProps) => {
+const MembersSettingsPanel = () => {
   const { openDialog, closeDialog } = useDialog();
   const [inviteInput, setInviteInput] = useState('');
   const [invitedEmails, setInvitedEmails] = useState<readonly string[]>([
@@ -361,7 +337,6 @@ const MembersSettingsPanel = ({
     setMembers((prev) =>
       prev.map((member) => (member.id === memberId ? { ...member, role: nextRole } : member)),
     );
-    onMemberRoleChangeClick?.(memberId);
   };
 
   const handleMemberDelete = (member: MemberRow) => {
@@ -378,7 +353,6 @@ const MembersSettingsPanel = ({
             onClick: () => {
               closeDialog();
               setMembers((prev) => prev.filter((item) => item.id !== member.id));
-              onMemberRemoveClick?.(member.id);
             },
           }}
           rightButton={{
@@ -396,10 +370,8 @@ const MembersSettingsPanel = ({
   const handleInviteSend = () => {
     const trimmed = inviteInput.trim();
     if (!trimmed) return;
-    const next = [...invitedEmails, trimmed];
-    setInvitedEmails(next);
+    setInvitedEmails((prev) => [...prev, trimmed]);
     setInviteInput('');
-    onInviteSendClick?.(next);
   };
 
   const handleInviteRemove = (email: string) => {
@@ -440,19 +412,27 @@ const MembersSettingsPanel = ({
                 disableInteraction
                 leadingContent={<Avatar variant="person" size="xsmall" alt={email} />}
                 trailingContent={
-                  <button
-                    type="button"
+                  <span
+                    role="button"
+                    tabIndex={0}
                     onClick={(event) => {
                       event.preventDefault();
                       event.stopPropagation();
                       handleInviteRemove(email);
                     }}
                     onMouseDown={(event) => event.stopPropagation()}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        handleInviteRemove(email);
+                      }
+                    }}
                     aria-label={`${email} 초대 취소`}
-                    className="text-label-alternative hover:text-label-neutral relative z-10 flex h-4 w-4 cursor-pointer items-center justify-center border-none bg-transparent p-0"
+                    className="text-label-alternative hover:text-label-neutral relative z-10 flex h-4 w-4 cursor-pointer items-center justify-center"
                   >
                     <IconClose className="h-4 w-4" aria-hidden="true" />
-                  </button>
+                  </span>
                 }
               >
                 <span className="text-caption-1 text-label-alternative font-medium">{email}</span>
@@ -617,26 +597,10 @@ const NotificationsSettingsPanel = () => {
 // =============================================================
 interface SettingsModalContentProps {
   onClose: () => void;
-  onDeleteProjectClick?: () => void;
-  onProjectImageChange?: (file: File) => void;
-  onInviteSendClick?: (emails: readonly string[]) => void;
-  onMemberRoleChangeClick?: (memberId: string) => void;
-  onMemberRemoveClick?: (memberId: string) => void;
-  projectImageUrl?: string;
-  defaultTab?: SettingsTab;
 }
 
-export const SettingsModalContent = ({
-  onClose,
-  onDeleteProjectClick,
-  onProjectImageChange,
-  onInviteSendClick,
-  onMemberRoleChangeClick,
-  onMemberRemoveClick,
-  projectImageUrl,
-  defaultTab = 'project',
-}: SettingsModalContentProps) => {
-  const [activeTab, setActiveTab] = useState<SettingsTab>(defaultTab);
+export const SettingsModalContent = ({ onClose }: SettingsModalContentProps) => {
+  const [activeTab, setActiveTab] = useState<SettingsTab>('project');
 
   return (
     // Modal default variant(`p-12`) 의 외곽 패딩을 -m-12로 상쇄하고 내부에서
@@ -664,20 +628,8 @@ export const SettingsModalContent = ({
 
         {/* 본문 */}
         <div className="flex min-h-0 flex-1 flex-col">
-          {activeTab === 'project' && (
-            <ProjectSettingsPanel
-              projectImageUrl={projectImageUrl}
-              onProjectImageChange={onProjectImageChange}
-              onDeleteProjectClick={onDeleteProjectClick}
-            />
-          )}
-          {activeTab === 'members' && (
-            <MembersSettingsPanel
-              onInviteSendClick={onInviteSendClick}
-              onMemberRoleChangeClick={onMemberRoleChangeClick}
-              onMemberRemoveClick={onMemberRemoveClick}
-            />
-          )}
+          {activeTab === 'project' && <ProjectSettingsPanel />}
+          {activeTab === 'members' && <MembersSettingsPanel />}
           {activeTab === 'notifications' && <NotificationsSettingsPanel />}
         </div>
       </section>

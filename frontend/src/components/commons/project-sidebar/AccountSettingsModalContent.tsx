@@ -37,29 +37,13 @@ const iconButtonNoHoverSx = {
 interface AccountSettingsModalContentProps {
   userName: string;
   userEmail: string;
-  profileImageUrl?: string;
   onClose: () => void;
-  onRequestVerification?: (email: string) => void;
-  onChangeEmail?: (email: string, verificationCode: string) => void;
-  onProfileImageChange?: (file: File) => void;
-  onTermsClick?: () => void;
-  onPrivacyPolicyClick?: () => void;
-  onLogoutClick?: () => void;
-  onWithdrawClick?: () => void;
 }
 
 export const AccountSettingsModalContent = ({
   userName,
   userEmail,
-  profileImageUrl,
   onClose,
-  onRequestVerification,
-  onChangeEmail,
-  onProfileImageChange,
-  onTermsClick,
-  onPrivacyPolicyClick,
-  onLogoutClick,
-  onWithdrawClick,
 }: AccountSettingsModalContentProps) => {
   const { openDialog, closeDialog } = useDialog();
   const [name, setName] = useState(userName);
@@ -67,7 +51,7 @@ export const AccountSettingsModalContent = ({
   const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [isVerified, setIsVerified] = useState(false);
-  const [profilePreviewUrl, setProfilePreviewUrl] = useState<string | undefined>(profileImageUrl);
+  const [profilePreviewUrl, setProfilePreviewUrl] = useState<string | undefined>(undefined);
   const objectUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -84,14 +68,12 @@ export const AccountSettingsModalContent = ({
     setIsVerified(false);
   };
 
+  // 데모 동작: 실제 인증 응답 대신 즉시 인증 성공으로 표시
   const handleRequestVerification = () => {
-    onRequestVerification?.(email);
-    // 데모 동작: 실제 인증 응답 대신 즉시 인증 성공으로 표시
     setIsVerified(true);
   };
 
   const handleChangeEmail = () => {
-    onChangeEmail?.(email, verificationCode);
     setIsEditingEmail(false);
   };
 
@@ -141,7 +123,6 @@ export const AccountSettingsModalContent = ({
             tone: 'assistive',
             onClick: () => {
               closeDialog();
-              onLogoutClick?.();
               onClose();
             },
           }}
@@ -168,7 +149,6 @@ export const AccountSettingsModalContent = ({
             tone: 'negative',
             onClick: () => {
               closeDialog();
-              onWithdrawClick?.();
               onClose();
             },
           }}
@@ -192,7 +172,6 @@ export const AccountSettingsModalContent = ({
     const url = URL.createObjectURL(file);
     objectUrlRef.current = url;
     setProfilePreviewUrl(url);
-    onProfileImageChange?.(file);
     // 동일 파일 재선택도 허용
     event.target.value = '';
   };
@@ -349,11 +328,11 @@ export const AccountSettingsModalContent = ({
         {/* 하단 링크 row */}
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
-            <TextButton color="assistive" size="small" onClick={onTermsClick}>
+            <TextButton color="assistive" size="small">
               서비스 이용 약관
             </TextButton>
             <div className="bg-label-alternative h-3 w-px" aria-hidden="true" />
-            <TextButton color="assistive" size="small" onClick={onPrivacyPolicyClick}>
+            <TextButton color="assistive" size="small">
               개인정보처리방침
             </TextButton>
           </div>
