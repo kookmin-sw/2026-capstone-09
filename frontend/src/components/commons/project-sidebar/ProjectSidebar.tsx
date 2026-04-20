@@ -20,6 +20,7 @@ import {
 import { cn } from '@/utils/cn';
 
 import { AccountSettingsModalContent } from './AccountSettingsModalContent';
+import { SearchModalContent } from './SearchModalContent';
 import { SidebarAlarmModal } from './SidebarAlarmModal';
 import { SidebarMenuButton } from './SidebarMenuButton';
 import { UserProfileButton } from './UserProfileButton';
@@ -92,6 +93,16 @@ export const ProjectSidebar = ({
   const handleAlarmModalToggle = () => {
     setIsAlarmModalOpen((prev) => !prev);
     onInboxClick?.();
+  };
+
+  const handleSearchClick = () => {
+    openModal({
+      variant: 'compact',
+      closeOnBackdrop: true,
+      closeOnEsc: true,
+      content: <SearchModalContent />,
+    });
+    onSearchClick?.();
   };
 
   const handleProfileClick = () => {
@@ -194,7 +205,7 @@ export const ProjectSidebar = ({
                   label="검색"
                   labelWidth={48}
                   labelTransitionDuration={SIDEBAR_LABEL_TRANSITION_DURATION}
-                  onClick={onSearchClick}
+                  onClick={handleSearchClick}
                 />
                 <SidebarMenuButton
                   icon={IconBell}
