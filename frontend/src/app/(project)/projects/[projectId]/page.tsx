@@ -1,6 +1,6 @@
 'use client';
 
-import { IconPlus } from '@wanteddev/wds-icon';
+import { IconPlus, IconSparkle } from '@wanteddev/wds-icon';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -12,7 +12,22 @@ import { useDialog } from '@/components/commons/custom-dialog/DialogContext';
 import { usePositionedToast } from '@/components/commons/custom-toast/usePositionedToast';
 import { useModal } from '@/components/commons/modal/ModalContext';
 import { MeetingCreateModalContent } from '@/components/projects/project-detail/MeetingCreateModalContent';
+import {
+  MultiNodeSummaryModalContent,
+  type MultiNodeSummaryNode,
+} from '@/components/projects/project-detail/MultiNodeSummaryModalContent';
 import { NodeDeleteConfirmContent } from '@/components/projects/project-detail/NodeDeleteConfirmContent';
+
+const EXAMPLE_SUMMARY_NODES: readonly MultiNodeSummaryNode[] = [
+  { id: 'summary-node-1', label: '노드 이름 1' },
+  { id: 'summary-node-2', label: '노드 이름 2' },
+  { id: 'summary-node-3', label: '노드 이름 3' },
+  { id: 'summary-node-4', label: '노드 이름 4' },
+];
+
+const EXAMPLE_SUMMARY_TEXT =
+  '요약 본문입니다. ' +
+  '요약 본문입니다. '.repeat(50);
 
 const VIEW_LABELS: Record<ProjectViewTypes, string> = {
   'node-flow': '노드 플로우',
@@ -53,6 +68,29 @@ export default function ProjectDetailPage() {
             setNode(null);
           }}
           onClose={closeDialog}
+        />
+      ),
+    });
+  };
+
+  const handleOpenMultiNodeSummaryModal = () => {
+    openModal({
+      variant: 'default',
+      closeOnBackdrop: true,
+      closeOnEsc: true,
+      content: (
+        <MultiNodeSummaryModalContent
+          nodes={EXAMPLE_SUMMARY_NODES}
+          summary={EXAMPLE_SUMMARY_TEXT}
+          onClose={closeModal}
+          onDownloadClick={() => {
+            showToast({
+              content: '요약을 다운로드했어요',
+              variant: 'normal',
+              placement: 'bottom-left',
+              duration: 'short',
+            });
+          }}
         />
       ),
     });
@@ -108,6 +146,15 @@ export default function ProjectDetailPage() {
           >
             <IconPlus className="h-4 w-4" aria-hidden="true" />
             회의 생성
+          </button>
+
+          <button
+            type="button"
+            onClick={handleOpenMultiNodeSummaryModal}
+            className="border-line-normal-neutral bg-static-white text-label-normal hover:bg-fill-alternative text-body-1 flex items-center gap-2 rounded-lg border px-4 py-2.5 font-medium transition-colors"
+          >
+            <IconSparkle className="text-primary-40 h-4 w-4" aria-hidden="true" />
+            다중 노드 요약
           </button>
         </>
       )}
