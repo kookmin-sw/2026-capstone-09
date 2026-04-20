@@ -455,7 +455,7 @@ const MembersSettingsPanel = () => {
                 <Avatar variant="person" size="medium" alt={member.name} />
                 <div className="flex min-w-0 flex-col gap-0.5">
                   <span className="text-caption-1 text-label-normal truncate">{member.name}</span>
-                  <span className="text-label-alternative truncate text-[0.625rem] leading-[0.875rem]">
+                  <span className="text-caption-2 text-label-alternative truncate">
                     {member.email}
                   </span>
                 </div>

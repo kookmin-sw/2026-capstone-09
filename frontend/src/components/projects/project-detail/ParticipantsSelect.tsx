@@ -156,7 +156,7 @@ export const ParticipantsSelect = ({
               width: anchorRect.width,
               zIndex: 10000,
             }}
-            className="border-line-solid-neutral bg-background-elevated-normal max-h-80 overflow-y-auto overscroll-contain rounded-2xl border py-2 shadow-[0_4px_6px_-1px_rgba(23,23,23,0.06),0_2px_4px_-2px_rgba(23,23,23,0.06)] [scrollbar-color:color-mix(in_srgb,var(--color-label-alternative)_20%,transparent)_transparent] [scrollbar-gutter:stable] [scrollbar-width:thin] hover:[scrollbar-color:color-mix(in_srgb,var(--color-label-alternative)_30%,transparent)_transparent] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-label-alternative/20 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar]:w-1.5"
+            className="border-line-solid-neutral bg-background-elevated-normal max-h-80 overflow-y-auto overscroll-contain rounded-2xl border py-2 shadow-[0_4px_6px_-1px_color-mix(in_srgb,var(--color-label-normal)_6%,transparent),0_2px_4px_-2px_color-mix(in_srgb,var(--color-label-normal)_6%,transparent)] [scrollbar-color:color-mix(in_srgb,var(--color-label-alternative)_20%,transparent)_transparent] [scrollbar-gutter:stable] [scrollbar-width:thin] hover:[scrollbar-color:color-mix(in_srgb,var(--color-label-alternative)_30%,transparent)_transparent] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-label-alternative/20 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar]:w-1.5"
           >
             {filtered.length === 0 && !showCustomSuggestion && (
               <p className="text-body-1 text-label-alternative px-5 py-2">검색 결과가 없어요.</p>
@@ -210,7 +210,7 @@ export const ParticipantsSelect = ({
           setOpen(true);
           inputRef.current?.focus();
         }}
-        className="border-line-normal-neutral focus-within:[box-shadow:inset_0_0_0_2px_color-mix(in_srgb,var(--color-primary-40)_43%,transparent)] flex h-12 w-full cursor-text items-center gap-2 overflow-hidden rounded-xl border bg-transparent [box-shadow:0_1px_2px_-1px_rgba(23,23,23,0.10)]"
+        className="border-line-normal-neutral focus-within:[box-shadow:inset_0_0_0_2px_color-mix(in_srgb,var(--color-primary-40)_43%,transparent)] flex h-12 w-full cursor-text items-center gap-2 overflow-hidden rounded-xl border bg-transparent [box-shadow:0_1px_2px_-1px_color-mix(in_srgb,var(--color-label-normal)_10%,transparent)]"
       >
         <div className="flex h-full flex-1 items-center gap-2 overflow-x-auto overflow-y-hidden px-3 [&::-webkit-scrollbar]:h-0 [scrollbar-width:none]">
           {value.map((item) => (
