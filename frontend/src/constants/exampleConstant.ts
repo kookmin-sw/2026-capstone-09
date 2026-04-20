@@ -64,6 +64,31 @@ export const EXAMPLE_PROJECT_DETAIL_LINKS = [
   { id: 'link-4', label: 'Vercel', href: 'https://vercel.com/dashboard' },
 ] as const;
 
+export const EXAMPLE_PROJECT_SETTINGS = {
+  projectName: '황수민의 비밀 공간❤️',
+  memberCount: 10,
+  createdAt: '2025.12.18.',
+  nameMaxLength: 50,
+} as const;
+
+export const EXAMPLE_PROJECT_MEMBERS = [
+  { id: 'member-1', name: '박건민', email: 'pkm021118@kookmin.ac.kr', role: 'member' },
+  { id: 'member-2', name: '황수민', email: 'tnals655@kookmin.ac.kr', role: 'member' },
+  { id: 'member-3', name: '윤신지', email: 'sinji1012@kookmin.ac.kr', role: 'admin' },
+  { id: 'member-4', name: '백채린', email: 'chaerin@kookmin.ac.kr', role: 'member' },
+  { id: 'member-5', name: '윤성욱', email: 'seonguk@kookmin.ac.kr', role: 'member' },
+  { id: 'member-6', name: '박정은', email: 'jeongeun@kookmin.ac.kr', role: 'member' },
+] as const;
+
+export const EXAMPLE_PROJECT_NOTIFICATION_SETTINGS = {
+  meetingEnabled: true,
+  nodeEnabled: false,
+  channels: {
+    desktop: false,
+    email: false,
+  },
+} as const;
+
 export const EXAMPLE_SEARCH_RESULTS = {
   totalCount: 100,
   items: [

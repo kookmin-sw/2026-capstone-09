@@ -21,6 +21,7 @@ import { cn } from '@/utils/cn';
 
 import { AccountSettingsModalContent } from './AccountSettingsModalContent';
 import { SearchModalContent } from './SearchModalContent';
+import { SettingsModalContent } from './SettingsModalContent';
 import { SidebarAlarmModal } from './SidebarAlarmModal';
 import { SidebarMenuButton } from './SidebarMenuButton';
 import { UserProfileButton } from './UserProfileButton';
@@ -103,6 +104,16 @@ export const ProjectSidebar = ({
       content: <SearchModalContent />,
     });
     onSearchClick?.();
+  };
+
+  const handleSettingClick = () => {
+    openModal({
+      variant: 'default',
+      closeOnBackdrop: true,
+      closeOnEsc: true,
+      content: <SettingsModalContent onClose={closeModal} />,
+    });
+    onSettingClick?.();
   };
 
   const handleProfileClick = () => {
@@ -222,7 +233,7 @@ export const ProjectSidebar = ({
                   label="설정"
                   labelWidth={48}
                   labelTransitionDuration={SIDEBAR_LABEL_TRANSITION_DURATION}
-                  onClick={onSettingClick}
+                  onClick={handleSettingClick}
                 />
               </nav>
             )}
