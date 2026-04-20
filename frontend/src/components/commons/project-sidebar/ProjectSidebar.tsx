@@ -12,12 +12,14 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
+import { useModal } from '@/components/commons/modal/ModalContext';
 import {
   EXAMPLE_PROJECT_SIDEBAR_PROFILE,
   EXAMPLE_SIDEBAR_ALARM_ITEMS,
 } from '@/constants/exampleConstant';
 import { cn } from '@/utils/cn';
 
+import { AccountSettingsModalContent } from './AccountSettingsModalContent';
 import { SidebarAlarmModal } from './SidebarAlarmModal';
 import { SidebarMenuButton } from './SidebarMenuButton';
 import { UserProfileButton } from './UserProfileButton';
@@ -48,6 +50,7 @@ export const ProjectSidebar = ({
 }: ProjectSidebarProps) => {
   const pathname = usePathname();
   const containerRef = useRef<HTMLDivElement>(null);
+  const { openModal, closeModal } = useModal();
   const [isCollapsedInternal, setIsCollapsedInternal] = useState(false);
   const [isAlarmModalOpen, setIsAlarmModalOpen] = useState(false);
   const { unreadCount } = EXAMPLE_SIDEBAR_ALARM_ITEMS.data;
@@ -89,6 +92,22 @@ export const ProjectSidebar = ({
   const handleAlarmModalToggle = () => {
     setIsAlarmModalOpen((prev) => !prev);
     onInboxClick?.();
+  };
+
+  const handleProfileClick = () => {
+    openModal({
+      variant: 'default',
+      closeOnBackdrop: false,
+      closeOnEsc: false,
+      content: (
+        <AccountSettingsModalContent
+          userName={userName}
+          userEmail={userEmail}
+          onClose={closeModal}
+        />
+      ),
+    });
+    onProfileClick?.();
   };
 
   return (
@@ -203,7 +222,7 @@ export const ProjectSidebar = ({
               isCollapsed={isCollapsed}
               userName={userName}
               userEmail={userEmail}
-              onClick={onProfileClick}
+              onClick={handleProfileClick}
             />
           </div>
         </div>
