@@ -78,6 +78,18 @@ export const EXAMPLE_PROJECT_MEMBERS = [
   { id: 'member-4', name: '백채린', email: 'chaerin@kookmin.ac.kr', role: 'member' },
   { id: 'member-5', name: '윤성욱', email: 'seonguk@kookmin.ac.kr', role: 'member' },
   { id: 'member-6', name: '박정은', email: 'jeongeun@kookmin.ac.kr', role: 'member' },
+  { id: 'member-7', name: '김민재', email: 'minjae.kim@kookmin.ac.kr', role: 'admin' },
+  { id: 'member-8', name: '이서연', email: 'seoyeon.lee@kookmin.ac.kr', role: 'member' },
+  { id: 'member-9', name: '정하준', email: 'hajun.jung@kookmin.ac.kr', role: 'member' },
+  { id: 'member-10', name: '최유나', email: 'yuna.choi@kookmin.ac.kr', role: 'member' },
+  { id: 'member-11', name: '한지호', email: 'jiho.han@kookmin.ac.kr', role: 'member' },
+  { id: 'member-12', name: '오수빈', email: 'subin.oh@kookmin.ac.kr', role: 'member' },
+  { id: 'member-13', name: '강도현', email: 'dohyun.kang@kookmin.ac.kr', role: 'member' },
+  { id: 'member-14', name: '임채은', email: 'chaeeun.lim@kookmin.ac.kr', role: 'member' },
+  { id: 'member-15', name: '조현우', email: 'hyunwoo.jo@kookmin.ac.kr', role: 'member' },
+  { id: 'member-16', name: '서지민', email: 'jimin.seo@kookmin.ac.kr', role: 'member' },
+  { id: 'member-17', name: '배수아', email: 'sua.bae@kookmin.ac.kr', role: 'member' },
+  { id: 'member-18', name: '노승재', email: 'seungjae.noh@kookmin.ac.kr', role: 'member' },
 ] as const;
 
 export const EXAMPLE_PROJECT_NOTIFICATION_SETTINGS = {
