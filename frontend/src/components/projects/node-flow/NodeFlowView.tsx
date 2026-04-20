@@ -1,15 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { EXAMPLE_FLOWCHART_DATA } from '@/constants/exampleConstant';
 import { FlowChart } from '@/types/FlowChartTypes';
 import { DashedComment } from './DashedComment';
-import { MainNode } from './MainNode';
-import { SubNode } from './SubNode';
+import { BaseNode } from './BaseNode';
 
 export function NodeFlowView() {
   const [flowChart, setFlowChart] = useState<FlowChart | null>(null);
   const [loading, setLoading] = useState(true);
+  const [focusedNodeId, setFocusedNodeId] = useState<number | null>(null);
 
   useEffect(() => {
     const loadFlowChart = async () => {
@@ -20,6 +20,10 @@ export function NodeFlowView() {
       setLoading(false);
     };
     loadFlowChart();
+  }, []);
+
+  const handleNodeClick = useCallback((nodeId: number) => {
+    setFocusedNodeId((prev) => (prev === nodeId ? null : nodeId));
   }, []);
 
   if (loading) {
@@ -51,7 +55,13 @@ export function NodeFlowView() {
           <h2 className="text-body-1 font-semibold text-neutral-90">메인 노드</h2>
           <div className="flex gap-4">
             {mainNodes.map((node) => (
-              <MainNode key={node.nodeId} node={node} />
+              <BaseNode
+                key={node.nodeId}
+                node={node}
+                variant="main"
+                isFocused={focusedNodeId === node.nodeId}
+                onNodeClick={handleNodeClick}
+              />
             ))}
           </div>
         </div>
@@ -61,7 +71,13 @@ export function NodeFlowView() {
           <h2 className="text-body-1 font-semibold text-neutral-90">서브 노드</h2>
           <div className="flex flex-wrap gap-4">
             {subNodes.map((node) => (
-              <SubNode key={node.nodeId} node={node} />
+              <BaseNode
+                key={node.nodeId}
+                node={node}
+                variant="sub"
+                isFocused={focusedNodeId === node.nodeId}
+                onNodeClick={handleNodeClick}
+              />
             ))}
           </div>
         </div>
