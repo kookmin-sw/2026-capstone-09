@@ -4,6 +4,7 @@
 # 로컬 전용 컨벤션·에이전트 문서
 conventions.md
 AGENTS.md
+CLAUDE.md
 .cursor/rules/conventions.mdc
 __pychache__/
 .pyc
