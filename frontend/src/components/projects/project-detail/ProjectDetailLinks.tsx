@@ -7,6 +7,7 @@ import { useState } from 'react';
 
 import { useDialog } from '@/components/commons/custom-dialog/DialogContext';
 import { CustomMenuItem } from '@/components/commons/custom-menu/CustomMemuItem';
+import { usePositionedToast } from '@/components/commons/custom-toast/usePositionedToast';
 import { ProjectDetailLinkItem } from '@/components/projects/project-detail/ProjectDetailLinkItem';
 import { EXAMPLE_PROJECT_DETAIL_LINKS } from '@/constants/exampleConstant';
 
@@ -24,6 +25,7 @@ const createLinkId = () =>
 
 export const ProjectDetailLinks = () => {
   const { openDialog, closeDialog } = useDialog();
+  const showToast = usePositionedToast();
   const [links, setLinks] = useState<LinkEditPayload[]>(() =>
     EXAMPLE_PROJECT_DETAIL_LINKS.map((link) => ({ ...link })),
   );
@@ -53,7 +55,14 @@ export const ProjectDetailLinks = () => {
   };
 
   const removeLink = (id: string) => {
+    const target = links.find((item) => item.id === id);
     setLinks((prev) => prev.filter((item) => item.id !== id));
+    showToast({
+      content: target ? `'${target.label}' 링크를 삭제했어요` : '링크를 삭제했어요',
+      variant: 'normal',
+      placement: 'bottom-left',
+      duration: 'short',
+    });
   };
 
   const handleAddLinkClick = () => {
