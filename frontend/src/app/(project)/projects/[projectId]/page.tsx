@@ -15,19 +15,19 @@ import { MeetingCreateModalContent } from '@/components/projects/project-detail/
 import {
   MultiNodeSummaryModalContent,
   type MultiNodeSummaryNode,
+  type MultiNodeSummaryResult,
 } from '@/components/projects/project-detail/MultiNodeSummaryModalContent';
 import { NodeDeleteConfirmContent } from '@/components/projects/project-detail/NodeDeleteConfirmContent';
+import { EXAMPLE_MULTI_NODE_SUMMARY_RESULT } from '@/constants/exampleConstant';
 
 const EXAMPLE_SUMMARY_NODES: readonly MultiNodeSummaryNode[] = [
-  { id: 'summary-node-1', label: '노드 이름 1' },
-  { id: 'summary-node-2', label: '노드 이름 2' },
-  { id: 'summary-node-3', label: '노드 이름 3' },
-  { id: 'summary-node-4', label: '노드 이름 4' },
+  { id: 'summary-node-1', label: '비즈니스 모델 전략 회의' },
+  { id: 'summary-node-2', label: 'MVP기능 회의' },
+  { id: 'summary-node-3', label: 'MVP 개발 일정 조정 회의' },
+  { id: 'summary-node-4', label: 'PPT 제작 회의' },
 ];
 
-const EXAMPLE_SUMMARY_TEXT =
-  '요약 본문입니다. ' +
-  '요약 본문입니다. '.repeat(50);
+const EXAMPLE_SUMMARY_RESULT: MultiNodeSummaryResult = EXAMPLE_MULTI_NODE_SUMMARY_RESULT;
 
 const VIEW_LABELS: Record<ProjectViewTypes, string> = {
   'node-flow': '노드 플로우',
@@ -81,7 +81,7 @@ export default function ProjectDetailPage() {
       content: (
         <MultiNodeSummaryModalContent
           nodes={EXAMPLE_SUMMARY_NODES}
-          summary={EXAMPLE_SUMMARY_TEXT}
+          result={EXAMPLE_SUMMARY_RESULT}
           onClose={closeModal}
           onDownloadClick={() => {
             showToast({
