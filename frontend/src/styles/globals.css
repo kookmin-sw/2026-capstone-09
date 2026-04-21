@@ -368,6 +368,31 @@ body {
   color: var(--color-label-normal);
 }
 
+/* 공통 스크롤바 — 콘텐츠 위에 얇게 얹히는 형태.
+   `overflow-y-auto pr-2`는 컴포넌트에서 레이아웃 제어가 필요할 때가 있어 제외하고,
+   스크롤바 색/두께/라운드 처리만 담는다. 사용 예) <ul className="custom-scrollbar overflow-y-auto pr-2" />
+*/
+@layer components {
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--color-label-alternative) 20%, transparent) transparent;
+    scrollbar-gutter: stable;
+  }
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 0.375rem;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background-color: color-mix(in srgb, var(--color-label-alternative) 20%, transparent);
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: color-mix(in srgb, var(--color-label-alternative) 45%, transparent);
+  }
+}
+
 /* 데스크탑 환경 세팅 - UA 우회 케이스 대비 CSS 보조 차단 */
 @media (max-width: 1023px) {
   body:not(.desktop-only-page) > * {
