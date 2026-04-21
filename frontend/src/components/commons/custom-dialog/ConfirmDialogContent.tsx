@@ -2,6 +2,14 @@
 
 import { TextButton } from '@wanteddev/wds';
 
+/**
+ * 두 개의 액션 버튼이 있는 일반적인 확인 Dialog의 내용.
+ * WDS의 Alert(Dialog) 컴포넌트를 바로 쓰면 primary 색이 WDS 기본 blue로 고정돼
+ * FlowMeet primary 토큰을 반영하기 어려워, Dialog Shell(`custom-dialog/Dialog.tsx`) +
+ * 이 컨텐츠 컴포넌트로 래핑해 사용한다.
+ *
+ * 여러 도메인에서 재사용하므로 `project-sidebar/`가 아니라 `custom-dialog/` 하위로 둔다.
+ */
 export type ConfirmDialogButtonTone = 'primary' | 'assistive' | 'negative';
 
 interface ConfirmDialogButtonSpec {

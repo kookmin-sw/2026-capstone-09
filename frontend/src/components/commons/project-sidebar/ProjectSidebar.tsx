@@ -21,7 +21,7 @@ import { cn } from '@/utils/cn';
 
 import { AccountSettingsModalContent } from './AccountSettingsModalContent';
 import { SearchModalContent } from './SearchModalContent';
-import { SettingsModalContent } from './SettingsModalContent';
+import { SettingsModalContent } from './setting-modal/SettingsModalContent';
 import { SidebarAlarmModal } from './SidebarAlarmModal';
 import { SidebarMenuButton } from './SidebarMenuButton';
 import { UserProfileButton } from './UserProfileButton';
