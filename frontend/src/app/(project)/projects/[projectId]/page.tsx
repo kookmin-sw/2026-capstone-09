@@ -8,17 +8,15 @@ import {
   type ProjectViewTypes,
   useProjectDetailLayout,
 } from '@/app/(project)/projects/[projectId]/layout';
-import { useDialog } from '@/components/commons/custom-dialog/DialogContext';
-import { usePositionedToast } from '@/components/commons/custom-toast/usePositionedToast';
-import { useModal } from '@/components/commons/modal/ModalContext';
-import { MeetingCreateModalContent } from '@/components/projects/project-detail/MeetingCreateModalContent';
-import {
-  MultiNodeSummaryModalContent,
-  type MultiNodeSummaryNode,
-  type MultiNodeSummaryResult,
-} from '@/components/projects/project-detail/MultiNodeSummaryModalContent';
-import { NodeDeleteConfirmContent } from '@/components/projects/project-detail/NodeDeleteConfirmContent';
+import type {
+  MultiNodeSummaryNode,
+  MultiNodeSummaryResult,
+} from '@/components/projects/project-detail/multi-node-summary/types';
 import { EXAMPLE_MULTI_NODE_SUMMARY_RESULT } from '@/constants/exampleConstant';
+import {
+  type ProjectDetailActionNode,
+  useProjectDetailActions,
+} from '@/hooks/useProjectDetailActions';
 
 const EXAMPLE_SUMMARY_NODES: readonly MultiNodeSummaryNode[] = [
   { id: 'summary-node-1', label: '비즈니스 모델 전략 회의' },
@@ -35,13 +33,7 @@ const VIEW_LABELS: Record<ProjectViewTypes, string> = {
   kanban: '칸반',
 };
 
-interface DemoNode {
-  id: string;
-  badge: string;
-  title: string;
-}
-
-const INITIAL_NODE: DemoNode = {
+const INITIAL_NODE: ProjectDetailActionNode = {
   id: 'demo-node-1',
   badge: '#1',
   title: '디자인 회의일걸요?',
@@ -49,82 +41,15 @@ const INITIAL_NODE: DemoNode = {
 
 export default function ProjectDetailPage() {
   const { activeView } = useProjectDetailLayout();
-  const { openDialog, closeDialog } = useDialog();
-  const { openModal, closeModal } = useModal();
-  const showToast = usePositionedToast();
-  const [node, setNode] = useState<DemoNode | null>(INITIAL_NODE);
+  const [node, setNode] = useState<ProjectDetailActionNode | null>(INITIAL_NODE);
 
-  const handleNodeContextMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    if (!node) return;
-    openDialog({
-      closeOnBackdrop: true,
-      closeOnEsc: true,
-      content: (
-        <NodeDeleteConfirmContent
-          nodeName={node.title}
-          onConfirm={() => {
-            closeDialog();
-            setNode(null);
-            showToast({
-              content: '노드를 삭제했어요',
-              variant: 'normal',
-              placement: 'top-center',
-              duration: 'short',
-            });
-          }}
-          onClose={closeDialog}
-        />
-      ),
+  const { handleNodeContextMenu, handleOpenMultiNodeSummaryModal, handleOpenMeetingCreateModal } =
+    useProjectDetailActions({
+      node,
+      onNodeDeleted: () => setNode(null),
+      summaryNodes: EXAMPLE_SUMMARY_NODES,
+      summaryResult: EXAMPLE_SUMMARY_RESULT,
     });
-  };
-
-  const handleOpenMultiNodeSummaryModal = () => {
-    openModal({
-      variant: 'default',
-      closeOnBackdrop: true,
-      closeOnEsc: true,
-      content: (
-        <MultiNodeSummaryModalContent
-          nodes={EXAMPLE_SUMMARY_NODES}
-          result={EXAMPLE_SUMMARY_RESULT}
-          onClose={closeModal}
-          onDownloadClick={() => {
-            showToast({
-              content: '요약을 다운로드했어요',
-              variant: 'normal',
-              placement: 'bottom-left',
-              duration: 'short',
-            });
-          }}
-        />
-      ),
-    });
-  };
-
-  const handleOpenMeetingCreateModal = () => {
-    openModal({
-      variant: 'default',
-      closeOnBackdrop: true,
-      closeOnEsc: true,
-      content: (
-        <MeetingCreateModalContent
-          nodeBadge={node?.badge ?? '#1'}
-          nodeTitle={node?.title ?? '디자인 회의일걸요?'}
-          onClose={closeModal}
-          onCreate={() => {
-            closeModal();
-            showToast({
-              content: '회의를 생성했어요',
-              variant: 'normal',
-              placement: 'top-center',
-              duration: 'short',
-            });
-          }}
-        />
-      ),
-    });
-  };
 
   return (
     <section className="bg-surface-canvas flex flex-1 flex-col items-center justify-center gap-6 overflow-hidden px-20 py-24">

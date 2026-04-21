@@ -4,17 +4,16 @@ import {
   Button,
   ContentBadge,
   DatePicker,
-  type DateType,
   TextField,
   TextFieldContent,
   TimePicker,
 } from '@wanteddev/wds';
 import { IconClose } from '@wanteddev/wds-icon';
-import { useMemo, useState } from 'react';
 
-import { EXAMPLE_PROJECT_MEMBERS } from '@/constants/exampleConstant';
+import { useMeetingCreateForm } from '@/hooks/useMeetingCreateForm';
+import { buttonPrimarySolidSx } from '@/styles/sx';
 
-import { ParticipantsSelect, type ParticipantOption } from './ParticipantsSelect';
+import { ParticipantsSelect } from './ParticipantsSelect';
 
 export interface MeetingCreatePayload {
   nodeBadge: string;
@@ -31,55 +30,29 @@ interface MeetingCreateModalContentProps {
   onCreate?: (payload: MeetingCreatePayload) => void;
 }
 
-const formatDate = (value: DateType): string => {
-  if (!value) return '';
-  const dateObj = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(dateObj.getTime())) return '';
-  const yyyy = dateObj.getFullYear();
-  const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-  const dd = String(dateObj.getDate()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}`;
-};
-
-const formatTime = (value: DateType): string => {
-  if (!value) return '';
-  const dateObj = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(dateObj.getTime())) return '';
-  const hh = String(dateObj.getHours()).padStart(2, '0');
-  const mm = String(dateObj.getMinutes()).padStart(2, '0');
-  return `${hh}:${mm}`;
-};
-
 export const MeetingCreateModalContent = ({
   nodeBadge,
   nodeTitle,
   onClose,
   onCreate,
 }: MeetingCreateModalContentProps) => {
-  const [date, setDate] = useState<DateType>(null);
-  const [time, setTime] = useState<DateType>(null);
-  const [isDateOpen, setIsDateOpen] = useState(false);
-  const [isTimeOpen, setIsTimeOpen] = useState(false);
-  const [participants, setParticipants] = useState<readonly ParticipantOption[]>([]);
-
-  const participantOptions = useMemo<ParticipantOption[]>(
-    () =>
-      EXAMPLE_PROJECT_MEMBERS.map((member) => ({
-        id: member.id,
-        name: member.name,
-        email: member.email,
-      })),
-    [],
-  );
+  const {
+    date,
+    setDate,
+    time,
+    setTime,
+    isDateOpen,
+    setIsDateOpen,
+    isTimeOpen,
+    setIsTimeOpen,
+    participants,
+    setParticipants,
+    participantOptions,
+    buildPayload,
+  } = useMeetingCreateForm();
 
   const handleCreate = () => {
-    onCreate?.({
-      nodeBadge,
-      nodeTitle,
-      date: formatDate(date),
-      time: formatTime(time),
-      participants: participants.map((item) => item.name),
-    });
+    onCreate?.({ nodeBadge, nodeTitle, ...buildPayload() });
   };
 
   return (
@@ -226,13 +199,7 @@ export const MeetingCreateModalContent = ({
 
         {/* 버튼 */}
         <div className="flex w-full items-center gap-3">
-          <Button
-            variant="solid"
-            color="assistive"
-            size="medium"
-            fullWidth
-            onClick={onClose}
-          >
+          <Button variant="solid" color="assistive" size="medium" fullWidth onClick={onClose}>
             취소
           </Button>
           <Button
@@ -241,18 +208,7 @@ export const MeetingCreateModalContent = ({
             size="medium"
             fullWidth
             onClick={handleCreate}
-            sx={{
-              backgroundColor: 'var(--color-primary-40) !important',
-              color: 'var(--color-static-white) !important',
-              '&:hover, &:focus-visible': {
-                backgroundColor:
-                  'color-mix(in srgb, var(--color-primary-40) 88%, black) !important',
-              },
-              '&:active': {
-                backgroundColor:
-                  'color-mix(in srgb, var(--color-primary-40) 78%, black) !important',
-              },
-            }}
+            sx={buttonPrimarySolidSx}
           >
             회의 생성
           </Button>
