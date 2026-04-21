@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Loading } from '@/components/commons/loading/Loading';
 import { EXAMPLE_FLOWCHART_DATA } from '@/constants/exampleConstant';
 import { FlowChart } from '@/types/FlowChartTypes';
 import { BaseNode } from './BaseNode';
@@ -56,11 +57,7 @@ export function NodeFlowView() {
   };
 
   if (loading) {
-    return (
-      <div className="flex flex-1 items-center justify-center">
-        <p className="text-body-1 text-label-neutral">로딩 중...</p>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (!flowChart) {
