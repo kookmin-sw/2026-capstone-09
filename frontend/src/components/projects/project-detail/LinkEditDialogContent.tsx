@@ -1,18 +1,9 @@
 'use client';
 
-import { TextButton, TextField } from '@wanteddev/wds';
+import { TextButton, TextField, Typography } from '@wanteddev/wds';
 import { useState } from 'react';
 
-// WDS TextField 포커스 테두리·캐럿 색을 FlowMeet Primary 토큰으로 스코프드 오버라이드
-const textFieldPrimaryFocusSx = {
-  '&:has(input:focus) [data-role="text-field-wrapper"]': {
-    boxShadow:
-      'inset 0 0 0 2px color-mix(in srgb, var(--color-primary-40) 43%, transparent) !important',
-  },
-  '[data-role="text-field-wrapper"] input': {
-    caretColor: 'var(--color-primary-40)',
-  },
-} as const;
+import { textButtonNegativeSx, textFieldPrimaryFocusSx } from '@/styles/sx';
 
 export interface LinkEditPayload {
   id: string;
@@ -53,9 +44,9 @@ export const LinkEditDialogContent = ({
 
   return (
     <div className="flex w-90 flex-col gap-4 pb-2">
-      <h3 className="text-heading-2 text-label-normal font-semibold">
+      <Typography as="h3" variant="heading2" weight="bold" color="semantic.label.normal">
         {isAddMode ? '링크 추가' : '링크 수정'}
-      </h3>
+      </Typography>
 
       <div className="flex flex-col gap-2">
         <label
@@ -75,10 +66,7 @@ export const LinkEditDialogContent = ({
       </div>
 
       <div className="flex flex-col gap-2">
-        <label
-          htmlFor="link-edit-href"
-          className="text-caption-1 text-label-neutral font-semibold"
-        >
+        <label htmlFor="link-edit-href" className="text-caption-1 text-label-neutral font-semibold">
           URL
         </label>
         <TextField
@@ -93,21 +81,14 @@ export const LinkEditDialogContent = ({
       </div>
 
       <div
-        className={`flex items-center gap-6 pt-2 ${
-          isAddMode ? 'justify-end' : 'justify-between'
-        }`}
+        className={`flex items-center gap-6 pt-2 ${isAddMode ? 'justify-end' : 'justify-between'}`}
       >
         {!isAddMode && onDelete && (
           <TextButton
             size="medium"
             color="assistive"
             onClick={() => onDelete(initialLink.id)}
-            sx={{
-              color: 'var(--color-status-negative) !important',
-              '&:hover, &:focus-visible, &:active': {
-                color: 'var(--color-status-negative) !important',
-              },
-            }}
+            sx={textButtonNegativeSx}
           >
             삭제
           </TextButton>
@@ -117,18 +98,7 @@ export const LinkEditDialogContent = ({
           <TextButton size="medium" color="assistive" onClick={onClose}>
             취소
           </TextButton>
-          <TextButton
-            size="medium"
-            color="primary"
-            disabled={!canSave}
-            onClick={handleSave}
-            sx={{
-              color: 'var(--color-primary-40) !important',
-              '&:hover, &:focus-visible, &:active': {
-                color: 'var(--color-primary-40) !important',
-              },
-            }}
-          >
+          <TextButton size="medium" color="primary" disabled={!canSave} onClick={handleSave}>
             저장
           </TextButton>
         </div>

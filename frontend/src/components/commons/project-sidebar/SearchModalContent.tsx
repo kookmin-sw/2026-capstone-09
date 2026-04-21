@@ -5,17 +5,7 @@ import { IconSearchThick } from '@wanteddev/wds-icon';
 import { useMemo, useState } from 'react';
 
 import { EXAMPLE_SEARCH_RESULTS } from '@/constants/exampleConstant';
-
-// WDS TextField 포커스 테두리·캐럿 색을 FlowMeet Primary 토큰으로 스코프드 오버라이드
-const textFieldPrimaryFocusSx = {
-  '&:has(input:focus) [data-role="text-field-wrapper"]': {
-    boxShadow:
-      'inset 0 0 0 2px color-mix(in srgb, var(--color-primary-40) 43%, transparent) !important',
-  },
-  '[data-role="text-field-wrapper"] input': {
-    caretColor: 'var(--color-primary-40)',
-  },
-} as const;
+import { textFieldPrimaryFocusSx } from '@/styles/sx';
 
 interface SearchModalContentProps {
   onResultClick?: (id: string) => void;
@@ -50,6 +40,7 @@ export const SearchModalContent = ({ onResultClick }: SearchModalContentProps) =
             </TextFieldContent>
           }
         />
+        {/* TODO(API): 검색 결과 총 개수는 서버 응답(`totalCount`)을 그대로 사용. 클라이언트에서 따로 계산하지 않는다. */}
         {hasQuery && (
           <p className="text-label-1 text-label-alternative">
             {EXAMPLE_SEARCH_RESULTS.totalCount}개의 검색 결과
@@ -59,7 +50,7 @@ export const SearchModalContent = ({ onResultClick }: SearchModalContentProps) =
 
       {/* 검색 결과 리스트 (남은 영역 스크롤) */}
       {hasQuery && (
-        <ul className="flex w-full min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-2 [&::-webkit-scrollbar-thumb:hover]:bg-label-alternative/45 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-label-alternative/20 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar]:w-1.5 [scrollbar-color:color-mix(in_srgb,var(--color-label-alternative)_20%,transparent)_transparent] [scrollbar-width:thin]">
+        <ul className="custom-scrollbar flex min-h-0 w-full flex-1 flex-col gap-3 overflow-y-auto pr-2">
           {results.map((item) => {
             const isMain = item.nodeType === 'main';
             return (
@@ -94,6 +85,7 @@ export const SearchModalContent = ({ onResultClick }: SearchModalContentProps) =
                       <span className="text-headline-2 text-label-normal truncate font-medium">
                         {item.title}
                       </span>
+                      {/* TODO(API): 최종 편집일은 서버에서 내려주는 값을 그대로 사용. 현재 필드가 없어 백엔드에 요청 필요. */}
                       <span className="text-label-1 text-label-assistive shrink-0">
                         최종 편집일: {item.lastEditDate}
                       </span>

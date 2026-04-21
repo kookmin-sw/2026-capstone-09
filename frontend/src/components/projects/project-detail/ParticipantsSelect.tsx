@@ -2,15 +2,7 @@
 
 import { Avatar, Chip } from '@wanteddev/wds';
 import { IconChevronDownThickSmall, IconClose } from '@wanteddev/wds-icon';
-import {
-  KeyboardEvent,
-  useEffect,
-  useId,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { KeyboardEvent, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 export interface ParticipantOption {
@@ -36,13 +28,15 @@ export const ParticipantsSelect = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const customIdCounterRef = useRef(0);
   const [input, setInput] = useState('');
   const [open, setOpen] = useState(false);
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
 
   const selectedIds = useMemo(() => new Set(value.map((item) => item.id)), [value]);
 
+  // 이미 선택된 멤버는 제외하고, 검색어에 맞는 옵션만 남긴다.
+  // 검색어와 정확히 일치하는 후보가 없어도 "커스텀 항목 추가"는 더 이상 허용하지 않는다.
+  // 프로젝트 멤버가 아닌 사람을 참여자로 지정하려면 먼저 해당 사용자를 초대해야 한다.
   const filtered = useMemo(() => {
     const query = input.trim().toLowerCase();
     return options
@@ -55,19 +49,6 @@ export const ParticipantsSelect = ({
         );
       });
   }, [options, selectedIds, input]);
-
-  const showCustomSuggestion =
-    input.trim().length > 0 &&
-    !filtered.some(
-      (option) =>
-        option.name.toLowerCase() === input.trim().toLowerCase() ||
-        option.email?.toLowerCase() === input.trim().toLowerCase(),
-    ) &&
-    !value.some(
-      (item) =>
-        item.name.toLowerCase() === input.trim().toLowerCase() ||
-        item.email?.toLowerCase() === input.trim().toLowerCase(),
-    );
 
   // 드롭다운 위치 계산(Portal + fixed positioning)
   useLayoutEffect(() => {
@@ -108,16 +89,6 @@ export const ParticipantsSelect = ({
     inputRef.current?.focus();
   };
 
-  const addCustom = () => {
-    const trimmed = input.trim();
-    if (!trimmed) return;
-    customIdCounterRef.current += 1;
-    addParticipant({
-      id: `custom-${customIdCounterRef.current}`,
-      name: trimmed,
-    });
-  };
-
   const removeParticipant = (id: string) => {
     onChange(value.filter((item) => item.id !== id));
   };
@@ -127,8 +98,6 @@ export const ParticipantsSelect = ({
       event.preventDefault();
       if (filtered.length > 0) {
         addParticipant(filtered[0]);
-      } else if (input.trim().length > 0) {
-        addCustom();
       }
       return;
     }
@@ -156,43 +125,31 @@ export const ParticipantsSelect = ({
               width: anchorRect.width,
               zIndex: 10000,
             }}
-            className="border-line-solid-neutral bg-background-elevated-normal max-h-80 overflow-y-auto overscroll-contain rounded-2xl border py-2 shadow-[0_4px_6px_-1px_color-mix(in_srgb,var(--color-label-normal)_6%,transparent),0_2px_4px_-2px_color-mix(in_srgb,var(--color-label-normal)_6%,transparent)] [scrollbar-color:color-mix(in_srgb,var(--color-label-alternative)_20%,transparent)_transparent] [scrollbar-gutter:stable] [scrollbar-width:thin] hover:[scrollbar-color:color-mix(in_srgb,var(--color-label-alternative)_30%,transparent)_transparent] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-label-alternative/20 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar]:w-1.5"
+            className="border-line-solid-neutral bg-background-elevated-normal custom-scrollbar max-h-80 overflow-y-auto overscroll-contain rounded-2xl border py-2 shadow-[0_4px_6px_-1px_color-mix(in_srgb,var(--color-label-normal)_6%,transparent),0_2px_4px_-2px_color-mix(in_srgb,var(--color-label-normal)_6%,transparent)]"
           >
-            {filtered.length === 0 && !showCustomSuggestion && (
+            {filtered.length === 0 ? (
               <p className="text-body-1 text-label-alternative px-5 py-2">검색 결과가 없어요.</p>
-            )}
-            {filtered.map((option) => (
-              <button
-                key={option.id}
-                type="button"
-                role="option"
-                aria-selected={false}
-                onClick={() => addParticipant(option)}
-                className="hover:bg-fill-normal flex w-full items-center gap-3 border-none bg-transparent px-5 py-2 text-left"
-              >
-                <Avatar variant="person" size="xsmall" alt={option.name} />
-                <span className="text-body-1 text-label-normal flex-1 truncate font-normal">
-                  {option.name}
-                </span>
-                {option.email && (
-                  <span className="text-body-1 text-label-alternative truncate">
-                    {option.email}
+            ) : (
+              filtered.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  role="option"
+                  aria-selected={false}
+                  onClick={() => addParticipant(option)}
+                  className="hover:bg-fill-normal flex w-full items-center gap-3 border-none bg-transparent px-5 py-2 text-left"
+                >
+                  <Avatar variant="person" size="xsmall" alt={option.name} />
+                  <span className="text-body-1 text-label-normal flex-1 truncate font-normal">
+                    {option.name}
                   </span>
-                )}
-              </button>
-            ))}
-            {showCustomSuggestion && (
-              <button
-                type="button"
-                role="option"
-                aria-selected={false}
-                onClick={addCustom}
-                className="hover:bg-fill-normal flex w-full items-center gap-3 border-none bg-transparent px-5 py-2 text-left"
-              >
-                <span className="text-body-1 text-label-normal flex-1 truncate font-normal">
-                  {input.trim()}
-                </span>
-              </button>
+                  {option.email && (
+                    <span className="text-body-1 text-label-alternative truncate">
+                      {option.email}
+                    </span>
+                  )}
+                </button>
+              ))
             )}
           </div>,
           document.body,
@@ -210,9 +167,9 @@ export const ParticipantsSelect = ({
           setOpen(true);
           inputRef.current?.focus();
         }}
-        className="border-line-normal-neutral focus-within:[box-shadow:inset_0_0_0_2px_color-mix(in_srgb,var(--color-primary-40)_43%,transparent)] flex h-12 w-full cursor-text items-center gap-2 overflow-hidden rounded-xl border bg-transparent [box-shadow:0_1px_2px_-1px_color-mix(in_srgb,var(--color-label-normal)_10%,transparent)]"
+        className="border-line-normal-neutral flex h-12 w-full cursor-text items-center gap-2 overflow-hidden rounded-xl border bg-transparent [box-shadow:0_1px_2px_-1px_color-mix(in_srgb,var(--color-label-normal)_10%,transparent)] focus-within:[box-shadow:inset_0_0_0_2px_color-mix(in_srgb,var(--color-primary-40)_43%,transparent)]"
       >
-        <div className="flex h-full flex-1 items-center gap-2 overflow-x-auto overflow-y-hidden px-3 [&::-webkit-scrollbar]:h-0 [scrollbar-width:none]">
+        <div className="flex h-full flex-1 items-center gap-2 overflow-x-auto overflow-y-hidden px-3 [scrollbar-width:none] [&::-webkit-scrollbar]:h-0">
           {value.map((item) => (
             <div key={item.id} className="shrink-0">
               <Chip
