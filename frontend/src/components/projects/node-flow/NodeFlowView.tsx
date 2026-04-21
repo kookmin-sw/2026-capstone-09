@@ -17,11 +17,15 @@ export function NodeFlowView() {
 
   useEffect(() => {
     const loadFlowChart = async () => {
-      // TODO: API 호출로 변경
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      setFlowChart(EXAMPLE_FLOWCHART_DATA);
-      setLoading(false);
+      try {
+        // TODO: API 호출로 변경
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        setFlowChart(EXAMPLE_FLOWCHART_DATA);
+      } catch (error) {
+        console.error('Failed to load flowchart:', error);
+      } finally {
+        setLoading(false);
+      }
     };
     void loadFlowChart();
   }, []);
