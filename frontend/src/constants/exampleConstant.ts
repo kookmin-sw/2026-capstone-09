@@ -72,3 +72,35 @@ export const EXAMPLE_USERS = [
   { name: '윤성욱', email: 'seonguk@kookmin.ac.kr' },
   { name: '박정은', email: 'jeongeun@kookmin.ac.kr' },
 ] as const;
+
+export const EXAMPLE_NODE_DETAIL = {
+  nodeId: 1,
+  projectId: 1,
+  parentId: null,
+  title: '기획 문서 작성',
+  description: '기획 초안 작성',
+  noteContent: '# 기획 문서\\n\\n## 1. 서론\\n프로젝트 목적은...',
+  status: 'IN_PROGRESS',
+  sortOrder: 0,
+  tags: [
+    { tagId: 1, name: '긴급', color: '#FF0000' },
+    { tagId: 3, name: '백엔드', color: '#0066FF' },
+  ],
+  assignees: [
+    {
+      userId: 10,
+      nickname: '홍길동',
+      email: 'hong@gmail.com',
+      profileImageUrl: '<https://cdn.flowmit.com/profiles/10.png>',
+    },
+  ],
+  meeting: {
+    meetingId: 1,
+    status: 'SCHEDULED',
+    startedAt: '2026-03-27T15:30:00',
+    pushEnabled: true,
+    pushNotifyAt: '2026-03-27T15:00:00',
+  },
+  createdAt: '2026-03-25T09:00:00',
+  updatedAt: '2026-03-26T10:00:00',
+};

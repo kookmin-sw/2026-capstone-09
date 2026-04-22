@@ -16,30 +16,19 @@ interface NodeSidebarProps {
 }
 
 export function NodeSidebar({ nodeId, onClose }: NodeSidebarProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
   const [value, setValue] = useState('note');
 
-  // 마운트 시 sessionStorage에서 복원
-  useEffect(() => {
-    const saved = sessionStorage.getItem(SESSION_KEY);
-    if (saved) {
-      setActiveNodeId(saved);
-      setIsOpen(true);
-    }
-  }, []);
+  const activeNodeId =
+    nodeId ?? (typeof window !== 'undefined' ? sessionStorage.getItem(SESSION_KEY) : null);
+  const isOpen = !!activeNodeId;
 
-  // 외부에서 nodeId prop이 변경될 때 (노드 카드 클릭)
   useEffect(() => {
     if (nodeId) {
-      setActiveNodeId(nodeId);
-      setIsOpen(true);
       sessionStorage.setItem(SESSION_KEY, nodeId);
     }
   }, [nodeId]);
 
   const handleClose = useCallback(() => {
-    setIsOpen(false);
     sessionStorage.removeItem(SESSION_KEY);
     onClose();
   }, [onClose]);
@@ -58,9 +47,8 @@ export function NodeSidebar({ nodeId, onClose }: NodeSidebarProps) {
         className="animate-slide-in fixed top-0 right-0 z-40 flex h-full w-2/5 flex-col border-l border-white bg-white"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 사이드바 상단 툴바 */}
-        {/* 전체 페이지로 확장하는 아이콘 */}
         {/* TODO : 전체 페이지의 경우 페이지 닫는 아이콘으로 변경 필요 */}
+        {/* TODO : 사이드바 닫는 아이콘 필요 */}
         <div className="absolute -scale-x-100 p-3">
           <IconButton
             color="semantic.label.alternative"

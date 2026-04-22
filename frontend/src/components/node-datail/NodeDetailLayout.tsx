@@ -1,18 +1,20 @@
 import { Tab, TabList, TabListItem, TabPanel } from '@wanteddev/wds';
 
+interface NodeDetailLayoutProps {
+  nodeId: string | null;
+  noteContent: React.ReactNode;
+  meetingContent: React.ReactNode;
+  value?: string;
+  onValueChange?: (tab: string) => void;
+}
+
 export function NodeDetailLayout({
   nodeId,
   noteContent,
   meetingContent,
   value, // 외부에서 탭 상태 주입
   onValueChange, // 외부에서 탭 변경 핸들링
-}: {
-  nodeId: string | null;
-  noteContent: React.ReactNode;
-  meetingContent: React.ReactNode;
-  value?: string;
-  onValueChange?: (tab: string) => void;
-}) {
+}: NodeDetailLayoutProps) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between">
