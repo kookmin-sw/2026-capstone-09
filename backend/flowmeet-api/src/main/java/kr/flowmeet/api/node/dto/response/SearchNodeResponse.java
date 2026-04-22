@@ -30,6 +30,8 @@ public record SearchNodeResponse(
     public record SearchItem(
             @Schema(description = "노드 ID", example = "101")
             Long nodeId,
+            @Schema(description = "노드 번호 (노드 1번의 서브 노드라면 1.1)", example = "1.1")
+            String number,
             @Schema(description = "노드 제목", example = "로그인 화면 기획")
             String title,
             @Schema(description = "노드 상태", example = "IN_PROGRESS", allowableValues = {"WAITING", "IN_PROGRESS", "DONE"})
@@ -41,6 +43,7 @@ public record SearchNodeResponse(
         public static SearchItem from(final Node node, final List<NodeTag> nodeTags) {
             return new SearchItem(
                     node.getId(),
+                    node.getNumber(),
                     node.getTitle(),
                     node.getStatus().name(),
                     nodeTags.stream().map(nt -> TagItem.from(nt.getTag())).toList()

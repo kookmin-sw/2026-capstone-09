@@ -16,6 +16,8 @@ public record GetNodeResponse(
         Long projectId,
         @Schema(description = "상위 노드 ID (루트인 경우 null)", example = "100")
         Long parentId,
+        @Schema(description = "노드 번호 (노드 1번의 서브 노드라면 1.1)", example = "1.1")
+        String number,
         @Schema(description = "노드 제목", example = "로그인 화면 기획")
         String title,
         @Schema(description = "노드 설명", example = "OAuth2 로그인 플로우 정리")
@@ -44,6 +46,7 @@ public record GetNodeResponse(
                 node.getId(),
                 node.getProjectId(),
                 node.getParentId(),
+                node.getNumber(),
                 node.getTitle(),
                 node.getDescription(),
                 node.getNoteContent(),
