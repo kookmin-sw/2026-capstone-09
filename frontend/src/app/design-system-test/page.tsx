@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { NodeSidebar } from '@/components/node-sidebar/NodeSidebar';
+import { NodeSidebar } from '@/components/node-datail/NodeSidebar';
 
 const Demo = () => {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
