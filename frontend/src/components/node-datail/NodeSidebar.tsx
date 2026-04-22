@@ -4,24 +4,16 @@ import { IconButton } from '@wanteddev/wds';
 import { IconFull } from '@wanteddev/wds-icon';
 import Link from 'next/link';
 import { useEffect, useState, useCallback, useSyncExternalStore } from 'react';
+import {
+  getServerSnapshot,
+  getSessionSnapshot,
+  SESSION_KEY,
+  subscribeToSession,
+} from '@/utils/sidebarSnapshot';
 import { NodeDetailLayout } from './NodeDetailLayout';
 import NodeMeetingTab from './NodeMeetingTab';
 import NodeNoteTab from './NodeNoteTab';
 
-const SESSION_KEY = 'node_sidebar_open';
-
-function subscribeToSession(callback: () => void) {
-  window.addEventListener('storage', callback);
-  return () => window.removeEventListener('storage', callback);
-}
-
-function getSessionSnapshot() {
-  return sessionStorage.getItem(SESSION_KEY);
-}
-
-function getServerSnapshot() {
-  return null; // SSR에서는 항상 null
-}
 interface NodeSidebarProps {
   nodeId: string | null;
   onClose: () => void;
@@ -55,6 +47,7 @@ export function NodeSidebar({ nodeId, onClose }: NodeSidebarProps) {
   return (
     <>
       {/* 오버레이 */}
+      {/* TODO : 현재 새로고침 하거나 다른 페이지 다녀오면 오버레이 안 먹히는 상태 - 수정 필요 */}
       <div className="fixed inset-0 z-30" onClick={handleClose} aria-hidden="true" />
 
       {/* 사이드바 */}
