@@ -25,6 +25,10 @@ public class NotificationSettingService {
         return notificationSettingRepository.findAllByProjectId(projectId);
     }
 
+    public List<NotificationSetting> findAllByProjectIds(final List<Long> projectIds) {
+        return notificationSettingRepository.findAllByProjectIdIn(projectIds);
+    }
+
     @Transactional
     public NotificationSetting create(final Long userId, final Long projectId) {
         return notificationSettingRepository.save(

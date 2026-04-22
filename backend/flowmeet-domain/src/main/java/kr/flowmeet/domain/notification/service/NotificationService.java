@@ -1,6 +1,8 @@
 package kr.flowmeet.domain.notification.service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import kr.flowmeet.domain.common.vo.CursorSlice;
 import kr.flowmeet.domain.notification.entity.NotificationType;
 import kr.flowmeet.domain.notification.service.vo.NotificationCommand;
@@ -61,6 +63,10 @@ public class NotificationService {
 
     public boolean existsReminderByNodeId(final Long nodeId) {
         return notificationRepository.existsByNodeIdAndType(nodeId, NotificationType.MEETING_REMINDER);
+    }
+
+    public Set<Long> findAlreadyNotifiedNodeIds(final List<Long> nodeIds) {
+        return new HashSet<>(notificationRepository.findNodeIdsByNodeIdInAndType(nodeIds, NotificationType.MEETING_REMINDER));
     }
 
     @Transactional

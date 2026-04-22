@@ -1,16 +1,16 @@
 package kr.flowmeet.domain.meeting.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import kr.flowmeet.domain.meeting.entity.MeetingParticipant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import kr.flowmeet.domain.common.exception.BusinessException;
 import kr.flowmeet.domain.meeting.entity.Meeting;
 import kr.flowmeet.domain.meeting.entity.MeetingStatus;
-import kr.flowmeet.domain.meeting.exception.MeetingErrorCode;
 import kr.flowmeet.domain.meeting.repository.MeetingParticipantRepository;
 import kr.flowmeet.domain.meeting.repository.MeetingRepository;
 
@@ -44,6 +44,14 @@ public class MeetingService {
                 .stream()
                 .map(Meeting::getNodeId)
                 .collect(Collectors.toSet());
+    }
+
+    public List<Meeting> findPendingReminders(final LocalDateTime now) {
+        return meetingRepository.findPendingReminders(now.minusHours(1), now, MeetingStatus.SCHEDULED);
+    }
+
+    public List<MeetingParticipant> findAllParticipantsByMeetingIds(final List<Long> meetingIds) {
+        return meetingParticipantRepository.findAllByMeetingIdIn(meetingIds);
     }
 
     @Transactional

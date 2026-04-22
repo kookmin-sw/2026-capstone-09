@@ -1,5 +1,6 @@
 package kr.flowmeet.domain.user.service;
 
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,10 @@ import kr.flowmeet.domain.user.repository.UserRepository;
 public class UserService {
 
     private final UserRepository userRepository;
+
+    public List<User> findAllByIds(final List<Long> userIds) {
+        return userRepository.findAllById(userIds);
+    }
 
     public User findById(final Long userId) {
         return userRepository.findById(userId)
