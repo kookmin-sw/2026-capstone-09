@@ -3,30 +3,47 @@
 import { IconButton } from '@wanteddev/wds';
 import { IconFull } from '@wanteddev/wds-icon';
 import Link from 'next/link';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useSyncExternalStore } from 'react';
 import { NodeDetailLayout } from './NodeDetailLayout';
 import NodeMeetingTab from './NodeMeetingTab';
 import NodeNoteTab from './NodeNoteTab';
 
 const SESSION_KEY = 'node_sidebar_open';
 
+function subscribeToSession(callback: () => void) {
+  window.addEventListener('storage', callback);
+  return () => window.removeEventListener('storage', callback);
+}
+
+function getSessionSnapshot() {
+  return sessionStorage.getItem(SESSION_KEY);
+}
+
+function getServerSnapshot() {
+  return null; // SSR에서는 항상 null
+}
 interface NodeSidebarProps {
-  nodeId: string | null; // null이면 사이드바 닫힘
+  nodeId: string | null;
   onClose: () => void;
 }
 
 export function NodeSidebar({ nodeId, onClose }: NodeSidebarProps) {
-  const [value, setValue] = useState('note');
+  const savedNodeId = useSyncExternalStore(
+    subscribeToSession,
+    getSessionSnapshot,
+    getServerSnapshot,
+  );
 
-  const activeNodeId =
-    nodeId ?? (typeof window !== 'undefined' ? sessionStorage.getItem(SESSION_KEY) : null);
-  const isOpen = !!activeNodeId;
+  const [value, setValue] = useState('note');
 
   useEffect(() => {
     if (nodeId) {
       sessionStorage.setItem(SESSION_KEY, nodeId);
     }
   }, [nodeId]);
+
+  const activeNodeId = nodeId ?? savedNodeId;
+  const isOpen = !!activeNodeId;
 
   const handleClose = useCallback(() => {
     sessionStorage.removeItem(SESSION_KEY);
@@ -37,10 +54,10 @@ export function NodeSidebar({ nodeId, onClose }: NodeSidebarProps) {
 
   return (
     <>
-      {/* 오버레이 (선택적 - 지금은 투명) */}
+      {/* 오버레이 */}
       <div className="fixed inset-0 z-30" onClick={handleClose} aria-hidden="true" />
 
-      {/* 사이드바 패널 */}
+      {/* 사이드바 */}
       {/* TODO : 지금 열릴 때만 애니메이션 적용됨 - 추후 닫힐 때 애니메이션 구현 */}
       {/* TODO : z-index 한 번에 관리할 수 있도록 정리 */}
       <aside
