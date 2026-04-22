@@ -48,6 +48,7 @@ public class NotificationService {
                         .type(type)
                         .content(type.formatContent(command.getArguments().toArray(new String[0])))
                         .projectId(command.getProjectId())
+                        .nodeId(command.getNodeId())
                         .build()
         );
         eventPublisher.publishEvent(new NotificationCreatedEvent(notification));
@@ -56,6 +57,10 @@ public class NotificationService {
     @Transactional
     public void markAllAsRead(final Long userId) {
         notificationRepository.markAllAsRead(userId);
+    }
+
+    public boolean existsReminderByNodeId(final Long nodeId) {
+        return notificationRepository.existsByNodeIdAndType(nodeId, NotificationType.MEETING_REMINDER);
     }
 
     @Transactional

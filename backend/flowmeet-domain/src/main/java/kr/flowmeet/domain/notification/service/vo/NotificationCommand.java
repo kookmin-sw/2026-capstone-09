@@ -12,6 +12,7 @@ public class NotificationCommand {
     private final Long userId;
     private final Long projectId;
     private final NotificationType type;
+    private Long nodeId;
 
     public List<String> getArguments() {
         return List.copyOf(arguments);
@@ -25,5 +26,9 @@ public class NotificationCommand {
 
     protected void addArguments(String... args) {
         arguments.addAll(Arrays.asList(args));
+    }
+
+    protected void setNodeId(Long nodeId) {
+        this.nodeId = nodeId;
     }
 }

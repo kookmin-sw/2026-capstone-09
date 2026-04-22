@@ -10,6 +10,8 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     long countByUserIdAndIsRead(Long userId, boolean isRead);
 
+    boolean existsByNodeIdAndType(Long nodeId, kr.flowmeet.domain.notification.entity.NotificationType type);
+
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Notification n SET n.isRead = true WHERE n.userId = :userId AND n.isRead = false")
     int markAllAsRead(@Param("userId") Long userId);
