@@ -4,9 +4,9 @@ import { ProjectSidebar } from '@/components/commons/project-sidebar/ProjectSide
 
 export default function ProjectLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen overflow-hidden">
       <ProjectSidebar />
-      <main className="bg-surface-canvas flex min-h-screen flex-1 flex-col">
+      <main className="bg-surface-canvas flex h-full flex-1 flex-col overflow-hidden">
         {children}
       </main>
     </div>

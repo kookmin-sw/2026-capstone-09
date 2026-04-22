@@ -2,6 +2,7 @@ export const EXAMPLE_PROJECT_SIDEBAR_PROFILE = {
   projectName: '플로밋 기획',
   userName: '황수민',
   userEmail: 'tnals655@naver.com',
+  profileImageUrl: 'https://via.placeholder.com/40',
 } as const;
 
 export const EXAMPLE_SIDEBAR_ALARM_ITEMS = {
@@ -72,3 +73,63 @@ export const EXAMPLE_USERS = [
   { name: '윤성욱', email: 'seonguk@kookmin.ac.kr' },
   { name: '박정은', email: 'jeongeun@kookmin.ac.kr' },
 ] as const;
+
+export const EXAMPLE_FLOWCHART_DATA = {
+  nodes: [
+    {
+      nodeId: 1,
+      parentId: null,
+      title: '기획 문서 작성',
+      description: '기획 초안 작성',
+      status: 'IN_PROGRESS' as const,
+      sortOrder: 0,
+      tags: [
+        { tagId: 1, name: '긴급', color: '#FF0000' },
+        { tagId: 2, name: 'UI', color: '#00FF00' },
+      ],
+      assignees: [
+        {
+          userId: 1,
+          nickname: '홍길동',
+          profileImageUrl: 'https://via.placeholder.com/40',
+        },
+      ],
+      hasMeeting: true,
+      childNodeIds: [2, 3],
+      updatedAt: '2026-03-26T10:00:00',
+    },
+    {
+      nodeId: 2,
+      parentId: 1,
+      title: '요구사항 분석',
+      description: null,
+      status: 'DONE' as const,
+      sortOrder: 1,
+      tags: [{ tagId: 5, name: '완료', color: '#00CC00' }],
+      assignees: [
+        {
+          userId: 1,
+          nickname: '홍길동',
+          profileImageUrl: 'https://via.placeholder.com/40',
+        },
+      ],
+      hasMeeting: false,
+      childNodeIds: [],
+      updatedAt: '2026-03-25T14:00:00',
+    },
+  ],
+  edges: [
+    {
+      edgeId: 2,
+      startNodeId: 1,
+      endNodeId: 3,
+      createdBy: {
+        userId: 12,
+        nickname: '황수민',
+        email: 'hwang@example.com',
+        profileImageUrl: 'https://via.placeholder.com/40',
+      },
+      comment: '코멘트입니다람쥐',
+    },
+  ],
+};
