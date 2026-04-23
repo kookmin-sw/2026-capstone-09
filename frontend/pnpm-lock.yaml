@@ -22,13 +22,13 @@ importers:
         version: 3.20.4
       '@wanteddev/wds':
         specifier: ^3.4.6
-        version: 3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/utils@1.4.2)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))
+        version: 3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/server@11.11.0)(@emotion/utils@1.4.2)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))
       '@wanteddev/wds-engine':
         specifier: ^3.4.6
-        version: 3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)
+        version: 3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/server@11.11.0)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)
       '@wanteddev/wds-icon':
         specifier: ^3.4.6
-        version: 3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)
+        version: 3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/server@11.11.0)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)
       '@wanteddev/wds-nextjs':
         specifier: ^3.4.6
         version: 3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/server@11.11.0)(@emotion/utils@1.4.2)(@types/react@19.2.14)(next@16.1.6(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)
@@ -4726,7 +4726,7 @@ snapshots:
 
   '@wanteddev/wds-icon@3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/server@11.11.0)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)':
     dependencies:
-      '@wanteddev/wds-engine': 3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)
+      '@wanteddev/wds-engine': 3.4.6(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.3))(@emotion/serialize@1.3.3)(@emotion/server@11.11.0)(@emotion/utils@1.4.2)(@types/react@19.2.14)(react@19.2.3)
       react: 19.2.3
     optionalDependencies:
       '@types/react': 19.2.14

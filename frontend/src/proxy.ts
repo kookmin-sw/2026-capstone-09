@@ -6,7 +6,7 @@ export function proxy(request: NextRequest) {
   const ua = request.headers.get('user-agent') ?? '';
 
   if (MOBILE_UA.test(ua) && !ua.includes('Electron')) {
-    return NextResponse.redirect(new URL('/desktop-only', request.url));
+    // return NextResponse.redirect(new URL('/desktop-only', request.url));
   }
   return NextResponse.next();
 }
