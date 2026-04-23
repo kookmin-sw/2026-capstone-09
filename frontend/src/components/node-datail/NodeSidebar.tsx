@@ -15,11 +15,12 @@ import NodeMeetingTab from './NodeMeetingTab';
 import NodeNoteTab from './NodeNoteTab';
 
 interface NodeSidebarProps {
-  nodeId: string | null;
+  nodeId: number | null;
+  projectId: number;
   onClose: () => void;
 }
 
-export function NodeSidebar({ nodeId, onClose }: NodeSidebarProps) {
+export function NodeSidebar({ nodeId, projectId, onClose }: NodeSidebarProps) {
   const savedNodeId = useSyncExternalStore(
     subscribeToSession,
     getSessionSnapshot,
@@ -30,7 +31,7 @@ export function NodeSidebar({ nodeId, onClose }: NodeSidebarProps) {
 
   useEffect(() => {
     if (nodeId) {
-      sessionStorage.setItem(SESSION_KEY, nodeId);
+      sessionStorage.setItem(SESSION_KEY, nodeId.toString());
     }
   }, [nodeId]);
 
@@ -74,7 +75,8 @@ export function NodeSidebar({ nodeId, onClose }: NodeSidebarProps) {
         <div className="flex-1 overflow-hidden px-14 pt-14">
           <NodeDetailLayout
             nodeId={nodeId}
-            noteContent={<NodeNoteTab />}
+            projectId={projectId}
+            noteContent={<NodeNoteTab nodeId={nodeId} projectId={projectId} />}
             meetingContent={<NodeMeetingTab />}
             value={value}
             onValueChange={setValue}

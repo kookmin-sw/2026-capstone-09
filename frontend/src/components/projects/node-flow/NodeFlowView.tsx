@@ -363,7 +363,11 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
           </div>
         </div>
       </div>
-      <NodeSidebar nodeId={selectedNodeId} onClose={() => setSelectedNodeId(null)} />
+      <NodeSidebar
+        projectId={projectId}
+        nodeId={selectedNodeId ?? null}
+        onClose={() => setSelectedNodeId(null)}
+      />
     </div>
   );
 }

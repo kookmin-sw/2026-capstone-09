@@ -19,7 +19,7 @@ interface BaseNodeProps {
 function BaseNodeComponent({ node, variant, isFocused, onNodeClick }: BaseNodeProps) {
   const { visibleTags, remainingTagsCount } = getVisibleTags(node.tags);
   const isMain = variant === 'main';
-  const nodeNumber = node.parentId ? `#${node.parentId}-${node.nodeId}` : `#${node.nodeId}`;
+  const nodeNumber = node.number;
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
