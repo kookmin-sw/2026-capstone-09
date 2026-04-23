@@ -66,70 +66,136 @@ export const EXAMPLE_PROJECT_DETAIL_LINKS = [
 ] as const;
 
 export const EXAMPLE_USERS = [
-  { name: '황수민', email: 'tnals655@kookmin.ac.kr' },
-  { name: '박건민', email: 'parkkunmin@kookmin.ac.kr' },
-  { name: '윤신지', email: 'shinji@kookmin.ac.kr' },
-  { name: '백채린', email: 'chaerin@kookmin.ac.kr' },
-  { name: '윤성욱', email: 'seonguk@kookmin.ac.kr' },
-  { name: '박정은', email: 'jeongeun@kookmin.ac.kr' },
+  { nickname: '황수민', email: 'tnals655@kookmin.ac.kr' },
+  { nickname: '박건민', email: 'parkkunmin@kookmin.ac.kr' },
+  { nickname: '윤신지', email: 'shinji@kookmin.ac.kr' },
+  { nicknamename: '백채린', email: 'chaerin@kookmin.ac.kr' },
+  { nickname: '윤성욱', email: 'seonguk@kookmin.ac.kr' },
+  { nickname: '박정은', email: 'jeongeun@kookmin.ac.kr' },
 ] as const;
 
 export const EXAMPLE_FLOWCHART_DATA = {
-  nodes: [
-    {
-      nodeId: 1,
-      parentId: null,
-      title: '기획 문서 작성',
-      description: '기획 초안 작성',
-      status: 'IN_PROGRESS' as const,
-      sortOrder: 0,
-      tags: [
-        { tagId: 1, name: '긴급', color: '#FF0000' },
-        { tagId: 2, name: 'UI', color: '#00FF00' },
-      ],
-      assignees: [
-        {
-          userId: 1,
-          nickname: '홍길동',
-          profileImageUrl: 'https://via.placeholder.com/40',
-        },
-      ],
-      hasMeeting: true,
-      childNodeIds: [2, 3],
-      updatedAt: '2026-03-26T10:00:00',
-    },
-    {
-      nodeId: 2,
-      parentId: 1,
-      title: '요구사항 분석',
-      description: null,
-      status: 'DONE' as const,
-      sortOrder: 1,
-      tags: [{ tagId: 5, name: '완료', color: '#00CC00' }],
-      assignees: [
-        {
-          userId: 1,
-          nickname: '홍길동',
-          profileImageUrl: 'https://via.placeholder.com/40',
-        },
-      ],
-      hasMeeting: false,
-      childNodeIds: [],
-      updatedAt: '2026-03-25T14:00:00',
-    },
-  ],
-  edges: [
-    {
-      edgeId: 2,
-      startNodeId: 1,
-      endNodeId: 3,
-      createdBy: {
-        userId: 12,
-        nickname: '황수민',
-        email: 'hwang@example.com',
-        profileImageUrl: 'https://via.placeholder.com/40',
+  status: 200,
+  code: 'OK',
+  message: '요청에 성공했습니다.',
+  data: {
+    nodes: [
+      {
+        nodeId: 100,
+        parentId: null,
+        number: '1',
+        title: '로그인 기능 개발',
+        description: 'OAuth2 로그인 시스템 구축',
+        status: 'IN_PROGRESS' as const,
+        sortOrder: 0,
+        tags: [
+          {
+            tagId: 5,
+            name: '긴급',
+            color: 'RED',
+          },
+        ],
+        assignees: [
+          {
+            userId: 91,
+            nickname: '플로우민',
+            email: 'flowmin@flowmeet.kr',
+            profileImageUrl: 'https://cdn.flowmeet.kr/profile/91.png',
+          },
+        ],
+        hasMeeting: true,
+        childNodeIds: [101, 102],
+        updatedAt: '2026-04-19T10:15:30',
       },
-      comment: '코멘트입니다람쥐',
-    },
-  ],
+      {
+        nodeId: 101,
+        parentId: 100,
+        number: '1.1',
+        title: '로그인 화면 기획',
+        description: 'OAuth2 로그인 플로우 정리',
+        status: 'IN_PROGRESS' as const,
+        sortOrder: 0,
+        tags: [
+          {
+            tagId: 5,
+            name: '긴급',
+            color: 'RED',
+          },
+        ],
+        assignees: [
+          {
+            userId: 91,
+            nickname: '플로우민',
+            email: 'flowmin@flowmeet.kr',
+            profileImageUrl: 'https://cdn.flowmeet.kr/profile/91.png',
+          },
+        ],
+        hasMeeting: false,
+        childNodeIds: [],
+        updatedAt: '2026-04-19T10:15:30',
+      },
+      {
+        nodeId: 102,
+        parentId: 100,
+        number: '1.2',
+        title: '로그인 API 구현',
+        description: '백엔드 API 개발',
+        status: 'TODO' as const,
+        sortOrder: 1,
+        tags: [],
+        assignees: [
+          {
+            userId: 91,
+            nickname: '플로우민',
+            email: 'flowmin@flowmeet.kr',
+            profileImageUrl: 'https://cdn.flowmeet.kr/profile/91.png',
+          },
+        ],
+        hasMeeting: false,
+        childNodeIds: [],
+        updatedAt: '2026-04-19T10:15:30',
+      },
+      {
+        nodeId: 200,
+        parentId: null,
+        number: '2',
+        title: '대시보드 구현',
+        description: '사용자 대시보드 UI/UX 개발',
+        status: 'TODO' as const,
+        sortOrder: 1,
+        tags: [
+          {
+            tagId: 3,
+            name: 'UI',
+            color: 'BLUE',
+          },
+        ],
+        assignees: [
+          {
+            userId: 91,
+            nickname: '플로우민',
+            email: 'flowmin@flowmeet.kr',
+            profileImageUrl: 'https://cdn.flowmeet.kr/profile/91.png',
+          },
+        ],
+        hasMeeting: false,
+        childNodeIds: [],
+        updatedAt: '2026-04-20T09:00:00',
+      },
+    ],
+    edges: [
+      {
+        edgeId: 9001,
+        startNodeId: 100,
+        endNodeId: 200,
+        createdBy: {
+          userId: 91,
+          nickname: '플로우민',
+          email: 'flowmin@flowmeet.kr',
+          profileImageUrl: 'https://cdn.flowmeet.kr/profile/91.png',
+        },
+        comment: '로그인 성공 시 대시보드로 이동',
+      },
+    ],
+  },
 };

@@ -34,7 +34,7 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
 
         // 목업 데이터
         await new Promise((resolve) => setTimeout(resolve, 100));
-        setFlowChart(JSON.parse(JSON.stringify(EXAMPLE_FLOWCHART_DATA)));
+        setFlowChart(JSON.parse(JSON.stringify(EXAMPLE_FLOWCHART_DATA.data)));
       } catch (error) {
         console.error('Failed to load flowchart:', error);
         setError(error instanceof Error ? error.message : '플로우차트를 불러오는데 실패했습니다.');
