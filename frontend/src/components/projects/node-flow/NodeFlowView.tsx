@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Loading } from '@/components/commons/loading/Loading';
 import { EXAMPLE_FLOWCHART_DATA } from '@/constants/exampleConstant';
 import { FlowChart } from '@/types/FlowChartTypes';
+import { privateApi } from '@/api';
 import { MainNodeConnector } from './MainNodeConnector';
 import { NodeBranch } from './NodeBranch';
 import NodeButton from './NodeButton';
@@ -34,6 +35,11 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
 
         // 목업 데이터
         await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // test
+        const test = await privateApi.project.getAllProjects();
+        console.log(test.data);
+
         setFlowChart(JSON.parse(JSON.stringify(EXAMPLE_FLOWCHART_DATA.data)));
       } catch (error) {
         console.error('Failed to load flowchart:', error);
@@ -118,11 +124,13 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
     return (
       <div className="flex flex-1 items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <p className="text-body-1 text-label-neutral font-medium">플로우차트를 불러오는데 실패했습니다</p>
+          <p className="text-body-1 text-label-neutral font-medium">
+            플로우차트를 불러오는데 실패했습니다
+          </p>
           <p className="text-caption-1 text-label-assistive">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-primary-40 text-white rounded-lg hover:bg-primary-50 transition-colors"
+            className="bg-primary-40 hover:bg-primary-50 rounded-lg px-4 py-2 text-white transition-colors"
           >
             다시 시도
           </button>
@@ -177,7 +185,7 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
           ...prev.nodes.map((node) =>
             node.nodeId === parentNodeId
               ? { ...node, childNodeIds: [...node.childNodeIds, newNodeId] }
-              : node
+              : node,
           ),
           newNode,
         ],
@@ -208,9 +216,8 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
   const handleCreateMainNode = () => {
     if (!flowChart) return;
 
-    const maxNodeId = flowChart.nodes.length > 0
-      ? Math.max(...flowChart.nodes.map((n) => n.nodeId))
-      : 0;
+    const maxNodeId =
+      flowChart.nodes.length > 0 ? Math.max(...flowChart.nodes.map((n) => n.nodeId)) : 0;
     const newNodeId = maxNodeId + 1;
 
     const mainNodesCount = flowChart.nodes.filter((n) => n.parentId === null).length;
@@ -254,18 +261,24 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
   };
 
   return (
-    <div className="w-full h-full relative">
+    <div className="relative h-full w-full">
       <div className="fixed top-[120px] right-6 z-[60]" onMouseDown={(e) => e.stopPropagation()}>
         <NodeButton
           onAddMainNode={handleCreateMainNode}
           onAddSubNode={focusedNodeId ? () => handleCreateSubNode(focusedNodeId) : undefined}
-          onAddMeeting={focusedNodeId ? () => {/* TODO: 모달 열기 */} : undefined}
+          onAddMeeting={
+            focusedNodeId
+              ? () => {
+                  /* TODO: 모달 열기 */
+                }
+              : undefined
+          }
         />
       </div>
 
       <div
         ref={containerRef}
-        className="w-full h-full overflow-auto bg-surface-canvas [&::-webkit-scrollbar]:hidden"
+        className="bg-surface-canvas h-full w-full overflow-auto [&::-webkit-scrollbar]:hidden"
         style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
@@ -279,7 +292,7 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
       >
         <div
           ref={contentRef}
-          className="inline-block min-w-[200vw] min-h-[200vh] pt-30 px-20 pb-20 relative"
+          className="relative inline-block min-h-[200vh] min-w-[200vw] px-20 pt-30 pb-20"
           style={{
             transform: `scale(${zoom})`,
             transformOrigin: '0 0',
@@ -304,8 +317,8 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
             {/* 노드 트리 */}
             <div className="flex gap-12">
               {mainNodes.map((mainNode) => {
-                const subNodesForMain = subNodes.filter(
-                  (sub) => mainNode.childNodeIds.includes(sub.nodeId)
+                const subNodesForMain = subNodes.filter((sub) =>
+                  mainNode.childNodeIds.includes(sub.nodeId),
                 );
 
                 return (
