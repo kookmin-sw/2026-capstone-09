@@ -71,6 +71,7 @@ export function NodeDetailLayout({
   useEffect(() => {
     const fetchNodeDetail = async () => {
       try {
+        console.log(projectId, nodeId);
         if (!projectId || !nodeId) return;
 
         const data = await privateApi.node.getNode(projectId, nodeId ?? 0);

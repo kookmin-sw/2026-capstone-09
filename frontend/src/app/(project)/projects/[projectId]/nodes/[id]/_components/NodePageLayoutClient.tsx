@@ -5,13 +5,15 @@ import { usePathname, useRouter } from 'next/navigation';
 import { NodeDetailLayout } from '@/components/node-datail/NodeDetailLayout';
 
 interface NodePageLayoutClientProps {
-  id: string;
+  nodeId: number;
+  projectId: number;
   noteContent: React.ReactNode;
   meetingContent: React.ReactNode;
 }
 
 export function NodePageLayoutClient({
-  id,
+  nodeId,
+  projectId,
   noteContent,
   meetingContent,
 }: NodePageLayoutClientProps) {
@@ -24,11 +26,12 @@ export function NodePageLayoutClient({
 
   return (
     <NodeDetailLayout
-      nodeId={id}
+      nodeId={nodeId}
+      projectId={projectId}
       noteContent={noteContent}
       meetingContent={meetingContent}
       value={value}
-      onValueChange={(tab) => router.replace(`/nodes/${id}/${tab}`)}
+      onValueChange={(tab) => router.replace(`/projects/${projectId}/nodes/${nodeId}/${tab}`)}
     />
   );
 }
