@@ -99,6 +99,9 @@ export function NodeBranch({
               variant="sub"
               isFocused={focusedNodeId === subNode.nodeId}
               onNodeClick={onNodeClick}
+              onCreateSubNode={onCreateSubNode}
+              onCreateReference={onCreateReference}
+              onDeleteNode={onDeleteNode}
             />
           </div>
         )}
@@ -279,6 +282,9 @@ export function NodeBranch({
             variant={depth === 0 ? 'main' : 'sub'}
             isFocused={focusedNodeId === mainNode.nodeId}
             onNodeClick={onNodeClick}
+            onCreateSubNode={onCreateSubNode}
+            onCreateReference={onCreateReference}
+            onDeleteNode={onDeleteNode}
           />
         </div>
 

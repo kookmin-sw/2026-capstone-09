@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { privateApi } from '@/api';
-import { GetFlowchartResponse, NodeItem } from '@/api/Api';
+import { GetFlowchartResponse } from '@/api/Api';
 import { Loading } from '@/components/commons/loading/Loading';
 import { MainNodeConnector } from './MainNodeConnector';
 import { NodeBranch } from './NodeBranch';
@@ -140,60 +140,47 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
   const mainNodes = flowChart?.nodes?.filter((node) => !node.parentId) ?? [];
   const subNodes = flowChart?.nodes?.filter((node) => !!node.parentId) ?? [];
 
-  const handleCreateSubNode = (parentNodeId: number) => {
+  const handleCreateSubNode = async (parentNodeId: number) => {
     if (!flowChart?.nodes) return;
 
     const parentNode = flowChart.nodes.find((n) => n.nodeId === parentNodeId);
     if (!parentNode) return;
 
-    const nodeIds = flowChart.nodes.map((n) => n.nodeId).filter((id): id is number => id !== undefined);
-    const newNodeId = nodeIds.length > 0 ? Math.max(...nodeIds) + 1 : 1;
+    try {
+      const childCount = parentNode.childNodeIds?.length ?? 0;
 
-    const childCount = parentNode.childNodeIds?.length ?? 0;
-    const newNodeNumber = `${parentNode.number ?? '0'}.${childCount + 1}`;
+      await privateApi.node.createNode(projectId, {
+        title: `새 서브 노드`,
+        type: 'SUB',
+        parentId: parentNodeId,
+      });
 
-    const newNode: NodeItem = {
-      nodeId: newNodeId,
-      parentId: parentNodeId,
-      number: newNodeNumber,
-      title: `새 서브 노드 ${newNodeId}`,
-      description: undefined,
-      status: 'WAITING',
-      sortOrder: childCount,
-      tags: [],
-      assignees: [],
-      hasMeeting: false,
-      childNodeIds: [],
-      updatedAt: new Date().toISOString(),
-    };
+      const data = await privateApi.node.getFlowchart(projectId);
+      setFlowChart(data.data.data ?? null);
 
-    setFlowChart((prev) => {
-      if (!prev?.nodes) return prev;
+      if (data.data.data?.nodes) {
+        const updatedParent = data.data.data.nodes.find((n) => n.nodeId === parentNodeId);
+        const newChildIds = updatedParent?.childNodeIds ?? [];
+        if (newChildIds.length > childCount) {
+          const newNodeId = newChildIds[newChildIds.length - 1];
+          setFocusedNodeId(newNodeId);
 
-      return {
-        ...prev,
-        nodes: [
-          ...prev.nodes.map((node) =>
-            node.nodeId === parentNodeId
-              ? { ...node, childNodeIds: [...(node.childNodeIds ?? []), newNodeId] }
-              : node,
-          ),
-          newNode,
-        ],
-      };
-    });
-    setFocusedNodeId(newNodeId);
-
-    setTimeout(() => {
-      const newNodeElement = document.querySelector(`[data-node-id="${newNodeId}"]`);
-      if (newNodeElement) {
-        newNodeElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center',
-          inline: 'center',
-        });
+          setTimeout(() => {
+            const newNodeElement = document.querySelector(`[data-node-id="${newNodeId}"]`);
+            if (newNodeElement) {
+              newNodeElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+                inline: 'center',
+              });
+            }
+          }, 100);
+        }
       }
-    }, 100);
+    } catch (error) {
+      console.error('Failed to create sub node:', error);
+      alert('서브 노드 생성에 실패했습니다.');
+    }
   };
 
   const handleCreateReference = (_startNodeId: number) => {
@@ -204,51 +191,44 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
     // TODO: 삭제 확인 모달 열기 → API 호출 → 상태 업데이트
   };
 
-  const handleCreateMainNode = () => {
+  const handleCreateMainNode = async () => {
     if (!flowChart?.nodes) return;
 
-    const nodeIds = flowChart.nodes.map((n) => n.nodeId).filter((id): id is number => id !== undefined);
-    const maxNodeId = nodeIds.length > 0 ? Math.max(...nodeIds) : 0;
-    const newNodeId = maxNodeId + 1;
+    try {
+      const mainNodesCount = flowChart.nodes.filter((n) => !n.parentId).length;
 
-    const mainNodesCount = flowChart.nodes.filter((n) => !n.parentId).length;
-    const newNodeNumber = `${mainNodesCount + 1}`;
+      await privateApi.node.createNode(projectId, {
+        title: `새 메인 노드`,
+        type: 'MAIN',
+      });
 
-    const newNode: NodeItem = {
-      nodeId: newNodeId,
-      parentId: undefined,
-      number: newNodeNumber,
-      title: `새 메인 노드 ${newNodeNumber}`,
-      description: undefined,
-      status: 'WAITING',
-      sortOrder: mainNodesCount,
-      tags: [],
-      assignees: [],
-      hasMeeting: false,
-      childNodeIds: [],
-      updatedAt: new Date().toISOString(),
-    };
+      const data = await privateApi.node.getFlowchart(projectId);
+      setFlowChart(data.data.data ?? null);
 
-    setFlowChart((prev) => {
-      if (!prev?.nodes) return prev;
+      if (data.data.data?.nodes) {
+        const mainNodes = data.data.data.nodes.filter((n) => !n.parentId);
+        if (mainNodes.length > mainNodesCount) {
+          const newNode = mainNodes[mainNodes.length - 1];
+          if (newNode.nodeId !== undefined) {
+            setFocusedNodeId(newNode.nodeId);
 
-      return {
-        ...prev,
-        nodes: [...prev.nodes, newNode],
-      };
-    });
-    setFocusedNodeId(newNodeId);
-
-    setTimeout(() => {
-      const newNodeElement = document.querySelector(`[data-node-id="${newNodeId}"]`);
-      if (newNodeElement) {
-        newNodeElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center',
-          inline: 'center',
-        });
+            setTimeout(() => {
+              const newNodeElement = document.querySelector(`[data-node-id="${newNode.nodeId}"]`);
+              if (newNodeElement) {
+                newNodeElement.scrollIntoView({
+                  behavior: 'smooth',
+                  block: 'center',
+                  inline: 'center',
+                });
+              }
+            }, 100);
+          }
+        }
       }
-    }, 100);
+    } catch (error) {
+      console.error('Failed to create main node:', error);
+      alert('메인 노드 생성에 실패했습니다.');
+    }
   };
 
   return (

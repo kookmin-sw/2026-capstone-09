@@ -10,9 +10,20 @@ interface BaseNodeProps {
   variant: 'main' | 'sub';
   isFocused: boolean;
   onNodeClick: (nodeId: number) => void;
+  onCreateSubNode?: (nodeId: number) => void;
+  onCreateReference?: (nodeId: number) => void;
+  onDeleteNode?: (nodeId: number) => void;
 }
 
-function BaseNodeComponent({ node, variant, isFocused, onNodeClick }: BaseNodeProps) {
+function BaseNodeComponent({
+  node,
+  variant,
+  isFocused,
+  onNodeClick,
+  onCreateSubNode,
+  onCreateReference,
+  onDeleteNode,
+}: BaseNodeProps) {
   const { visibleTags, remainingTagsCount } = getVisibleTags(node.tags ?? []);
   const isMain = variant === 'main';
   const nodeNumber = node.number ?? `#${node.nodeId}`;
@@ -29,7 +40,9 @@ function BaseNodeComponent({ node, variant, isFocused, onNodeClick }: BaseNodePr
   };
 
   const handleCreateSubNode = () => {
-    // TODO: 서브 노드 생성 모달 열기
+    if (node.nodeId !== undefined && onCreateSubNode) {
+      onCreateSubNode(node.nodeId);
+    }
   };
 
   const handleCreateMeeting = () => {
@@ -45,11 +58,15 @@ function BaseNodeComponent({ node, variant, isFocused, onNodeClick }: BaseNodePr
   };
 
   const handleCreateReference = () => {
-    // TODO: 참조 노드 생성 모달 열기
+    if (node.nodeId !== undefined && onCreateReference) {
+      onCreateReference(node.nodeId);
+    }
   };
 
   const handleDelete = () => {
-    // TODO: 삭제 확인 모달 열기
+    if (node.nodeId !== undefined && onDeleteNode) {
+      onDeleteNode(node.nodeId);
+    }
   };
 
   const menuVariant = isMain
