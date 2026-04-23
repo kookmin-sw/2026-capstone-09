@@ -15,33 +15,34 @@ const PreventEnter = Extension.create({
 });
 
 export function useTitleEditor(title?: string) {
-  return useEditor({
-    extensions: [
-      StarterKit,
-      Placeholder.configure({
-        placeholder: '제목을 입력하세요.',
-      }),
-      PreventEnter,
-    ],
-    content: title ?? '새 노드',
+  return useEditor(
+    {
+      extensions: [
+        StarterKit,
+        Placeholder.configure({
+          placeholder: '제목을 입력하세요.',
+        }),
+        PreventEnter,
+      ],
+      content: title ?? '새 노드',
 
-    editorProps: {
-      handlePaste(view, event) {
-        const text = event.clipboardData?.getData('text/plain');
-        if (text) {
-          event.preventDefault();
-          view.dispatch(
-            view.state.tr.insertText(text.replace(/\n/g, ' '))
-          );
-          return true;
-        }
-        return false;
+      editorProps: {
+        handlePaste(view, event) {
+          const text = event.clipboardData?.getData('text/plain');
+          if (text) {
+            event.preventDefault();
+            view.dispatch(view.state.tr.insertText(text.replace(/\n/g, ' ')));
+            return true;
+          }
+          return false;
+        },
+        attributes: {
+          class: 'prose focus:outline-none text-2xl font-medium',
+        },
       },
-      attributes: {
-        class: 'prose focus:outline-none text-2xl font-medium',
-      },
+
+      immediatelyRender: false,
     },
-
-    immediatelyRender: false,
-  });
+    [title],
+  );
 }
