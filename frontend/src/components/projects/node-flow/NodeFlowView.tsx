@@ -6,7 +6,7 @@ import { privateApi } from '@/api';
 import { MainNodeConnector } from './MainNodeConnector';
 import { NodeBranch } from './NodeBranch';
 import NodeButton from './NodeButton';
-import { GetFlowchartResponse } from '@/api/Api';
+import { GetFlowchartResponse, NodeItem, EdgeItem } from '@/api/Api';
 
 interface NodeFlowViewProps {
   projectId: number;
@@ -141,28 +141,29 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
     );
   }
 
-  const mainNodes = flowChart?.nodes?.filter((node) => node.parentId === null);
-  const subNodes = flowChart?.nodes?.filter((node) => node.parentId !== null);
+  const mainNodes = flowChart?.nodes?.filter((node) => !node.parentId) ?? [];
+  const subNodes = flowChart?.nodes?.filter((node) => !!node.parentId) ?? [];
 
   const handleCreateSubNode = (parentNodeId: number) => {
-    if (!flowChart) return;
+    if (!flowChart?.nodes) return;
 
-    const parentNode = flowChart?.nodes?.find((n) => n.nodeId === parentNodeId);
+    const parentNode = flowChart.nodes.find((n) => n.nodeId === parentNodeId);
     if (!parentNode) return;
 
-    const newNodeId = Math.max(...flowChart.nodes.map((n) => n.nodeId)) + 1;
+    const nodeIds = flowChart.nodes.map((n) => n.nodeId).filter((id): id is number => id !== undefined);
+    const newNodeId = nodeIds.length > 0 ? Math.max(...nodeIds) + 1 : 1;
 
-    const childCount = parentNode.childNodeIds?.length;
-    const newNodeNumber = `${parentNode.number}.${childCount ? childCount + 1 : 0}`;
+    const childCount = parentNode.childNodeIds?.length ?? 0;
+    const newNodeNumber = `${parentNode.number ?? '0'}.${childCount + 1}`;
 
-    const newNode = {
+    const newNode: NodeItem = {
       nodeId: newNodeId,
       parentId: parentNodeId,
       number: newNodeNumber,
       title: `새 서브 노드 ${newNodeId}`,
-      description: null,
-      status: 'TODO' as const,
-      sortOrder: parentNode.childNodeIds?.length,
+      description: undefined,
+      status: 'WAITING',
+      sortOrder: childCount,
       tags: [],
       assignees: [],
       hasMeeting: false,
@@ -171,14 +172,14 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
     };
 
     setFlowChart((prev) => {
-      if (!prev) return prev;
+      if (!prev?.nodes) return prev;
 
       return {
         ...prev,
         nodes: [
           ...prev.nodes.map((node) =>
             node.nodeId === parentNodeId
-              ? { ...node, childNodeIds: [...node.childNodeIds, newNodeId] }
+              ? { ...node, childNodeIds: [...(node.childNodeIds ?? []), newNodeId] }
               : node,
           ),
           newNode,
@@ -208,22 +209,22 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
   };
 
   const handleCreateMainNode = () => {
-    if (!flowChart) return;
+    if (!flowChart?.nodes) return;
 
-    const maxNodeId =
-      flowChart.nodes.length > 0 ? Math.max(...flowChart.nodes.map((n) => n.nodeId)) : 0;
+    const nodeIds = flowChart.nodes.map((n) => n.nodeId).filter((id): id is number => id !== undefined);
+    const maxNodeId = nodeIds.length > 0 ? Math.max(...nodeIds) : 0;
     const newNodeId = maxNodeId + 1;
 
-    const mainNodesCount = flowChart.nodes.filter((n) => n.parentId === null).length;
+    const mainNodesCount = flowChart.nodes.filter((n) => !n.parentId).length;
     const newNodeNumber = `${mainNodesCount + 1}`;
 
-    const newNode = {
+    const newNode: NodeItem = {
       nodeId: newNodeId,
-      parentId: null,
+      parentId: undefined,
       number: newNodeNumber,
       title: `새 메인 노드 ${newNodeNumber}`,
-      description: null,
-      status: 'TODO' as const,
+      description: undefined,
+      status: 'WAITING',
       sortOrder: mainNodesCount,
       tags: [],
       assignees: [],
@@ -233,7 +234,7 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
     };
 
     setFlowChart((prev) => {
-      if (!prev) return prev;
+      if (!prev?.nodes) return prev;
 
       return {
         ...prev,
@@ -259,7 +260,7 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
       <div className="fixed top-[120px] right-6 z-[60]" onMouseDown={(e) => e.stopPropagation()}>
         <NodeButton
           onAddMainNode={handleCreateMainNode}
-          onAddSubNode={focusedNodeId ? () => handleCreateSubNode(focusedNodeId) : undefined}
+          onAddSubNode={focusedNodeId !== null ? () => handleCreateSubNode(focusedNodeId) : undefined}
           onAddMeeting={
             focusedNodeId
               ? () => {
@@ -296,6 +297,7 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
           {mainNodes?.map((mainNode, index) => {
             if (index === mainNodes.length - 1) return null;
             const nextNode = mainNodes[index + 1];
+            if (!mainNode.nodeId || !nextNode.nodeId) return null;
             return (
               <MainNodeConnector
                 key={`connector-${mainNode.nodeId}-${nextNode.nodeId}`}
@@ -310,18 +312,18 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
           <div className="flex flex-col gap-8">
             {/* 노드 트리 */}
             <div className="flex gap-12">
-              {mainNodes?.map((mainNode) => {
+              {mainNodes?.map((mainNode, idx) => {
                 const subNodesForMain = subNodes?.filter((sub) =>
-                  mainNode?.childNodeIds?.includes(sub.nodeId),
+                  sub.nodeId !== undefined && mainNode?.childNodeIds?.includes(sub.nodeId),
                 );
 
                 return (
                   <NodeBranch
-                    key={mainNode.nodeId}
+                    key={mainNode.nodeId ?? `main-${idx}`}
                     mainNode={mainNode}
-                    subNodes={subNodesForMain}
-                    allNodes={flowChart.nodes}
-                    allEdges={flowChart.edges}
+                    subNodes={subNodesForMain ?? []}
+                    allNodes={flowChart.nodes ?? []}
+                    allEdges={flowChart.edges ?? []}
                     focusedNodeId={focusedNodeId}
                     onNodeClick={handleNodeClick}
                     onCreateSubNode={handleCreateSubNode}
