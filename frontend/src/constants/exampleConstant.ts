@@ -121,7 +121,7 @@ export const EXAMPLE_NODE_DETAIL = {
   },
   createdAt: '2026-03-01T09:00:00',
   updatedAt: '2026-04-19T10:15:30',
-};
+}
 
 export const EXAMPLE_FLOWCHART_DATA = {
   nodes: [
