@@ -98,10 +98,6 @@ public class MeetingReminderScheduler {
                     }
                 }
 
-                if (setting.isDesktopEnabled()) {
-                    // TODO: SSE 푸시 알림 구현
-                    log.debug("[MeetingReminderScheduler] SSE 푸시 알림 미구현. userId={}, nodeId={}", userId, nodeId);
-                }
             }
         }
     }
