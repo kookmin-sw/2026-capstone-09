@@ -1,13 +1,8 @@
 import {
-  Avatar,
-  AvatarGroup,
   ContentBadge,
-  Tooltip,
-  TooltipContent,
-  TooltipGroup,
-  TooltipTrigger,
 } from '@wanteddev/wds';
 import { memo } from 'react';
+import { Users } from '@/components/commons/user/UserAvatarGroup';
 import type { Node } from '@/types/FlowChartTypes';
 import { formatDate, getVisibleTags } from '@/utils/nodeUtils';
 import { NodeMenu } from './NodeMenu';
@@ -16,25 +11,32 @@ interface BaseNodeProps {
   node: Node;
   variant: 'main' | 'sub';
   isFocused: boolean;
-  onNodeClick: (nodeId: number) => void;
+  onNodeClick: (nodeId: number, e?: React.MouseEvent) => void;
+  onCreateSubNode?: (parentNodeId: number) => void;
+  onCreateReference?: (startNodeId: number) => void;
+  onDeleteNode?: (nodeId: number) => void;
+  allNodes?: Node[];
 }
 
-function BaseNodeComponent({ node, variant, isFocused, onNodeClick }: BaseNodeProps) {
+function BaseNodeComponent({
+  node,
+  variant,
+  isFocused,
+  onNodeClick,
+  onCreateSubNode,
+  onCreateReference,
+  onDeleteNode,
+}: BaseNodeProps) {
   const { visibleTags, remainingTagsCount } = getVisibleTags(node.tags);
   const isMain = variant === 'main';
-  const nodeNumber = node.parentId ? `#${node.parentId}-${node.nodeId}` : `#${node.nodeId}`;
+  const nodeNumber = `#${node.number}`;
 
   const handleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onNodeClick(node.nodeId);
-  };
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    e.stopPropagation();
+    onNodeClick(node.nodeId, e);
   };
 
   const handleCreateSubNode = () => {
-    // TODO: 서브 노드 생성 모달 열기
+    onCreateSubNode?.(node.nodeId);
   };
 
   const handleCreateMeeting = () => {
@@ -50,11 +52,11 @@ function BaseNodeComponent({ node, variant, isFocused, onNodeClick }: BaseNodePr
   };
 
   const handleCreateReference = () => {
-    // TODO: 참조 노드 생성 모달 열기
+    onCreateReference?.(node.nodeId);
   };
 
   const handleDelete = () => {
-    // TODO: 삭제 확인 모달 열기
+    onDeleteNode?.(node.nodeId);
   };
 
   const menuVariant = isMain
@@ -63,8 +65,11 @@ function BaseNodeComponent({ node, variant, isFocused, onNodeClick }: BaseNodePr
     ? 'sub-with-meeting'
     : 'sub-without-meeting';
 
+  const menuKey = `menu-${node.nodeId}-${node.childNodeIds.length}`;
+
   return (
     <div
+      data-node-id={node.nodeId}
       className={`bg-white flex flex-col overflow-hidden rounded-xl p-4 outline outline-1 outline-offset-[-1px] cursor-pointer transition-all
         ${isMain ? 'w-64 gap-5' : 'w-60 gap-3'}
         ${isFocused
@@ -75,7 +80,6 @@ function BaseNodeComponent({ node, variant, isFocused, onNodeClick }: BaseNodePr
         boxShadow: '-2px -2px 4px 0px color-mix(in srgb, var(--color-primary-40) 20%, transparent), 2px 2px 4px 0px color-mix(in srgb, var(--color-primary-40) 20%, transparent)'
       } : undefined}
       onClick={handleClick}
-      onMouseDown={handleMouseDown}
     >
       <div className="flex self-stretch flex-col gap-1">
         <div className="flex w-full items-center justify-between">
@@ -95,6 +99,7 @@ function BaseNodeComponent({ node, variant, isFocused, onNodeClick }: BaseNodePr
           </div>
 
           <NodeMenu
+            key={menuKey}
             variant={menuVariant}
             onCreateSubNode={handleCreateSubNode}
             onCreateMeeting={handleCreateMeeting}
@@ -102,6 +107,7 @@ function BaseNodeComponent({ node, variant, isFocused, onNodeClick }: BaseNodePr
             onDeleteMeeting={handleDeleteMeeting}
             onCreateReference={handleCreateReference}
             onDelete={handleDelete}
+            onMenuClick={handleClick}
           />
         </div>
 
@@ -141,42 +147,7 @@ function BaseNodeComponent({ node, variant, isFocused, onNodeClick }: BaseNodePr
 
         {node.assignees.length > 0 && (
           <div className="shrink-0">
-            <TooltipGroup>
-              <AvatarGroup size="xsmall">
-                {node.assignees.slice(0, 3).map((assignee, index) => (
-                  <Tooltip key={assignee.userId}>
-                    <TooltipTrigger>
-                      <div className={index === 0 ? '' : '-ml-1'} style={{ zoom: 0.75 }}>
-                        <Avatar
-                          variant="person"
-                          size="xsmall"
-                          src={assignee.profileImageUrl}
-                        />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent
-                      size="small"
-                      position={
-                        index === node.assignees.length - 1
-                          ? 'bottom-end'
-                          : 'bottom-center'
-                      }
-                    >
-                      <div className="flex min-w-[100px] items-center gap-2 px-1 py-1.5">
-                        <Avatar
-                          variant="person"
-                          size="xsmall"
-                          src={assignee.profileImageUrl}
-                        />
-                        <span className="text-caption-1 text-neutral-100 font-medium">
-                          {assignee.nickname}
-                        </span>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                ))}
-              </AvatarGroup>
-            </TooltipGroup>
+            <Users users={node.assignees} maxVisible={2} compact />
           </div>
         )}
       </div>
