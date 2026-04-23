@@ -13,9 +13,9 @@
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.19",
+    "@tiptap/core": "^3.22.4",
     "@tiptap/extension-collaboration": "^3.20.1",
-    "@tiptap/extension-collaboration-cursor": "^2.26.2",
-    "@tiptap/extensions": "^3.22.4",
+    "@tiptap/extensions": "^3.20.4",
     "@tiptap/react": "^3.20.1",
     "@tiptap/starter-kit": "^3.20.1",
     "@wanteddev/wds": "^3.4.6",

@@ -14,6 +14,7 @@ export default function Editor() {
         placeholder: '내용을 입력하세요.',
       }),
     ],
+
     // TODO : API 연결 이후 API값으로 변경
     content: '',
 
