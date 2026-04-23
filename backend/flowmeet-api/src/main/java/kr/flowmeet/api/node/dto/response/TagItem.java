@@ -2,6 +2,7 @@ package kr.flowmeet.api.node.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import kr.flowmeet.domain.node.entity.Tag;
+import kr.flowmeet.domain.node.entity.TagColor;
 
 @Schema(description = "태그 정보")
 public record TagItem(
@@ -9,8 +10,8 @@ public record TagItem(
         Long tagId,
         @Schema(description = "태그 이름", example = "긴급")
         String name,
-        @Schema(description = "태그 색상(HEX)", example = "#FF5A5F")
-        String color
+        @Schema(description = "태그 색상", example = "RED")
+        TagColor color
 ) {
 
     public static TagItem from(final Tag tag) {

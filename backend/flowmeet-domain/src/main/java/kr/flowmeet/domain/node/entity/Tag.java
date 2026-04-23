@@ -2,6 +2,8 @@ package kr.flowmeet.domain.node.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -51,17 +53,18 @@ public class Tag extends BaseTimeEntity {
     @Column(nullable = false, length = 50)
     private String name;
 
-    @Column(nullable = false, length = 20)
-    private String color;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TagColor color;
 
     @Builder
-    public Tag(Long projectId, String name, String color) {
+    public Tag(Long projectId, String name, TagColor color) {
         this.projectId = projectId;
         this.name = name;
         this.color = color;
     }
 
-    public void update(final String name, final String color) {
+    public void update(final String name, final TagColor color) {
         this.name = name;
         this.color = color;
     }
