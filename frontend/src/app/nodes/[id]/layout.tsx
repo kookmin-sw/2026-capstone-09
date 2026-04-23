@@ -1,6 +1,6 @@
 import NodeMeetingTab from '@/components/node-datail/NodeMeetingTab';
 import NodeNoteTab from '@/components/node-datail/NodeNoteTab';
-import { NodePageLayoutClient } from './_components/NodePageLayoutDetail';
+import { NodePageLayoutClient } from './_components/NodePageLayoutClient';
 
 interface NodeDetailLayoutProps {
   params: Promise<{ id: string }>;
