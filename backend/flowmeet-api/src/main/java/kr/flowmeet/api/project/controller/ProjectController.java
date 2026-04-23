@@ -25,6 +25,7 @@ import kr.flowmeet.api.project.dto.response.CreateProjectResponse;
 import kr.flowmeet.api.project.dto.response.GetProjectResponse;
 import kr.flowmeet.api.project.dto.response.ProjectSummaryResponse;
 import kr.flowmeet.api.project.facade.ProjectFacade;
+import kr.flowmeet.api.project.success.ProjectSuccessCode;
 import kr.flowmeet.auth.annotation.UserId;
 import kr.flowmeet.domain.project.service.ProjectSortType;
 
@@ -37,9 +38,11 @@ public class ProjectController implements ProjectApi {
 
     @Override
     @PostMapping
-    public CommonResponse<CreateProjectResponse> createProject(@UserId Long userId,
-                                                               @Valid @RequestBody CreateProjectRequest request) {
-        return CommonResponse.ok(projectFacade.createProject(userId, request));
+    public CommonResponse<CreateProjectResponse> createProject(
+            @UserId Long userId,
+            @Valid @RequestBody CreateProjectRequest request
+    ) {
+        return CommonResponse.ok(ProjectSuccessCode.CREATE_PROJECT, projectFacade.createProject(userId, request));
     }
 
     @Override
@@ -52,21 +55,27 @@ public class ProjectController implements ProjectApi {
             @RequestParam(required = false) String cursorValue,
             @RequestParam(defaultValue = "20") int size
     ) {
-        return CommonResponse.ok(projectFacade.getAllProjects(userId, search, sort, cursorId, cursorValue, size));
+        return CommonResponse.ok(
+                ProjectSuccessCode.GET_ALL_PROJECTS,
+                projectFacade.getAllProjects(userId, search, sort, cursorId, cursorValue, size)
+        );
     }
 
     @Override
     @GetMapping("/{projectId}")
     public CommonResponse<GetProjectResponse> getProject(@UserId Long userId, @PathVariable Long projectId) {
-        return CommonResponse.ok(projectFacade.getProject(userId, projectId));
+        return CommonResponse.ok(ProjectSuccessCode.GET_PROJECT, projectFacade.getProject(userId, projectId));
     }
 
     @Override
     @PatchMapping("/{projectId}")
-    public CommonResponse<?> updateProject(@UserId Long userId, @PathVariable Long projectId,
-                                           @Valid @RequestBody UpdateProjectRequest request) {
+    public CommonResponse<?> updateProject(
+            @UserId Long userId,
+            @PathVariable Long projectId,
+            @Valid @RequestBody UpdateProjectRequest request
+    ) {
         projectFacade.updateProject(userId, projectId, request);
-        return CommonResponse.ok();
+        return CommonResponse.ok(ProjectSuccessCode.UPDATE_PROJECT);
     }
 
     @Override
@@ -74,30 +83,39 @@ public class ProjectController implements ProjectApi {
     public CommonResponse<?> updateProfileImage(
             @UserId Long userId,
             @PathVariable Long projectId,
-            @RequestPart("profileImage") MultipartFile profileImage) {
+            @RequestPart("profileImage") MultipartFile profileImage
+    ) {
         projectFacade.updateProfileImage(userId, projectId, profileImage);
-        return CommonResponse.ok();
+        return CommonResponse.ok(ProjectSuccessCode.UPDATE_PROFILE_IMAGE);
     }
 
     @Override
     @DeleteMapping("/{projectId}")
     public CommonResponse<?> deleteProject(@UserId Long userId, @PathVariable Long projectId) {
         projectFacade.deleteProject(userId, projectId);
-        return CommonResponse.ok();
+        return CommonResponse.ok(ProjectSuccessCode.DELETE_PROJECT);
     }
 
     @Override
     @PostMapping("/{projectId}/invite")
-    public CommonResponse<?> inviteMember(@UserId Long userId, @PathVariable Long projectId,
-                                          @Valid @RequestBody InviteProjectMemberRequest request) {
+    public CommonResponse<?> inviteMember(
+            @UserId Long userId,
+            @PathVariable Long projectId,
+            @Valid @RequestBody InviteProjectMemberRequest request
+    ) {
         projectFacade.inviteMember(userId, projectId, request);
-        return CommonResponse.ok();
+        return CommonResponse.ok(ProjectSuccessCode.INVITE_MEMBER);
     }
 
     @Override
     @PostMapping("/invitations/accept")
-    public CommonResponse<AcceptProjectInvitationResponse> acceptInvitation(@UserId Long userId,
-                                                                            @Valid @RequestBody AcceptProjectInvitationRequest request) {
-        return CommonResponse.ok(projectFacade.acceptInvitation(userId, request));
+    public CommonResponse<AcceptProjectInvitationResponse> acceptInvitation(
+            @UserId Long userId,
+            @Valid @RequestBody AcceptProjectInvitationRequest request
+    ) {
+        return CommonResponse.ok(
+                ProjectSuccessCode.ACCEPT_INVITATION,
+                projectFacade.acceptInvitation(userId, request)
+        );
     }
 }

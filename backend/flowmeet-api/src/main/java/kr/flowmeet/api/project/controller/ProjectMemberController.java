@@ -13,6 +13,7 @@ import kr.flowmeet.api.common.dto.CommonResponse;
 import kr.flowmeet.api.project.dto.response.GetAllProjectMembersResponse;
 import kr.flowmeet.api.project.facade.ProjectMemberFacade;
 import kr.flowmeet.api.project.dto.request.UpdateProjectMemberRoleRequest;
+import kr.flowmeet.api.project.success.ProjectSuccessCode;
 import kr.flowmeet.auth.annotation.UserId;
 
 @RestController
@@ -24,31 +25,43 @@ public class ProjectMemberController implements ProjectMemberApi {
 
     @Override
     @GetMapping
-    public CommonResponse<GetAllProjectMembersResponse> getAllMembers(@UserId Long userId, @PathVariable Long projectId) {
-        return CommonResponse.ok(projectMemberFacade.getAllMembers(userId, projectId));
+    public CommonResponse<GetAllProjectMembersResponse> getAllMembers(
+            @UserId Long userId,
+            @PathVariable Long projectId
+    ) {
+        return CommonResponse.ok(
+                ProjectSuccessCode.GET_ALL_MEMBERS,
+                projectMemberFacade.getAllMembers(userId, projectId)
+        );
     }
 
     @Override
     @PatchMapping("/{memberId}/role")
-    public CommonResponse<?> updateMemberRole(@UserId Long userId, @PathVariable Long projectId,
-                                              @PathVariable Long memberId,
-                                              @Valid @RequestBody UpdateProjectMemberRoleRequest request) {
+    public CommonResponse<?> updateMemberRole(
+            @UserId Long userId,
+            @PathVariable Long projectId,
+            @PathVariable Long memberId,
+            @Valid @RequestBody UpdateProjectMemberRoleRequest request
+    ) {
         projectMemberFacade.updateMemberRole(userId, projectId, memberId, request);
-        return CommonResponse.ok();
+        return CommonResponse.ok(ProjectSuccessCode.UPDATE_MEMBER_ROLE);
     }
 
     @Override
     @DeleteMapping("/{memberId}")
-    public CommonResponse<?> deleteMember(@UserId Long userId, @PathVariable Long projectId,
-                                          @PathVariable Long memberId) {
+    public CommonResponse<?> deleteMember(
+            @UserId Long userId,
+            @PathVariable Long projectId,
+            @PathVariable Long memberId
+    ) {
         projectMemberFacade.deleteMember(userId, projectId, memberId);
-        return CommonResponse.ok();
+        return CommonResponse.ok(ProjectSuccessCode.DELETE_MEMBER);
     }
 
     @Override
     @DeleteMapping("/me")
     public CommonResponse<?> leaveProject(@UserId Long userId, @PathVariable Long projectId) {
         projectMemberFacade.leaveProject(userId, projectId);
-        return CommonResponse.ok();
+        return CommonResponse.ok(ProjectSuccessCode.LEAVE_PROJECT);
     }
 }

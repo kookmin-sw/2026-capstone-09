@@ -1,6 +1,5 @@
 package kr.flowmeet.api.notification.controller;
 
-import kr.flowmeet.domain.common.vo.CursorSlice;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -13,6 +12,7 @@ import kr.flowmeet.api.common.dto.CursorSliceResponse;
 import kr.flowmeet.api.notification.dto.response.NotificationSummaryResponse;
 import kr.flowmeet.api.notification.dto.response.GetUnreadCountResponse;
 import kr.flowmeet.api.notification.facade.NotificationFacade;
+import kr.flowmeet.api.notification.success.NotificationSuccessCode;
 import kr.flowmeet.auth.annotation.UserId;
 
 @RestController
@@ -30,26 +30,29 @@ public class NotificationController implements NotificationApi {
             @RequestParam(required = false) Long cursorId,
             @RequestParam(defaultValue = "20") int size
     ) {
-        return CommonResponse.ok(notificationFacade.getAllNotifications(userId, isRead, cursorId, size));
+        return CommonResponse.ok(
+                NotificationSuccessCode.GET_ALL_NOTIFICATIONS,
+                notificationFacade.getAllNotifications(userId, isRead, cursorId, size)
+        );
     }
 
     @Override
     @PatchMapping("/{notificationId}/read")
     public CommonResponse<?> markAsRead(@UserId Long userId, @PathVariable Long notificationId) {
         notificationFacade.markAsRead(userId, notificationId);
-        return CommonResponse.ok();
+        return CommonResponse.ok(NotificationSuccessCode.MARK_AS_READ);
     }
 
     @Override
     @PatchMapping("/all")
     public CommonResponse<?> markAllAsRead(@UserId Long userId) {
         notificationFacade.markAllAsRead(userId);
-        return CommonResponse.ok();
+        return CommonResponse.ok(NotificationSuccessCode.MARK_ALL_AS_READ);
     }
 
     @Override
     @GetMapping("/unread-count")
     public CommonResponse<GetUnreadCountResponse> getUnreadCount(@UserId Long userId) {
-        return CommonResponse.ok(notificationFacade.getUnreadCount(userId));
+        return CommonResponse.ok(NotificationSuccessCode.GET_UNREAD_COUNT, notificationFacade.getUnreadCount(userId));
     }
 }

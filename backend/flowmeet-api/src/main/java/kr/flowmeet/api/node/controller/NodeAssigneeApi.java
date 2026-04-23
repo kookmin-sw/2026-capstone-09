@@ -7,7 +7,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import kr.flowmeet.api.common.dto.CommonResponse;
 import kr.flowmeet.api.common.swagger.ApiErrorCode;
+import kr.flowmeet.api.common.swagger.ApiSuccessCode;
 import kr.flowmeet.api.node.dto.request.CreateAssigneeRequest;
+import kr.flowmeet.api.node.success.NodeAssigneeSuccessCode;
 import kr.flowmeet.auth.annotation.UserId;
 import kr.flowmeet.domain.node.exception.AssigneeErrorCode;
 import kr.flowmeet.domain.node.exception.NodeErrorCode;
@@ -17,6 +19,7 @@ import kr.flowmeet.domain.project.exception.ProjectErrorCode;
 public interface NodeAssigneeApi {
 
     @Operation(summary = "담당자 추가", description = "노드에 담당자를 추가합니다.")
+    @ApiSuccessCode(code = NodeAssigneeSuccessCode.class, name = "CREATE_ASSIGNEE")
     @ApiErrorCode(code = NodeErrorCode.class, names = {"NODE_NOT_FOUND", "NODE_CREATE_FORBIDDEN"})
     @ApiErrorCode(code = AssigneeErrorCode.class, names = {"ASSIGNEE_ALREADY_EXISTS"})
     @ApiErrorCode(code = ProjectErrorCode.class, names = {"MEMBER_NOT_FOUND"})
@@ -28,6 +31,7 @@ public interface NodeAssigneeApi {
     );
 
     @Operation(summary = "담당자 제거", description = "노드에서 담당자를 제거합니다.")
+    @ApiSuccessCode(code = NodeAssigneeSuccessCode.class, name = "DELETE_ASSIGNEE")
     @ApiErrorCode(code = AssigneeErrorCode.class, names = {"ASSIGNEE_NOT_FOUND"})
     CommonResponse<?> deleteAssignee(
             @UserId Long userId,

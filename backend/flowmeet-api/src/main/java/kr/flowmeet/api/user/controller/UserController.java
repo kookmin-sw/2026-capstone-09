@@ -16,6 +16,7 @@ import kr.flowmeet.api.common.dto.CommonResponse;
 import kr.flowmeet.api.user.dto.response.GetUserResponse;
 import kr.flowmeet.api.user.dto.request.UpdateUserRequest;
 import kr.flowmeet.api.user.dto.response.UpdateUserResponse;
+import kr.flowmeet.api.user.success.UserSuccessCode;
 import kr.flowmeet.auth.annotation.UserId;
 
 @RestController
@@ -28,27 +29,29 @@ public class UserController implements UserApi {
     @Override
     @GetMapping("/me")
     public CommonResponse<GetUserResponse> getMe(@UserId Long userId) {
-        return CommonResponse.ok(userFacade.getMe(userId));
+        return CommonResponse.ok(UserSuccessCode.GET_ME, userFacade.getMe(userId));
     }
 
     @Override
     @PatchMapping("/me")
     public CommonResponse<UpdateUserResponse> updateMe(@UserId Long userId, @Valid @RequestBody UpdateUserRequest request) {
-        return CommonResponse.ok(userFacade.updateMe(userId, request));
+        return CommonResponse.ok(UserSuccessCode.UPDATE_ME, userFacade.updateMe(userId, request));
     }
 
     @Override
     @PatchMapping(value = "/me/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public CommonResponse<?> updateProfileImage(@UserId Long userId,
-                                                @RequestPart MultipartFile profileImage) {
+    public CommonResponse<?> updateProfileImage(
+            @UserId Long userId,
+            @RequestPart MultipartFile profileImage
+    ) {
         userFacade.updateProfileImage(userId, profileImage);
-        return CommonResponse.ok();
+        return CommonResponse.ok(UserSuccessCode.UPDATE_PROFILE_IMAGE);
     }
 
     @Override
     @DeleteMapping("/me")
     public CommonResponse<?> deleteMe(@UserId Long userId) {
         userFacade.deleteMe(userId);
-        return CommonResponse.ok();
+        return CommonResponse.ok(UserSuccessCode.DELETE_ME);
     }
 }
