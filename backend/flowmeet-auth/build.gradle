@@ -7,7 +7,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-client'
 
     // Jackson — AuthenticationEntryPoint JSON 응답 작성용 (런타임은 flowmeet-api가 제공)
-    compileOnly 'com.fasterxml.jackson.core:jackson-databind'
+    // Spring Boot 4는 Jackson 3.x(tools.jackson.*)를 primary로 사용
+    compileOnly 'tools.jackson.core:jackson-databind'
 
     // JWT (jjwt)
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
