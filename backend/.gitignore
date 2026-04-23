@@ -45,4 +45,6 @@ out/
 ### Docker / certbot ###
 docker/certbot/
 
-docs
+docs/
+
+.claude/UX_MESSAGE_GUIDE.md

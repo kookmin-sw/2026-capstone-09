@@ -20,7 +20,7 @@ import kr.flowmeet.auth.annotation.UserId;
 import kr.flowmeet.domain.meeting.exception.MeetingErrorCode;
 import kr.flowmeet.domain.node.exception.NodeErrorCode;
 
-@Tag(name = "노드")
+@Tag(name = "Node", description = "노드")
 public interface NodeApi {
 
     @Operation(summary = "플로우차트 조회", description = "프로젝트의 전체 노드 트리 + 엣지를 조회합니다.")

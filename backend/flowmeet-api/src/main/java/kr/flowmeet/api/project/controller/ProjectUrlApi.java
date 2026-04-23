@@ -12,7 +12,7 @@ import kr.flowmeet.api.project.dto.response.ProjectUrlResponse;
 import kr.flowmeet.auth.annotation.UserId;
 import kr.flowmeet.domain.project.exception.ProjectErrorCode;
 
-@Tag(name = "프로젝트 URL")
+@Tag(name = "ProjectUrl", description = "프로젝트 URL")
 public interface ProjectUrlApi {
 
     @Operation(summary = "URL 추가")

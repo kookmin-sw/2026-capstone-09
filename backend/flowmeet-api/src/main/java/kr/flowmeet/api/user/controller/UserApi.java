@@ -14,7 +14,7 @@ import kr.flowmeet.auth.annotation.UserId;
 import kr.flowmeet.domain.file.exception.FileErrorCode;
 import kr.flowmeet.domain.user.exception.UserErrorCode;
 
-@Tag(name = "사용자")
+@Tag(name = "User", description = "사용자")
 public interface UserApi {
 
     @Operation(summary = "내 정보 조회")

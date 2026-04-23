@@ -13,7 +13,7 @@ import kr.flowmeet.api.file.dto.response.CreatePresignedUrlResponse;
 import kr.flowmeet.api.file.dto.response.FileInformationResponse;
 import kr.flowmeet.domain.file.exception.FileErrorCode;
 
-@Tag(name = "파일")
+@Tag(name = "File", description = "파일")
 public interface FileApi {
 
     @Operation(summary = "Presigned URL 발급", description = "S3 직접 업로드를 위한 Presigned URL을 발급합니다.")

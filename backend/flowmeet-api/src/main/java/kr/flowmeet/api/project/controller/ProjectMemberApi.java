@@ -12,7 +12,7 @@ import kr.flowmeet.api.project.dto.request.UpdateProjectMemberRoleRequest;
 import kr.flowmeet.auth.annotation.UserId;
 import kr.flowmeet.domain.project.exception.ProjectErrorCode;
 
-@Tag(name = "프로젝트 멤버")
+@Tag(name = "ProjectMember", description = "프로젝트 멤버")
 public interface ProjectMemberApi {
 
     @Operation(summary = "멤버 목록 조회")

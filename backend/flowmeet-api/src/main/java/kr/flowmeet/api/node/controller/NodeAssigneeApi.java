@@ -13,7 +13,7 @@ import kr.flowmeet.domain.node.exception.AssigneeErrorCode;
 import kr.flowmeet.domain.node.exception.NodeErrorCode;
 import kr.flowmeet.domain.project.exception.ProjectErrorCode;
 
-@Tag(name = "노드 담당자")
+@Tag(name = "NodeAssignee", description = "노드 담당자")
 public interface NodeAssigneeApi {
 
     @Operation(summary = "담당자 추가", description = "노드에 담당자를 추가합니다.")

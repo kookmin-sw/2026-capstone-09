@@ -13,7 +13,7 @@ import kr.flowmeet.auth.annotation.UserId;
 import kr.flowmeet.domain.node.exception.EdgeErrorCode;
 import kr.flowmeet.domain.node.exception.NodeErrorCode;
 
-@Tag(name = "연결선")
+@Tag(name = "Edge", description = "연결선")
 public interface EdgeApi {
 
     @Operation(summary = "연결선 생성", description = "노드 간 연결선을 추가합니다.")

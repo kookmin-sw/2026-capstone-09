@@ -8,8 +8,8 @@ import kr.flowmeet.common.exception.ErrorCode;
 @Getter
 @RequiredArgsConstructor
 public enum EdgeErrorCode implements ErrorCode {
-    EDGE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 연결선입니다."),
-    EDGE_DUPLICATE(HttpStatus.CONFLICT, "동일한 연결선이 이미 존재합니다."),
+    EDGE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 연결선이에요."),
+    EDGE_DUPLICATE(HttpStatus.CONFLICT, "동일한 연결선이 이미 있어요."),
     ;
 
     private final HttpStatus httpStatus;
