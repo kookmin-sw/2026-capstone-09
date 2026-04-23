@@ -93,6 +93,7 @@ export function NodeFlowView() {
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
     >
+      {/* 현재 여기 타입 에러 있는데 서버에서 number: string으로 준다고 합니다 */}
       <NodeSidebar nodeId={selectedNodeId} onClose={() => setSelectedNodeId(null)} />
       <div className="flex min-w-max flex-col gap-8">
         {/* 메인 노드 */}
