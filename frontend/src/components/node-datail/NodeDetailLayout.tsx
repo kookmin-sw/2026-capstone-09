@@ -73,7 +73,7 @@ export function NodeDetailLayout({
   useEffect(() => {
     const fetchNodeDetail = async () => {
       try {
-        const data = await privateApi.node.getNode(projectId, 1);
+        const data = await privateApi.node.getNode(projectId, nodeId);
         setNodeDetail(data.data.data);
       } catch (error) {
         console.error('Failed to load flowchart:', error);
