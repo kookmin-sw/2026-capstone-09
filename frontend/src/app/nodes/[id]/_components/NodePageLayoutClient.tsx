@@ -18,7 +18,9 @@ export function NodePageLayoutClient({
   const pathname = usePathname();
   const router = useRouter();
 
-  const value = pathname.endsWith('meeting') ? 'meeting' : 'note';
+  const segments = pathname.split('/');
+  const lastSegment = segments[segments.length - 1];
+  const value = lastSegment === 'meeting' ? 'meeting' : 'note';
 
   return (
     <NodeDetailLayout

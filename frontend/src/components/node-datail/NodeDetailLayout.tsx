@@ -129,7 +129,7 @@ export function NodeDetailLayout({
         {/* TODO : 회의가 있을 경우 회의 내용 필요 */}
       </div>
 
-      <Tab value={value} onValueChange={onValueChange} defaultValue="notes">
+      <Tab value={value} onValueChange={onValueChange} defaultValue="note">
         <TabList size="medium" resize="fill">
           <TabListItem value="note">노트</TabListItem>
           <TabListItem value="meeting">회의</TabListItem>
