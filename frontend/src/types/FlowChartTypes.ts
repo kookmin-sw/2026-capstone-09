@@ -7,8 +7,8 @@ export interface NodeTag {
 export interface NodeAssignee {
   userId: number;
   nickname: string;
-  email?: string;
-  profileImageUrl: string;
+  email: string;
+  profileImageUrl?: string;
 }
 
 export interface NodeMeeting {
@@ -22,6 +22,7 @@ export interface NodeMeeting {
 export interface Node {
   nodeId: number;
   parentId: number | null;
+  number: string;
   title: string;
   description: string | null;
   status: 'TODO' | 'IN_PROGRESS' | 'DONE';
@@ -52,7 +53,7 @@ export interface Edge {
   startNodeId: number;
   endNodeId: number;
   createdBy: EdgeCreator;
-  comment: string;
+  comment: string | null;
 }
 
 export interface FlowChart {

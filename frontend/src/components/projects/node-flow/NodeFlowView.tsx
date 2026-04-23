@@ -4,39 +4,63 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Loading } from '@/components/commons/loading/Loading';
 import { EXAMPLE_FLOWCHART_DATA } from '@/constants/exampleConstant';
 import { FlowChart } from '@/types/FlowChartTypes';
-import { BaseNode } from './BaseNode';
-import { DashedComment } from './DashedComment';
 import { privateApi } from '@/api';
+import { MainNodeConnector } from './MainNodeConnector';
+import { NodeBranch } from './NodeBranch';
+import NodeButton from './NodeButton';
 
-export function NodeFlowView() {
+interface NodeFlowViewProps {
+  projectId: number;
+}
+
+export function NodeFlowView({ projectId }: NodeFlowViewProps) {
   const [flowChart, setFlowChart] = useState<FlowChart | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [focusedNodeId, setFocusedNodeId] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const loadFlowChart = async () => {
       try {
-        // TODO: API 호출로 변경
+        setLoading(true);
+        setError(null);
+        // TODO: API 연동 시 아래 주석 해제
+        // const data = await fetchFlowChart(projectId);
+        // setFlowChart(data);
+
+        // 목업 데이터
         await new Promise((resolve) => setTimeout(resolve, 100));
 
         // test
         const test = await privateApi.project.getAllProjects();
         console.log(test);
 
-        setFlowChart(EXAMPLE_FLOWCHART_DATA);
+        setFlowChart(JSON.parse(JSON.stringify(EXAMPLE_FLOWCHART_DATA.data)));
       } catch (error) {
         console.error('Failed to load flowchart:', error);
+        setError(error instanceof Error ? error.message : '플로우차트를 불러오는데 실패했습니다.');
       } finally {
         setLoading(false);
       }
     };
     void loadFlowChart();
-  }, []);
+  }, [projectId]);
 
-  const handleNodeClick = useCallback((nodeId: number) => {
+  useEffect(() => {
+    if (!loading && containerRef.current) {
+      const container = containerRef.current;
+      container.scrollLeft = 0;
+      container.scrollTop = 0;
+    }
+  }, [loading]);
+
+  const handleNodeClick = useCallback((nodeId: number, e?: React.MouseEvent) => {
+    e?.stopPropagation();
     setFocusedNodeId((prev) => (prev === nodeId ? null : nodeId));
   }, []);
 
@@ -66,8 +90,53 @@ export function NodeFlowView() {
     setIsDragging(false);
   };
 
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const delta = -e.deltaY;
+      const zoomIntensity = 0.01;
+      setZoom((prevZoom) => {
+        const newZoom = prevZoom + delta * zoomIntensity;
+        return Math.min(Math.max(0.1, newZoom), 3);
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('[class*="bg-white"]')) {
+        setFocusedNodeId(null);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
   if (loading) {
     return <Loading />;
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <p className="text-body-1 text-label-neutral font-medium">
+            플로우차트를 불러오는데 실패했습니다
+          </p>
+          <p className="text-caption-1 text-label-assistive">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-primary-40 hover:bg-primary-50 rounded-lg px-4 py-2 text-white transition-colors"
+          >
+            다시 시도
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (!flowChart) {
@@ -80,70 +149,195 @@ export function NodeFlowView() {
 
   const mainNodes = flowChart.nodes.filter((node) => node.parentId === null);
   const subNodes = flowChart.nodes.filter((node) => node.parentId !== null);
-  const commentEdges = flowChart.edges.filter((edge) => edge.comment);
+
+  const handleCreateSubNode = (parentNodeId: number) => {
+    if (!flowChart) return;
+
+    const parentNode = flowChart.nodes.find((n) => n.nodeId === parentNodeId);
+    if (!parentNode) return;
+
+    const newNodeId = Math.max(...flowChart.nodes.map((n) => n.nodeId)) + 1;
+
+    const childCount = parentNode.childNodeIds.length;
+    const newNodeNumber = `${parentNode.number}.${childCount + 1}`;
+
+    const newNode = {
+      nodeId: newNodeId,
+      parentId: parentNodeId,
+      number: newNodeNumber,
+      title: `새 서브 노드 ${newNodeId}`,
+      description: null,
+      status: 'TODO' as const,
+      sortOrder: parentNode.childNodeIds.length,
+      tags: [],
+      assignees: [],
+      hasMeeting: false,
+      childNodeIds: [],
+      updatedAt: new Date().toISOString(),
+    };
+
+    setFlowChart((prev) => {
+      if (!prev) return prev;
+
+      return {
+        ...prev,
+        nodes: [
+          ...prev.nodes.map((node) =>
+            node.nodeId === parentNodeId
+              ? { ...node, childNodeIds: [...node.childNodeIds, newNodeId] }
+              : node,
+          ),
+          newNode,
+        ],
+      };
+    });
+    setFocusedNodeId(newNodeId);
+
+    setTimeout(() => {
+      const newNodeElement = document.querySelector(`[data-node-id="${newNodeId}"]`);
+      if (newNodeElement) {
+        newNodeElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+          inline: 'center',
+        });
+      }
+    }, 100);
+  };
+
+  const handleCreateReference = (_startNodeId: number) => {
+    // TODO: 참조 노드 선택 모달 열기 또는 API 호출
+  };
+
+  const handleDeleteNode = (_nodeId: number) => {
+    // TODO: 삭제 확인 모달 열기 → API 호출 → 상태 업데이트
+  };
+
+  const handleCreateMainNode = () => {
+    if (!flowChart) return;
+
+    const maxNodeId =
+      flowChart.nodes.length > 0 ? Math.max(...flowChart.nodes.map((n) => n.nodeId)) : 0;
+    const newNodeId = maxNodeId + 1;
+
+    const mainNodesCount = flowChart.nodes.filter((n) => n.parentId === null).length;
+    const newNodeNumber = `${mainNodesCount + 1}`;
+
+    const newNode = {
+      nodeId: newNodeId,
+      parentId: null,
+      number: newNodeNumber,
+      title: `새 메인 노드 ${newNodeNumber}`,
+      description: null,
+      status: 'TODO' as const,
+      sortOrder: mainNodesCount,
+      tags: [],
+      assignees: [],
+      hasMeeting: false,
+      childNodeIds: [],
+      updatedAt: new Date().toISOString(),
+    };
+
+    setFlowChart((prev) => {
+      if (!prev) return prev;
+
+      return {
+        ...prev,
+        nodes: [...prev.nodes, newNode],
+      };
+    });
+    setFocusedNodeId(newNodeId);
+
+    setTimeout(() => {
+      const newNodeElement = document.querySelector(`[data-node-id="${newNodeId}"]`);
+      if (newNodeElement) {
+        newNodeElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+          inline: 'center',
+        });
+      }
+    }, 100);
+  };
 
   return (
-    <div
-      ref={containerRef}
-      className="bg-surface-canvas h-full w-full overflow-auto p-6 [&::-webkit-scrollbar]:hidden"
-      style={{
-        scrollbarWidth: 'none',
-        msOverflowStyle: 'none',
-        cursor: isDragging ? 'grabbing' : 'default',
-      }}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseLeave}
-    >
-      <div className="flex min-w-max flex-col gap-8">
-        {/* 메인 노드 */}
-        <div className="flex flex-col gap-4">
-          <h2 className="text-body-1 text-neutral-90 font-semibold">메인 노드</h2>
-          <div className="flex gap-4">
-            {mainNodes.map((node) => (
-              <BaseNode
-                key={node.nodeId}
-                node={node}
-                variant="main"
-                isFocused={focusedNodeId === node.nodeId}
-                onNodeClick={handleNodeClick}
+    <div className="relative h-full w-full">
+      <div className="fixed top-[120px] right-6 z-[60]" onMouseDown={(e) => e.stopPropagation()}>
+        <NodeButton
+          onAddMainNode={handleCreateMainNode}
+          onAddSubNode={focusedNodeId ? () => handleCreateSubNode(focusedNodeId) : undefined}
+          onAddMeeting={
+            focusedNodeId
+              ? () => {
+                  /* TODO: 모달 열기 */
+                }
+              : undefined
+          }
+        />
+      </div>
+
+      <div
+        ref={containerRef}
+        className="bg-surface-canvas h-full w-full overflow-auto [&::-webkit-scrollbar]:hidden"
+        style={{
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          cursor: isDragging ? 'grabbing' : 'grab',
+        }}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+        onWheel={handleWheel}
+      >
+        <div
+          ref={contentRef}
+          className="relative inline-block min-h-[200vh] min-w-[200vw] px-20 pt-30 pb-20"
+          style={{
+            transform: `scale(${zoom})`,
+            transformOrigin: '0 0',
+          }}
+        >
+          {/* 메인 노드 연결선 */}
+          {mainNodes.map((mainNode, index) => {
+            if (index === mainNodes.length - 1) return null;
+            const nextNode = mainNodes[index + 1];
+            return (
+              <MainNodeConnector
+                key={`connector-${mainNode.nodeId}-${nextNode.nodeId}`}
+                startNodeId={mainNode.nodeId}
+                endNodeId={nextNode.nodeId}
+                containerRef={contentRef}
+                zoom={zoom}
               />
-            ))}
-          </div>
-        </div>
+            );
+          })}
 
-        {/* 서브 노드 */}
-        <div className="flex flex-col gap-4">
-          <h2 className="text-body-1 text-neutral-90 font-semibold">서브 노드</h2>
-          <div className="flex flex-col flex-wrap gap-4">
-            {subNodes.map((node) => (
-              <BaseNode
-                key={node.nodeId}
-                node={node}
-                variant="sub"
-                isFocused={focusedNodeId === node.nodeId}
-                onNodeClick={handleNodeClick}
-              />
-            ))}
-          </div>
-        </div>
+          <div className="flex flex-col gap-8">
+            {/* 노드 트리 */}
+            <div className="flex gap-12">
+              {mainNodes.map((mainNode) => {
+                const subNodesForMain = subNodes.filter((sub) =>
+                  mainNode.childNodeIds.includes(sub.nodeId),
+                );
 
-        {/* 점선 코멘트 - Default */}
-        <div className="flex flex-col gap-4">
-          <h2 className="text-body-1 text-neutral-90 font-semibold">점선 코멘트 (Default)</h2>
-          <div className="flex gap-4">
-            {commentEdges.map((edge) => (
-              <DashedComment key={edge.edgeId} edge={edge} isCreateMode={false} />
-            ))}
-          </div>
-        </div>
-
-        {/* 점선 코멘트 - Create */}
-        <div className="flex flex-col gap-4">
-          <h2 className="text-body-1 text-neutral-90 font-semibold">점선 코멘트 (Create)</h2>
-          <div className="flex gap-4">
-            <DashedComment isCreateMode={true} />
+                return (
+                  <NodeBranch
+                    key={mainNode.nodeId}
+                    mainNode={mainNode}
+                    subNodes={subNodesForMain}
+                    allNodes={flowChart.nodes}
+                    allEdges={flowChart.edges}
+                    focusedNodeId={focusedNodeId}
+                    onNodeClick={handleNodeClick}
+                    onCreateSubNode={handleCreateSubNode}
+                    onCreateReference={handleCreateReference}
+                    onDeleteNode={handleDeleteNode}
+                    zoom={zoom}
+                  />
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>

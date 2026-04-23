@@ -24,6 +24,7 @@ interface NodeMenuProps {
   onDeleteMeeting?: () => void;
   onCreateReference: () => void;
   onDelete: () => void;
+  onMenuClick?: (e: React.MouseEvent) => void;
 }
 
 export function NodeMenu({
@@ -34,11 +35,19 @@ export function NodeMenu({
   onDeleteMeeting,
   onCreateReference,
   onDelete,
+  onMenuClick,
 }: NodeMenuProps) {
+  const handleMenuButtonClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setTimeout(() => {
+      onMenuClick?.(e);
+    }, 0);
+  };
+
   return (
     <Menu>
       <MenuTrigger>
-        <IconButton size={18} onClick={(e) => e.stopPropagation()}>
+        <IconButton size={18} onClick={handleMenuButtonClick}>
           <IconMoreVertical className="shrink-0 text-neutral-60" width={18} height={18} />
         </IconButton>
       </MenuTrigger>

@@ -1,16 +1,25 @@
 'use client';
 
+import { use } from 'react';
 import { NodeFlowView } from '@/components/projects/node-flow/NodeFlowView';
 import { useProjectDetailLayout } from '@/contexts/ProjectDetailLayoutContext';
 
-export default function ProjectDetailPage() {
+interface ProjectDetailPageProps {
+  params: Promise<{
+    projectId: string;
+  }>;
+}
+
+export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   const { activeView } = useProjectDetailLayout();
+  const { projectId } = use(params);
+  const projectIdNum = parseInt(projectId, 10);
 
   return (
     <section className="bg-surface-canvas flex flex-1 flex-col overflow-hidden">
       {activeView === 'node-flow' && (
         <div className="flex-1 w-full h-full">
-          <NodeFlowView />
+          <NodeFlowView projectId={projectIdNum} />
         </div>
       )}
       {activeView === 'list' && (
