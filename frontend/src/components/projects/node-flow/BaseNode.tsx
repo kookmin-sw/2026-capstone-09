@@ -1,29 +1,38 @@
 import { ContentBadge } from '@wanteddev/wds';
 import { memo } from 'react';
-import type { Node } from '@/types/FlowChartTypes';
+import type { NodeItem } from '@/api/Api';
+import { Users } from '@/components/commons/user/UserAvatarGroup';
 import { formatDate, getVisibleTags } from '@/utils/nodeUtils';
 import { NodeMenu } from './NodeMenu';
-import { Users } from '@/components/commons/user/UserAvatarGroup';
 
 interface BaseNodeProps {
-  node: Node;
+  node: NodeItem;
   variant: 'main' | 'sub';
   isFocused: boolean;
   onNodeClick: (nodeId: number) => void;
-  onCreateSubNode?: (parentNodeId: number) => void;
-  onCreateReference?: (startNodeId: number) => void;
+  onCreateSubNode?: (nodeId: number) => void;
+  onCreateReference?: (nodeId: number) => void;
   onDeleteNode?: (nodeId: number) => void;
-  allNodes: Node[];
 }
 
-function BaseNodeComponent({ node, variant, isFocused, onNodeClick }: BaseNodeProps) {
-  const { visibleTags, remainingTagsCount } = getVisibleTags(node.tags);
+function BaseNodeComponent({
+  node,
+  variant,
+  isFocused,
+  onNodeClick,
+  onCreateSubNode,
+  onCreateReference,
+  onDeleteNode,
+}: BaseNodeProps) {
+  const { visibleTags, remainingTagsCount } = getVisibleTags(node.tags ?? []);
   const isMain = variant === 'main';
-  const nodeNumber = node.number;
+  const nodeNumber = node.number ?? `#${node.nodeId}`;
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onNodeClick(node.nodeId);
+    if (node.nodeId !== undefined) {
+      onNodeClick(node.nodeId);
+    }
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -31,7 +40,9 @@ function BaseNodeComponent({ node, variant, isFocused, onNodeClick }: BaseNodePr
   };
 
   const handleCreateSubNode = () => {
-    // TODO: 서브 노드 생성 모달 열기
+    if (node.nodeId !== undefined && onCreateSubNode) {
+      onCreateSubNode(node.nodeId);
+    }
   };
 
   const handleCreateMeeting = () => {
@@ -47,11 +58,15 @@ function BaseNodeComponent({ node, variant, isFocused, onNodeClick }: BaseNodePr
   };
 
   const handleCreateReference = () => {
-    // TODO: 참조 노드 생성 모달 열기
+    if (node.nodeId !== undefined && onCreateReference) {
+      onCreateReference(node.nodeId);
+    }
   };
 
   const handleDelete = () => {
-    // TODO: 삭제 확인 모달 열기
+    if (node.nodeId !== undefined && onDeleteNode) {
+      onDeleteNode(node.nodeId);
+    }
   };
 
   const menuVariant = isMain
@@ -62,7 +77,7 @@ function BaseNodeComponent({ node, variant, isFocused, onNodeClick }: BaseNodePr
 
   return (
     <div
-      data-node-id={node.nodeId}
+      data-node-id={node.nodeId ?? ''}
       className={`flex cursor-pointer flex-col overflow-hidden rounded-xl bg-white p-4 outline outline-1 outline-offset-[-1px] transition-all ${isMain ? 'w-64 gap-5' : 'w-60 gap-3'} ${
         isFocused ? 'outline-primary-40' : 'hover:outline-primary-40 outline-neutral-200'
       }`}
@@ -90,7 +105,7 @@ function BaseNodeComponent({ node, variant, isFocused, onNodeClick }: BaseNodePr
             </ContentBadge>
 
             <div className="text-caption-2 text-label-alternative min-w-0 truncate font-normal">
-              {formatDate(node.updatedAt)}
+              {formatDate(node.updatedAt ?? '')}
             </div>
           </div>
 
@@ -105,7 +120,7 @@ function BaseNodeComponent({ node, variant, isFocused, onNodeClick }: BaseNodePr
           />
         </div>
 
-        <div className="text-body-1 line-clamp-1 font-medium">{node.title}</div>
+        <div className="text-body-1 line-clamp-1 font-medium">{node.title ?? ''}</div>
 
         {isMain && node.description && (
           <div className="text-label-2 text-label-alternative line-clamp-2 font-normal">
@@ -137,7 +152,7 @@ function BaseNodeComponent({ node, variant, isFocused, onNodeClick }: BaseNodePr
           )}
         </div>
 
-        {node.assignees.length > 0 && (
+        {node.assignees && node.assignees.length > 0 && (
           <div className="shrink-0">
             <Users users={node.assignees} maxVisible={2} compact />
           </div>

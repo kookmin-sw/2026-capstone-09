@@ -9,9 +9,9 @@ import {
 } from '@wanteddev/wds';
 
 export interface UserInfo {
-  userId: number;
-  email: string;
-  nickname: string;
+  userId?: number;
+  email?: string;
+  nickname?: string;
   profileImageUrl?: string | null;
 }
 
@@ -39,8 +39,8 @@ const UserAvatarWithTooltip = ({ user, position }: UserAvatarWithTooltipProps) =
         <div className="flex min-w-35 items-center gap-2 px-1 py-1.5">
           <Avatar variant="person" size="xsmall" />
           <div className="flex flex-col">
-            <span className="text-caption-1 font-medium text-neutral-100">{user.nickname}</span>
-            <span className="text-caption-2 font-normal text-neutral-100">{user.email}</span>
+            <span className="text-caption-1 font-medium text-neutral-100">{user.nickname ?? ''}</span>
+            <span className="text-caption-2 font-normal text-neutral-100">{user.email ?? ''}</span>
           </div>
         </div>
       </TooltipContent>
@@ -78,12 +78,12 @@ const AllUsersTooltip = ({ users, maxVisible = 5, compact = false }: AllUsersToo
 
       <TooltipContent size="small" position="bottom-end">
         <div className="flex min-w-40 flex-col gap-2 px-1 py-1.5">
-          {users.map((user) => (
-            <div key={user.email} className="flex items-center gap-2">
+          {users.map((user, idx) => (
+            <div key={user.email ?? idx} className="flex items-center gap-2">
               <Avatar variant="person" size="xsmall" />
               <div className="flex flex-col">
-                <span className="text-caption-1 font-medium text-neutral-100">{user.nickname}</span>
-                <span className="text-caption-2 font-normal text-neutral-100">{user.email}</span>
+                <span className="text-caption-1 font-medium text-neutral-100">{user.nickname ?? ''}</span>
+                <span className="text-caption-2 font-normal text-neutral-100">{user.email ?? ''}</span>
               </div>
             </div>
           ))}

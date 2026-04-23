@@ -1,16 +1,16 @@
 'use client';
 
 import { useRef, useLayoutEffect, useState } from 'react';
-import type { Node, Edge } from '@/types/FlowChartTypes';
+import type { NodeItem, EdgeItem } from '@/api/Api';
 import { BaseNode } from './BaseNode';
 import { BranchConnector } from './BranchConnector';
 import { HorizontalConnector } from './HorizontalConnector';
 
 interface NodeBranchProps {
-  mainNode: Node;
-  subNodes: Node[];
-  allNodes: Node[];
-  allEdges: Edge[];
+  mainNode: NodeItem;
+  subNodes: NodeItem[];
+  allNodes: NodeItem[];
+  allEdges: EdgeItem[];
   focusedNodeId: number | null;
   onNodeClick: (nodeId: number, e?: React.MouseEvent) => void;
   onCreateSubNode?: (parentNodeId: number) => void;
@@ -63,19 +63,19 @@ export function NodeBranch({
     childPositions: Array<{ y: number; endX: number }>;
   } | null>(null);
 
-  const renderChildNode = (subNode: Node) => {
-    const subSubNodes = subNode.childNodeIds
+  const renderChildNode = (subNode: NodeItem, index: number) => {
+    const subSubNodes = (subNode.childNodeIds ?? [])
       .map((childId) => allNodes.find((n) => n.nodeId === childId))
-      .filter((n): n is Node => n !== undefined);
+      .filter((n): n is NodeItem => n !== undefined);
 
     const setSubNodeRef = (el: HTMLDivElement | null) => {
-      if (el) {
+      if (el && subNode.nodeId !== undefined) {
         childRefs.current[subNode.nodeId] = el;
       }
     };
 
     return (
-      <div key={subNode.nodeId}>
+      <div key={subNode.nodeId ?? `sub-${index}`}>
         {subSubNodes.length > 0 ? (
           <div ref={setSubNodeRef} data-has-children="true">
             <NodeBranch
@@ -102,7 +102,6 @@ export function NodeBranch({
               onCreateSubNode={onCreateSubNode}
               onCreateReference={onCreateReference}
               onDeleteNode={onDeleteNode}
-              allNodes={allNodes}
             />
           </div>
         )}
@@ -156,6 +155,7 @@ export function NodeBranch({
 
         const childPositions = subNodes
           .map((child) => {
+            if (child.nodeId === undefined) return null;
             const el = childRefs.current[child.nodeId];
             if (!el) return null;
 
@@ -213,6 +213,7 @@ export function NodeBranch({
 
       const childPositions: BranchPosition[] = subNodes
         .map((child) => {
+          if (child.nodeId === undefined) return null;
           const el = childRefs.current[child.nodeId];
           if (!el) return null;
 
@@ -270,7 +271,7 @@ export function NodeBranch({
     return () => {
       clearTimeout(timer);
     };
-  }, [subNodes, isVertical, layoutVersion]);
+  }, [subNodes, isVertical, layoutVersion, zoom]);
 
   return (
     <div ref={containerRef} className="relative flex flex-col gap-[22px]">
@@ -284,7 +285,6 @@ export function NodeBranch({
             onCreateSubNode={onCreateSubNode}
             onCreateReference={onCreateReference}
             onDeleteNode={onDeleteNode}
-            allNodes={allNodes}
           />
         </div>
 

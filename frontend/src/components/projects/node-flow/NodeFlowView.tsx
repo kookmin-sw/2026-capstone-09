@@ -1,22 +1,19 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Loading } from '@/components/commons/loading/Loading';
-import { EXAMPLE_FLOWCHART_DATA } from '@/constants/exampleConstant';
-import { FlowChart } from '@/types/FlowChartTypes';
 import { privateApi } from '@/api';
+import { GetFlowchartResponse } from '@/api/Api';
+import { Loading } from '@/components/commons/loading/Loading';
 import { MainNodeConnector } from './MainNodeConnector';
 import { NodeBranch } from './NodeBranch';
 import NodeButton from './NodeButton';
-import { NodeSidebar } from '@/components/node-datail/NodeSidebar';
-import useSingleAndDoubleClick from '@/hooks/useSingleAndDoubleClick';
 
 interface NodeFlowViewProps {
   projectId: number;
 }
 
 export function NodeFlowView({ projectId }: NodeFlowViewProps) {
-  const [flowChart, setFlowChart] = useState<FlowChart | null>(null);
+  const [flowChart, setFlowChart] = useState<GetFlowchartResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [focusedNodeId, setFocusedNodeId] = useState<number | null>(null);
@@ -25,40 +22,15 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
   const [zoom, setZoom] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
-
-  const [clickTargetId, setClickTargetId] = useState<number | null>(null);
-
-  const handleClick = useSingleAndDoubleClick({
-    actionSimpleClick: () => {
-      if (clickTargetId !== null) {
-        setFocusedNodeId((prev) => (prev === clickTargetId ? null : clickTargetId));
-      }
-    },
-    actionDoubleClick: () => {
-      if (clickTargetId !== null) {
-        setSelectedNodeId(clickTargetId);
-      }
-    },
-  });
 
   useEffect(() => {
     const loadFlowChart = async () => {
       try {
         setLoading(true);
         setError(null);
-        // TODO: API 연동 시 아래 주석 해제
-        // const data = await fetchFlowChart(projectId);
-        // setFlowChart(data);
 
-        // 목업 데이터
-        await new Promise((resolve) => setTimeout(resolve, 100));
-
-        // test
-        const test = await privateApi.project.getAllProjects();
-        console.log(test.data);
-
-        setFlowChart(JSON.parse(JSON.stringify(EXAMPLE_FLOWCHART_DATA.data)));
+        const data = await privateApi.node.getFlowchart(projectId);
+        setFlowChart(data.data.data ?? null);
       } catch (error) {
         console.error('Failed to load flowchart:', error);
         setError(error instanceof Error ? error.message : '플로우차트를 불러오는데 실패했습니다.');
@@ -77,14 +49,10 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
     }
   }, [loading]);
 
-  const handleNodeClick = useCallback(
-    (nodeId: number, e?: React.MouseEvent) => {
-      e?.stopPropagation();
-      setClickTargetId(nodeId);
-      handleClick();
-    },
-    [handleClick],
-  );
+  const handleNodeClick = useCallback((nodeId: number, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setFocusedNodeId((prev) => (prev === nodeId ? null : nodeId));
+  }, []);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     setIsDragging(true);
@@ -169,62 +137,50 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
     );
   }
 
-  const mainNodes = flowChart.nodes.filter((node) => node.parentId === null);
-  const subNodes = flowChart.nodes.filter((node) => node.parentId !== null);
+  const mainNodes = flowChart?.nodes?.filter((node) => !node.parentId) ?? [];
+  const subNodes = flowChart?.nodes?.filter((node) => !!node.parentId) ?? [];
 
-  const handleCreateSubNode = (parentNodeId: number) => {
-    if (!flowChart) return;
+  const handleCreateSubNode = async (parentNodeId: number) => {
+    if (!flowChart?.nodes) return;
 
     const parentNode = flowChart.nodes.find((n) => n.nodeId === parentNodeId);
     if (!parentNode) return;
 
-    const newNodeId = Math.max(...flowChart.nodes.map((n) => n.nodeId)) + 1;
+    try {
+      const childCount = parentNode.childNodeIds?.length ?? 0;
 
-    const childCount = parentNode.childNodeIds.length;
-    const newNodeNumber = `${parentNode.number}.${childCount + 1}`;
+      await privateApi.node.createNode(projectId, {
+        title: `새 서브 노드`,
+        type: 'SUB',
+        parentId: parentNodeId,
+      });
 
-    const newNode = {
-      nodeId: newNodeId,
-      parentId: parentNodeId,
-      number: newNodeNumber,
-      title: `새 서브 노드 ${newNodeId}`,
-      description: null,
-      status: 'TODO' as const,
-      sortOrder: parentNode.childNodeIds.length,
-      tags: [],
-      assignees: [],
-      hasMeeting: false,
-      childNodeIds: [],
-      updatedAt: new Date().toISOString(),
-    };
+      const data = await privateApi.node.getFlowchart(projectId);
+      setFlowChart(data.data.data ?? null);
 
-    setFlowChart((prev) => {
-      if (!prev) return prev;
+      if (data.data.data?.nodes) {
+        const updatedParent = data.data.data.nodes.find((n) => n.nodeId === parentNodeId);
+        const newChildIds = updatedParent?.childNodeIds ?? [];
+        if (newChildIds.length > childCount) {
+          const newNodeId = newChildIds[newChildIds.length - 1];
+          setFocusedNodeId(newNodeId);
 
-      return {
-        ...prev,
-        nodes: [
-          ...prev.nodes.map((node) =>
-            node.nodeId === parentNodeId
-              ? { ...node, childNodeIds: [...node.childNodeIds, newNodeId] }
-              : node,
-          ),
-          newNode,
-        ],
-      };
-    });
-    setFocusedNodeId(newNodeId);
-
-    setTimeout(() => {
-      const newNodeElement = document.querySelector(`[data-node-id="${newNodeId}"]`);
-      if (newNodeElement) {
-        newNodeElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center',
-          inline: 'center',
-        });
+          setTimeout(() => {
+            const newNodeElement = document.querySelector(`[data-node-id="${newNodeId}"]`);
+            if (newNodeElement) {
+              newNodeElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+                inline: 'center',
+              });
+            }
+          }, 100);
+        }
       }
-    }, 100);
+    } catch (error) {
+      console.error('Failed to create sub node:', error);
+      alert('서브 노드 생성에 실패했습니다.');
+    }
   };
 
   const handleCreateReference = (_startNodeId: number) => {
@@ -235,51 +191,44 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
     // TODO: 삭제 확인 모달 열기 → API 호출 → 상태 업데이트
   };
 
-  const handleCreateMainNode = () => {
-    if (!flowChart) return;
+  const handleCreateMainNode = async () => {
+    if (!flowChart?.nodes) return;
 
-    const maxNodeId =
-      flowChart.nodes.length > 0 ? Math.max(...flowChart.nodes.map((n) => n.nodeId)) : 0;
-    const newNodeId = maxNodeId + 1;
+    try {
+      const mainNodesCount = flowChart.nodes.filter((n) => !n.parentId).length;
 
-    const mainNodesCount = flowChart.nodes.filter((n) => n.parentId === null).length;
-    const newNodeNumber = `${mainNodesCount + 1}`;
+      await privateApi.node.createNode(projectId, {
+        title: `새 메인 노드`,
+        type: 'MAIN',
+      });
 
-    const newNode = {
-      nodeId: newNodeId,
-      parentId: null,
-      number: newNodeNumber,
-      title: `새 메인 노드 ${newNodeNumber}`,
-      description: null,
-      status: 'TODO' as const,
-      sortOrder: mainNodesCount,
-      tags: [],
-      assignees: [],
-      hasMeeting: false,
-      childNodeIds: [],
-      updatedAt: new Date().toISOString(),
-    };
+      const data = await privateApi.node.getFlowchart(projectId);
+      setFlowChart(data.data.data ?? null);
 
-    setFlowChart((prev) => {
-      if (!prev) return prev;
+      if (data.data.data?.nodes) {
+        const mainNodes = data.data.data.nodes.filter((n) => !n.parentId);
+        if (mainNodes.length > mainNodesCount) {
+          const newNode = mainNodes[mainNodes.length - 1];
+          if (newNode.nodeId !== undefined) {
+            setFocusedNodeId(newNode.nodeId);
 
-      return {
-        ...prev,
-        nodes: [...prev.nodes, newNode],
-      };
-    });
-    setFocusedNodeId(newNodeId);
-
-    setTimeout(() => {
-      const newNodeElement = document.querySelector(`[data-node-id="${newNodeId}"]`);
-      if (newNodeElement) {
-        newNodeElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center',
-          inline: 'center',
-        });
+            setTimeout(() => {
+              const newNodeElement = document.querySelector(`[data-node-id="${newNode.nodeId}"]`);
+              if (newNodeElement) {
+                newNodeElement.scrollIntoView({
+                  behavior: 'smooth',
+                  block: 'center',
+                  inline: 'center',
+                });
+              }
+            }, 100);
+          }
+        }
       }
-    }, 100);
+    } catch (error) {
+      console.error('Failed to create main node:', error);
+      alert('메인 노드 생성에 실패했습니다.');
+    }
   };
 
   return (
@@ -287,7 +236,9 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
       <div className="fixed top-[120px] right-6 z-[60]" onMouseDown={(e) => e.stopPropagation()}>
         <NodeButton
           onAddMainNode={handleCreateMainNode}
-          onAddSubNode={focusedNodeId ? () => handleCreateSubNode(focusedNodeId) : undefined}
+          onAddSubNode={
+            focusedNodeId !== null ? () => handleCreateSubNode(focusedNodeId) : undefined
+          }
           onAddMeeting={
             focusedNodeId
               ? () => {
@@ -321,9 +272,10 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
           }}
         >
           {/* 메인 노드 연결선 */}
-          {mainNodes.map((mainNode, index) => {
+          {mainNodes?.map((mainNode, index) => {
             if (index === mainNodes.length - 1) return null;
             const nextNode = mainNodes[index + 1];
+            if (!mainNode.nodeId || !nextNode.nodeId) return null;
             return (
               <MainNodeConnector
                 key={`connector-${mainNode.nodeId}-${nextNode.nodeId}`}
@@ -338,18 +290,18 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
           <div className="flex flex-col gap-8">
             {/* 노드 트리 */}
             <div className="flex gap-12">
-              {mainNodes.map((mainNode) => {
-                const subNodesForMain = subNodes.filter((sub) =>
-                  mainNode.childNodeIds.includes(sub.nodeId),
+              {mainNodes?.map((mainNode, idx) => {
+                const subNodesForMain = subNodes?.filter(
+                  (sub) => sub.nodeId !== undefined && mainNode?.childNodeIds?.includes(sub.nodeId),
                 );
 
                 return (
                   <NodeBranch
-                    key={mainNode.nodeId}
+                    key={mainNode.nodeId ?? `main-${idx}`}
                     mainNode={mainNode}
-                    subNodes={subNodesForMain}
-                    allNodes={flowChart.nodes}
-                    allEdges={flowChart.edges}
+                    subNodes={subNodesForMain ?? []}
+                    allNodes={flowChart.nodes ?? []}
+                    allEdges={flowChart.edges ?? []}
                     focusedNodeId={focusedNodeId}
                     onNodeClick={handleNodeClick}
                     onCreateSubNode={handleCreateSubNode}
@@ -363,11 +315,6 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
           </div>
         </div>
       </div>
-      <NodeSidebar
-        projectId={projectId}
-        nodeId={selectedNodeId ?? null}
-        onClose={() => setSelectedNodeId(null)}
-      />
     </div>
   );
 }
