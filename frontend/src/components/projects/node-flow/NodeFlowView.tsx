@@ -1,12 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Loading } from '@/components/commons/loading/Loading';
 import { privateApi } from '@/api';
+import { GetFlowchartResponse, NodeItem } from '@/api/Api';
+import { Loading } from '@/components/commons/loading/Loading';
 import { MainNodeConnector } from './MainNodeConnector';
 import { NodeBranch } from './NodeBranch';
 import NodeButton from './NodeButton';
-import { GetFlowchartResponse, NodeItem, EdgeItem } from '@/api/Api';
 
 interface NodeFlowViewProps {
   projectId: number;
@@ -22,7 +22,6 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
   const [zoom, setZoom] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
 
   useEffect(() => {
     const loadFlowChart = async () => {
@@ -31,8 +30,6 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
         setError(null);
 
         const data = await privateApi.node.getFlowchart(projectId);
-        console.log(data);
-
         setFlowChart(data.data.data ?? null);
       } catch (error) {
         console.error('Failed to load flowchart:', error);
@@ -55,7 +52,6 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
   const handleNodeClick = useCallback((nodeId: number, e?: React.MouseEvent) => {
     e?.stopPropagation();
     setFocusedNodeId((prev) => (prev === nodeId ? null : nodeId));
-    setSelectedNodeId(nodeId);
   }, []);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {

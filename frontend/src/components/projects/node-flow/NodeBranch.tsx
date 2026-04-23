@@ -63,7 +63,7 @@ export function NodeBranch({
     childPositions: Array<{ y: number; endX: number }>;
   } | null>(null);
 
-  const renderChildNode = (subNode: NodeItem) => {
+  const renderChildNode = (subNode: NodeItem, index: number) => {
     const subSubNodes = (subNode.childNodeIds ?? [])
       .map((childId) => allNodes.find((n) => n.nodeId === childId))
       .filter((n): n is NodeItem => n !== undefined);
@@ -75,7 +75,7 @@ export function NodeBranch({
     };
 
     return (
-      <div key={subNode.nodeId ?? Math.random()}>
+      <div key={subNode.nodeId ?? `sub-${index}`}>
         {subSubNodes.length > 0 ? (
           <div ref={setSubNodeRef} data-has-children="true">
             <NodeBranch
@@ -268,7 +268,7 @@ export function NodeBranch({
     return () => {
       clearTimeout(timer);
     };
-  }, [subNodes, isVertical, layoutVersion]);
+  }, [subNodes, isVertical, layoutVersion, zoom]);
 
   return (
     <div ref={containerRef} className="relative flex flex-col gap-[22px]">

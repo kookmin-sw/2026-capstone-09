@@ -1,9 +1,9 @@
 import { ContentBadge } from '@wanteddev/wds';
 import { memo } from 'react';
 import type { NodeItem } from '@/api/Api';
+import { Users } from '@/components/commons/user/UserAvatarGroup';
 import { formatDate, getVisibleTags } from '@/utils/nodeUtils';
 import { NodeMenu } from './NodeMenu';
-import { Users } from '@/components/commons/user/UserAvatarGroup';
 
 interface BaseNodeProps {
   node: NodeItem;
