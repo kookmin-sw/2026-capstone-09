@@ -2,6 +2,7 @@ package kr.flowmeet.api.common.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import kr.flowmeet.common.exception.ErrorCode;
+import kr.flowmeet.common.response.SuccessCode;
 import org.springframework.http.HttpStatus;
 
 @Schema(description = "공통 응답 형식")
@@ -24,6 +25,14 @@ public record CommonResponse<T>(
 
     public static <T> CommonResponse<T> ok(final T data) {
         return new CommonResponse<>(HttpStatus.OK.value(), SUCCESS_CODE, SUCCESS_MESSAGE, data);
+    }
+
+    public static CommonResponse<?> ok(final SuccessCode successCode) {
+        return ok(successCode, null);
+    }
+
+    public static <T> CommonResponse<T> ok(final SuccessCode successCode, final T data) {
+        return new CommonResponse<>(HttpStatus.OK.value(), successCode.name(), successCode.getMessage(), data);
     }
 
     public static CommonResponse<?> error(final ErrorCode errorCode) {
