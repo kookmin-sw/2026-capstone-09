@@ -273,11 +273,8 @@ export function NodeBranch({
   }, [subNodes, isVertical, layoutVersion]);
 
   return (
-    <div
-      ref={containerRef}
-      className="relative flex flex-col gap-[22px]"
-    >
-      <div className={isVertical ? 'flex flex-col' : 'flex flex-row gap-8 items-start'}>
+    <div ref={containerRef} className="relative flex flex-col gap-[22px]">
+      <div className={isVertical ? 'flex flex-col' : 'flex flex-row items-start gap-8'}>
         <div ref={mainNodeRef} className="relative">
           <BaseNode
             node={mainNode}
@@ -292,16 +289,12 @@ export function NodeBranch({
         </div>
 
         {subNodes.length > 0 && !isVertical && (
-          <div className="flex flex-col gap-[22px]">
-            {subNodes.map(renderChildNode)}
-          </div>
+          <div className="flex flex-col gap-[22px]">{subNodes.map(renderChildNode)}</div>
         )}
       </div>
 
       {subNodes.length > 0 && isVertical && (
-        <div className="flex flex-col gap-[22px] ml-20">
-          {subNodes.map(renderChildNode)}
-        </div>
+        <div className="ml-20 flex flex-col gap-[22px]">{subNodes.map(renderChildNode)}</div>
       )}
 
       {lineData && (

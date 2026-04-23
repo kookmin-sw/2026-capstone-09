@@ -2,19 +2,18 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Loading } from '@/components/commons/loading/Loading';
-import { EXAMPLE_FLOWCHART_DATA } from '@/constants/exampleConstant';
-import { FlowChart } from '@/types/FlowChartTypes';
 import { privateApi } from '@/api';
 import { MainNodeConnector } from './MainNodeConnector';
 import { NodeBranch } from './NodeBranch';
 import NodeButton from './NodeButton';
+import { GetFlowchartResponse } from '@/api/Api';
 
 interface NodeFlowViewProps {
   projectId: number;
 }
 
 export function NodeFlowView({ projectId }: NodeFlowViewProps) {
-  const [flowChart, setFlowChart] = useState<FlowChart | null>(null);
+  const [flowChart, setFlowChart] = useState<GetFlowchartResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [focusedNodeId, setFocusedNodeId] = useState<number | null>(null);
@@ -30,18 +29,11 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
       try {
         setLoading(true);
         setError(null);
-        // TODO: API 연동 시 아래 주석 해제
-        // const data = await fetchFlowChart(projectId);
-        // setFlowChart(data);
 
-        // 목업 데이터
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        const data = await privateApi.node.getFlowchart(projectId);
+        console.log(data);
 
-        // test
-        const test = await privateApi.project.getAllProjects();
-        console.log(test.data);
-
-        setFlowChart(JSON.parse(JSON.stringify(EXAMPLE_FLOWCHART_DATA.data)));
+        setFlowChart(data.data.data ?? null);
       } catch (error) {
         console.error('Failed to load flowchart:', error);
         setError(error instanceof Error ? error.message : '플로우차트를 불러오는데 실패했습니다.');
@@ -149,19 +141,19 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
     );
   }
 
-  const mainNodes = flowChart.nodes.filter((node) => node.parentId === null);
-  const subNodes = flowChart.nodes.filter((node) => node.parentId !== null);
+  const mainNodes = flowChart?.nodes?.filter((node) => node.parentId === null);
+  const subNodes = flowChart?.nodes?.filter((node) => node.parentId !== null);
 
   const handleCreateSubNode = (parentNodeId: number) => {
     if (!flowChart) return;
 
-    const parentNode = flowChart.nodes.find((n) => n.nodeId === parentNodeId);
+    const parentNode = flowChart?.nodes?.find((n) => n.nodeId === parentNodeId);
     if (!parentNode) return;
 
     const newNodeId = Math.max(...flowChart.nodes.map((n) => n.nodeId)) + 1;
 
-    const childCount = parentNode.childNodeIds.length;
-    const newNodeNumber = `${parentNode.number}.${childCount + 1}`;
+    const childCount = parentNode.childNodeIds?.length;
+    const newNodeNumber = `${parentNode.number}.${childCount ? childCount + 1 : 0}`;
 
     const newNode = {
       nodeId: newNodeId,
@@ -170,7 +162,7 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
       title: `새 서브 노드 ${newNodeId}`,
       description: null,
       status: 'TODO' as const,
-      sortOrder: parentNode.childNodeIds.length,
+      sortOrder: parentNode.childNodeIds?.length,
       tags: [],
       assignees: [],
       hasMeeting: false,
@@ -301,7 +293,7 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
           }}
         >
           {/* 메인 노드 연결선 */}
-          {mainNodes.map((mainNode, index) => {
+          {mainNodes?.map((mainNode, index) => {
             if (index === mainNodes.length - 1) return null;
             const nextNode = mainNodes[index + 1];
             return (
@@ -318,9 +310,9 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
           <div className="flex flex-col gap-8">
             {/* 노드 트리 */}
             <div className="flex gap-12">
-              {mainNodes.map((mainNode) => {
-                const subNodesForMain = subNodes.filter((sub) =>
-                  mainNode.childNodeIds.includes(sub.nodeId),
+              {mainNodes?.map((mainNode) => {
+                const subNodesForMain = subNodes?.filter((sub) =>
+                  mainNode?.childNodeIds?.includes(sub.nodeId),
                 );
 
                 return (

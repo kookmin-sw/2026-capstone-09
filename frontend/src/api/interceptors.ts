@@ -4,9 +4,8 @@ export function customFetch(baseFetch: typeof fetch = fetch) {
   return async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     const response = await baseFetch(input, init);
     const json = await response.json();
-    const unwrapped = json.data ?? json;
 
-    return new Response(JSON.stringify(unwrapped), {
+    return new Response(JSON.stringify(json), {
       status: response.status,
       statusText: response.statusText,
       headers: {

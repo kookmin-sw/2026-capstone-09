@@ -3,13 +3,18 @@
 import { useLayoutEffect, useState } from 'react';
 
 interface MainNodeConnectorProps {
-  startNodeId: number;
-  endNodeId: number;
+  startNodeId?: number;
+  endNodeId?: number;
   containerRef: React.RefObject<HTMLDivElement | null>;
   zoom?: number;
 }
 
-export function MainNodeConnector({ startNodeId, endNodeId, containerRef, zoom = 1 }: MainNodeConnectorProps) {
+export function MainNodeConnector({
+  startNodeId,
+  endNodeId,
+  containerRef,
+  zoom = 1,
+}: MainNodeConnectorProps) {
   const [lineData, setLineData] = useState<{
     x1: number;
     y1: number;
@@ -89,7 +94,10 @@ export function MainNodeConnector({ startNodeId, endNodeId, containerRef, zoom =
   return (
     <>
       {lineData && (
-        <svg className="absolute inset-0 w-full h-full overflow-visible pointer-events-none" style={{ zIndex: 0 }}>
+        <svg
+          className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
+          style={{ zIndex: 0 }}
+        >
           <line
             x1={lineData.x1}
             y1={lineData.y1}
