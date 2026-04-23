@@ -23,6 +23,7 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
   const [zoom, setZoom] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
 
   useEffect(() => {
     const loadFlowChart = async () => {
@@ -62,6 +63,7 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
   const handleNodeClick = useCallback((nodeId: number, e?: React.MouseEvent) => {
     e?.stopPropagation();
     setFocusedNodeId((prev) => (prev === nodeId ? null : nodeId));
+    setSelectedNodeId(nodeId);
   }, []);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {

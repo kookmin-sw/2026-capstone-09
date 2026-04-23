@@ -23,6 +23,8 @@ import {
   getNodeStatusLabel,
 } from '@/constants/getNodeStatus';
 import { NodeStatusType } from '@/constants/nodeStatus';
+import { EditorContent, } from '@tiptap/react';
+import { useTitleEditor } from './hooks/useTitleEditor';
 
 interface NodeDetailLayoutProps {
   nodeId: string | null;
@@ -40,6 +42,7 @@ export function NodeDetailLayout({
   onValueChange, // 외부에서 탭 변경 핸들링
 }: NodeDetailLayoutProps) {
   const nodeDetail = EXAMPLE_NODE_DETAIL;
+  const titleEditor = useTitleEditor(nodeDetail.title);
 
   return (
     <div className="flex h-full flex-col">
@@ -69,9 +72,7 @@ export function NodeDetailLayout({
       <div className="flex flex-col gap-6 pb-5">
         {/* 제목 */}
         {/* TODO : 현재 타이포라서 read만 가능한 상태 - 나중에 input 변경 */}
-        <Typography variant="title3" weight="medium">
-          {nodeDetail.title}
-        </Typography>
+        <EditorContent editor={titleEditor} />
 
         <div className="flex flex-col gap-5">
           {/* 태그 */}

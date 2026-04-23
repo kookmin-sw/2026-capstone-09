@@ -1,5 +1,11 @@
-export const NodeNoteTab = () => {
-  return <>임시 노트 페이지</>;
-};
+'use client';
 
-export default NodeNoteTab;
+import Editor from '../commons/editor/editor';
+
+export default function NodeNoteTab() {
+  return (
+    <main className="flex">
+      <Editor />
+    </main>
+  );
+}

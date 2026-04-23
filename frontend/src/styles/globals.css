@@ -4,6 +4,7 @@
 @import './variables.css';
 @import 'pretendard/dist/web/variable/pretendardvariable.css';
 @import 'pretendard/dist/web/static/pretendard.css';
+@plugin "@tailwindcss/typography";
 
 @theme inline {
   /* Fonts */
@@ -410,4 +411,18 @@ body {
       transform: translateX(100%);
     }
   }
+}
+
+/* tiptap용 스타일 */
+.prose {
+  max-width: none;
+}
+
+/* placeholder용 스타일 */
+.tiptap p.is-editor-empty:first-child::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
 }

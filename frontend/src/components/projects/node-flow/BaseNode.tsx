@@ -1,42 +1,33 @@
-import {
-  ContentBadge,
-} from '@wanteddev/wds';
+import { ContentBadge } from '@wanteddev/wds';
 import { memo } from 'react';
-import { Users } from '@/components/commons/user/UserAvatarGroup';
 import type { Node } from '@/types/FlowChartTypes';
 import { formatDate, getVisibleTags } from '@/utils/nodeUtils';
 import { NodeMenu } from './NodeMenu';
+import { Users } from '@/components/commons/user/UserAvatarGroup';
 
 interface BaseNodeProps {
   node: Node;
   variant: 'main' | 'sub';
   isFocused: boolean;
-  onNodeClick: (nodeId: number, e?: React.MouseEvent) => void;
-  onCreateSubNode?: (parentNodeId: number) => void;
-  onCreateReference?: (startNodeId: number) => void;
-  onDeleteNode?: (nodeId: number) => void;
-  allNodes?: Node[];
+  onNodeClick: (nodeId: number) => void;
 }
 
-function BaseNodeComponent({
-  node,
-  variant,
-  isFocused,
-  onNodeClick,
-  onCreateSubNode,
-  onCreateReference,
-  onDeleteNode,
-}: BaseNodeProps) {
+function BaseNodeComponent({ node, variant, isFocused, onNodeClick }: BaseNodeProps) {
   const { visibleTags, remainingTagsCount } = getVisibleTags(node.tags);
   const isMain = variant === 'main';
-  const nodeNumber = `#${node.number}`;
+  const nodeNumber = node.parentId ? `#${node.parentId}-${node.nodeId}` : `#${node.nodeId}`;
 
   const handleClick = (e: React.MouseEvent) => {
-    onNodeClick(node.nodeId, e);
+    e.stopPropagation();
+    onNodeClick(node.nodeId);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.stopPropagation();
   };
 
   const handleCreateSubNode = () => {
-    onCreateSubNode?.(node.nodeId);
+    // TODO: 서브 노드 생성 모달 열기
   };
 
   const handleCreateMeeting = () => {
@@ -52,36 +43,37 @@ function BaseNodeComponent({
   };
 
   const handleCreateReference = () => {
-    onCreateReference?.(node.nodeId);
+    // TODO: 참조 노드 생성 모달 열기
   };
 
   const handleDelete = () => {
-    onDeleteNode?.(node.nodeId);
+    // TODO: 삭제 확인 모달 열기
   };
 
   const menuVariant = isMain
     ? 'main'
     : node.hasMeeting
-    ? 'sub-with-meeting'
-    : 'sub-without-meeting';
-
-  const menuKey = `menu-${node.nodeId}-${node.childNodeIds.length}`;
+      ? 'sub-with-meeting'
+      : 'sub-without-meeting';
 
   return (
     <div
       data-node-id={node.nodeId}
-      className={`bg-white flex flex-col overflow-hidden rounded-xl p-4 outline outline-1 outline-offset-[-1px] cursor-pointer transition-all
-        ${isMain ? 'w-64 gap-5' : 'w-60 gap-3'}
-        ${isFocused
-          ? 'outline-primary-40'
-          : 'outline-neutral-200 hover:outline-primary-40'
-        }`}
-      style={isFocused ? {
-        boxShadow: '-2px -2px 4px 0px color-mix(in srgb, var(--color-primary-40) 20%, transparent), 2px 2px 4px 0px color-mix(in srgb, var(--color-primary-40) 20%, transparent)'
-      } : undefined}
+      className={`flex cursor-pointer flex-col overflow-hidden rounded-xl bg-white p-4 outline outline-1 outline-offset-[-1px] transition-all ${isMain ? 'w-64 gap-5' : 'w-60 gap-3'} ${
+        isFocused ? 'outline-primary-40' : 'hover:outline-primary-40 outline-neutral-200'
+      }`}
+      style={
+        isFocused
+          ? {
+              boxShadow:
+                '-2px -2px 4px 0px color-mix(in srgb, var(--color-primary-40) 20%, transparent), 2px 2px 4px 0px color-mix(in srgb, var(--color-primary-40) 20%, transparent)',
+            }
+          : undefined
+      }
       onClick={handleClick}
+      onMouseDown={handleMouseDown}
     >
-      <div className="flex self-stretch flex-col gap-1">
+      <div className="flex flex-col gap-1 self-stretch">
         <div className="flex w-full items-center justify-between">
           <div className="flex min-w-0 items-center gap-2">
             <ContentBadge
@@ -93,13 +85,12 @@ function BaseNodeComponent({
               {nodeNumber}
             </ContentBadge>
 
-            <div className="min-w-0 truncate text-caption-2 font-normal text-label-alternative">
+            <div className="text-caption-2 text-label-alternative min-w-0 truncate font-normal">
               {formatDate(node.updatedAt)}
             </div>
           </div>
 
           <NodeMenu
-            key={menuKey}
             variant={menuVariant}
             onCreateSubNode={handleCreateSubNode}
             onCreateMeeting={handleCreateMeeting}
@@ -107,22 +98,19 @@ function BaseNodeComponent({
             onDeleteMeeting={handleDeleteMeeting}
             onCreateReference={handleCreateReference}
             onDelete={handleDelete}
-            onMenuClick={handleClick}
           />
         </div>
 
-        <div className="text-body-1 font-medium line-clamp-1">
-          {node.title}
-        </div>
+        <div className="text-body-1 line-clamp-1 font-medium">{node.title}</div>
 
         {isMain && node.description && (
-          <div className="text-label-2 font-normal text-label-alternative line-clamp-2">
+          <div className="text-label-2 text-label-alternative line-clamp-2 font-normal">
             {node.description}
           </div>
         )}
       </div>
 
-      <div className="flex self-stretch items-center justify-between gap-2 overflow-hidden">
+      <div className="flex items-center justify-between gap-2 self-stretch overflow-hidden">
         <div className="flex min-w-0 items-center gap-1 overflow-hidden">
           {visibleTags.map((tag) => (
             <ContentBadge
