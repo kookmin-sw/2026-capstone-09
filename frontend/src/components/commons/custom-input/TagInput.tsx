@@ -55,7 +55,7 @@ export const TagInput = ({
                                 <ContentBadge
                                     size="xsmall"
                                     variant="solid"
-                                    className="!bg-primary-60/10 !text-primary-60"
+                                    className="!bg-primary-40/10 !text-primary-40"
                                 >
                                     #{nodeInfo.nodeNumber}
                                 </ContentBadge>

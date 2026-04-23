@@ -293,7 +293,7 @@ export const DropdownInput = ({
                 >
                   <span
                     style={{
-                      color: isSelected ? '#33EBC3' : 'inherit',
+                      color: isSelected ? '#03C98F' : 'inherit',
                     }}
                   >
                     {option.label}
