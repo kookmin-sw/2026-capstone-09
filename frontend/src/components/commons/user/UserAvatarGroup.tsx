@@ -16,7 +16,7 @@ export interface UserInfo {
 }
 
 interface UsersProps {
-  users: UserInfo[];
+  users: readonly UserInfo[];
   maxVisible?: number;
   compact?: boolean; // true면 "+n", false면 "외 n명"
 }

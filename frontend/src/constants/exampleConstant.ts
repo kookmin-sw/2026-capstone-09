@@ -66,12 +66,12 @@ export const EXAMPLE_PROJECT_DETAIL_LINKS = [
 ] as const;
 
 export const EXAMPLE_USERS = [
-  { nickname: '황수민', email: 'tnals655@kookmin.ac.kr' },
-  { nickname: '박건민', email: 'parkkunmin@kookmin.ac.kr' },
-  { nickname: '윤신지', email: 'shinji@kookmin.ac.kr' },
-  { nicknamename: '백채린', email: 'chaerin@kookmin.ac.kr' },
-  { nickname: '윤성욱', email: 'seonguk@kookmin.ac.kr' },
-  { nickname: '박정은', email: 'jeongeun@kookmin.ac.kr' },
+  { userId: 1, nickname: '황수민', email: 'tnals655@kookmin.ac.kr' },
+  { userId: 2, nickname: '박건민', email: 'parkkunmin@kookmin.ac.kr' },
+  { userId: 3, nickname: '윤신지', email: 'shinji@kookmin.ac.kr' },
+  { userId: 4, nickname: '백채린', email: 'chaerin@kookmin.ac.kr' },
+  { userId: 5, nickname: '윤성욱', email: 'seonguk@kookmin.ac.kr' },
+  { userId: 6, nickname: '박정은', email: 'jeongeun@kookmin.ac.kr' },
 ] as const;
 
 export const EXAMPLE_FLOWCHART_DATA = {

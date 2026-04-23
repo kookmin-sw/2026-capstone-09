@@ -12,7 +12,7 @@ interface CommentDisplayProps {
   avatarSrc?: string;
   nickname: string;
   timeText: string;
-  comment: string;
+  comment: string | null;
 }
 
 // 공통 코멘트 컴포넌트 (default 상태)
