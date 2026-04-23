@@ -1,12 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-// import { fetchFlowChart } from '@/apis/flowchart';
 import { Loading } from '@/components/commons/loading/Loading';
 import { EXAMPLE_FLOWCHART_DATA } from '@/constants/exampleConstant';
 import { FlowChart } from '@/types/FlowChartTypes';
 import { MainNodeConnector } from './MainNodeConnector';
 import { NodeBranch } from './NodeBranch';
+import NodeButton from './NodeButton';
 
 interface NodeFlowViewProps {
   projectId: number;
@@ -205,69 +205,126 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
     // TODO: 삭제 확인 모달 열기 → API 호출 → 상태 업데이트
   };
 
+  const handleCreateMainNode = () => {
+    if (!flowChart) return;
+
+    const maxNodeId = flowChart.nodes.length > 0
+      ? Math.max(...flowChart.nodes.map((n) => n.nodeId))
+      : 0;
+    const newNodeId = maxNodeId + 1;
+
+    const mainNodesCount = flowChart.nodes.filter((n) => n.parentId === null).length;
+    const newNodeNumber = `${mainNodesCount + 1}`;
+
+    const newNode = {
+      nodeId: newNodeId,
+      parentId: null,
+      number: newNodeNumber,
+      title: `새 메인 노드 ${newNodeNumber}`,
+      description: null,
+      status: 'TODO' as const,
+      sortOrder: mainNodesCount,
+      tags: [],
+      assignees: [],
+      hasMeeting: false,
+      childNodeIds: [],
+      updatedAt: new Date().toISOString(),
+    };
+
+    setFlowChart((prev) => {
+      if (!prev) return prev;
+
+      return {
+        ...prev,
+        nodes: [...prev.nodes, newNode],
+      };
+    });
+    setFocusedNodeId(newNodeId);
+
+    setTimeout(() => {
+      const newNodeElement = document.querySelector(`[data-node-id="${newNodeId}"]`);
+      if (newNodeElement) {
+        newNodeElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+          inline: 'center',
+        });
+      }
+    }, 100);
+  };
+
   return (
-    <div
-      ref={containerRef}
-      className="w-full h-full overflow-auto bg-surface-canvas [&::-webkit-scrollbar]:hidden"
-      style={{
-        scrollbarWidth: 'none',
-        msOverflowStyle: 'none',
-        cursor: isDragging ? 'grabbing' : 'grab',
-      }}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseLeave}
-      onWheel={handleWheel}
-    >
-      {/* 무한 캔버스 컨테이너 */}
+    <div className="w-full h-full relative">
+      <div className="fixed top-[120px] right-6 z-[60]" onMouseDown={(e) => e.stopPropagation()}>
+        <NodeButton
+          onAddMainNode={handleCreateMainNode}
+          onAddSubNode={focusedNodeId ? () => handleCreateSubNode(focusedNodeId) : undefined}
+          onAddMeeting={focusedNodeId ? () => {/* TODO: 모달 열기 */} : undefined}
+        />
+      </div>
+
       <div
-        ref={contentRef}
-        className="inline-block min-w-[200vw] min-h-[200vh] p-20 relative"
+        ref={containerRef}
+        className="w-full h-full overflow-auto bg-surface-canvas [&::-webkit-scrollbar]:hidden"
         style={{
-          transform: `scale(${zoom})`,
-          transformOrigin: '0 0',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          cursor: isDragging ? 'grabbing' : 'grab',
         }}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+        onWheel={handleWheel}
       >
-        {/* 메인 노드 연결선 */}
-        {mainNodes.map((mainNode, index) => {
-          if (index === mainNodes.length - 1) return null;
-          const nextNode = mainNodes[index + 1];
-          return (
-            <MainNodeConnector
-              key={`connector-${mainNode.nodeId}-${nextNode.nodeId}`}
-              startNodeId={mainNode.nodeId}
-              endNodeId={nextNode.nodeId}
-              containerRef={contentRef}
-              zoom={zoom}
-            />
-          );
-        })}
+        <div
+          ref={contentRef}
+          className="inline-block min-w-[200vw] min-h-[200vh] pt-30 px-20 pb-20 relative"
+          style={{
+            transform: `scale(${zoom})`,
+            transformOrigin: '0 0',
+          }}
+        >
+          {/* 메인 노드 연결선 */}
+          {mainNodes.map((mainNode, index) => {
+            if (index === mainNodes.length - 1) return null;
+            const nextNode = mainNodes[index + 1];
+            return (
+              <MainNodeConnector
+                key={`connector-${mainNode.nodeId}-${nextNode.nodeId}`}
+                startNodeId={mainNode.nodeId}
+                endNodeId={nextNode.nodeId}
+                containerRef={contentRef}
+                zoom={zoom}
+              />
+            );
+          })}
 
-        <div className="flex flex-col gap-8">
-          {/* 노드 트리 */}
-          <div className="flex gap-12">
-            {mainNodes.map((mainNode) => {
-              const subNodesForMain = subNodes.filter(
-                (sub) => mainNode.childNodeIds.includes(sub.nodeId)
-              );
+          <div className="flex flex-col gap-8">
+            {/* 노드 트리 */}
+            <div className="flex gap-12">
+              {mainNodes.map((mainNode) => {
+                const subNodesForMain = subNodes.filter(
+                  (sub) => mainNode.childNodeIds.includes(sub.nodeId)
+                );
 
-              return (
-                <NodeBranch
-                  key={mainNode.nodeId}
-                  mainNode={mainNode}
-                  subNodes={subNodesForMain}
-                  allNodes={flowChart.nodes}
-                  allEdges={flowChart.edges}
-                  focusedNodeId={focusedNodeId}
-                  onNodeClick={handleNodeClick}
-                  onCreateSubNode={handleCreateSubNode}
-                  onCreateReference={handleCreateReference}
-                  onDeleteNode={handleDeleteNode}
-                  zoom={zoom}
-                />
-              );
-            })}
+                return (
+                  <NodeBranch
+                    key={mainNode.nodeId}
+                    mainNode={mainNode}
+                    subNodes={subNodesForMain}
+                    allNodes={flowChart.nodes}
+                    allEdges={flowChart.edges}
+                    focusedNodeId={focusedNodeId}
+                    onNodeClick={handleNodeClick}
+                    onCreateSubNode={handleCreateSubNode}
+                    onCreateReference={handleCreateReference}
+                    onDeleteNode={handleDeleteNode}
+                    zoom={zoom}
+                  />
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>

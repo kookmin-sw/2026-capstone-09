@@ -37,7 +37,9 @@ export function MainNodeConnector({ startNodeId, endNodeId, containerRef, zoom =
       const x2 = (endRect.left - containerRect.left) / zoom;
       const y2 = (endRect.top + endRect.height / 2 - containerRect.top) / zoom;
 
-      setLineData({ x1, y1, x2, y2 });
+      const avgY = (y1 + y2) / 2;
+
+      setLineData({ x1, y1: avgY, x2, y2: avgY });
     };
 
     const debouncedCalculate = () => {
