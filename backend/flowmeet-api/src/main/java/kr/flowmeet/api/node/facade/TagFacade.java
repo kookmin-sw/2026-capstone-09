@@ -1,25 +1,19 @@
 package kr.flowmeet.api.node.facade;
 
 import java.util.List;
-import kr.flowmeet.domain.node.exception.TagErrorCode;
 import kr.flowmeet.domain.node.service.NodeValidator;
 import kr.flowmeet.domain.project.entity.ProjectMemberRole;
 import kr.flowmeet.domain.project.service.ProjectPermissionValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import kr.flowmeet.api.common.exception.ApiException;
 import kr.flowmeet.api.node.dto.request.AddNodeTagRequest;
 import kr.flowmeet.api.node.dto.request.CreateTagRequest;
 import kr.flowmeet.api.node.dto.request.UpdateTagRequest;
 import kr.flowmeet.api.node.dto.response.GetAllTagsResponse;
 import kr.flowmeet.domain.node.entity.Tag;
-import kr.flowmeet.domain.node.exception.NodeErrorCode;
-import kr.flowmeet.domain.node.service.NodeService;
 import kr.flowmeet.domain.node.service.NodeTagService;
 import kr.flowmeet.domain.node.service.TagService;
-import kr.flowmeet.domain.project.entity.ProjectMember;
-import kr.flowmeet.domain.project.service.ProjectMemberService;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +22,6 @@ public class TagFacade {
 
     private final TagService tagService;
     private final NodeTagService nodeTagService;
-    private final NodeService nodeService;
     private final ProjectPermissionValidator projectPermissionValidator;
     private final NodeValidator nodeValidator;
 
