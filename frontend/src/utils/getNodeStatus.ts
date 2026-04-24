@@ -1,4 +1,4 @@
-import { NODE_STATUS_INFO, NodeStatusType } from './nodeStatus';
+import { NODE_STATUS_INFO, NodeStatusType } from '../constants/nodeStatus';
 
 // 라벨명만 가져오기
 export const getNodeStatusLabel = (status: NodeStatusType): string => {

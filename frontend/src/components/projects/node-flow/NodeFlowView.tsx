@@ -7,6 +7,8 @@ import { Loading } from '@/components/commons/loading/Loading';
 import { MainNodeConnector } from './MainNodeConnector';
 import { NodeBranch } from './NodeBranch';
 import NodeButton from './NodeButton';
+import useSingleAndDoubleClick from '@/hooks/useSingleAndDoubleClick';
+import { NodeSidebar } from '@/components/node-datail/NodeSidebar';
 
 interface NodeFlowViewProps {
   projectId: number;
@@ -17,6 +19,7 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [focusedNodeId, setFocusedNodeId] = useState<number | null>(null);
+  // const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -49,10 +52,29 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
     }
   }, [loading]);
 
-  const handleNodeClick = useCallback((nodeId: number, e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    setFocusedNodeId((prev) => (prev === nodeId ? null : nodeId));
-  }, []);
+  const [clickTargetId, setClickTargetId] = useState<number | null>(null);
+
+  const handleClick = useSingleAndDoubleClick({
+    actionSimpleClick: () => {
+      if (clickTargetId !== null) {
+        setFocusedNodeId((prev) => (prev === clickTargetId ? null : clickTargetId));
+      }
+    },
+    actionDoubleClick: () => {
+      if (clickTargetId !== null) {
+        setFocusedNodeId(clickTargetId);
+      }
+    },
+  });
+
+  const handleNodeClick = useCallback(
+    (nodeId: number, e?: React.MouseEvent) => {
+      e?.stopPropagation();
+      setClickTargetId(nodeId);
+      handleClick();
+    },
+    [handleClick],
+  );
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     setIsDragging(true);
@@ -236,7 +258,9 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
       <div className="fixed top-[120px] right-6 z-[60]" onMouseDown={(e) => e.stopPropagation()}>
         <NodeButton
           onAddMainNode={handleCreateMainNode}
-          onAddSubNode={focusedNodeId !== null ? () => handleCreateSubNode(focusedNodeId) : undefined}
+          onAddSubNode={
+            focusedNodeId !== null ? () => handleCreateSubNode(focusedNodeId) : undefined
+          }
           onAddMeeting={
             focusedNodeId
               ? () => {
@@ -289,8 +313,8 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
             {/* 노드 트리 */}
             <div className="flex gap-12">
               {mainNodes?.map((mainNode, idx) => {
-                const subNodesForMain = subNodes?.filter((sub) =>
-                  sub.nodeId !== undefined && mainNode?.childNodeIds?.includes(sub.nodeId),
+                const subNodesForMain = subNodes?.filter(
+                  (sub) => sub.nodeId !== undefined && mainNode?.childNodeIds?.includes(sub.nodeId),
                 );
 
                 return (
@@ -313,6 +337,11 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
           </div>
         </div>
       </div>
+      <NodeSidebar
+        projectId={projectId}
+        nodeId={focusedNodeId}
+        onClose={() => setFocusedNodeId(null)}
+      />
     </div>
   );
 }

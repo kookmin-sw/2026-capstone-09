@@ -15,11 +15,12 @@ import NodeMeetingTab from './NodeMeetingTab';
 import NodeNoteTab from './NodeNoteTab';
 
 interface NodeSidebarProps {
-  nodeId: string | null;
+  nodeId: number | null;
+  projectId: number;
   onClose: () => void;
 }
 
-export function NodeSidebar({ nodeId, onClose }: NodeSidebarProps) {
+export function NodeSidebar({ nodeId, projectId, onClose }: NodeSidebarProps) {
   const savedNodeId = useSyncExternalStore(
     subscribeToSession,
     getSessionSnapshot,
@@ -30,7 +31,7 @@ export function NodeSidebar({ nodeId, onClose }: NodeSidebarProps) {
 
   useEffect(() => {
     if (nodeId) {
-      sessionStorage.setItem(SESSION_KEY, nodeId);
+      sessionStorage.setItem(SESSION_KEY, nodeId.toString());
     }
   }, [nodeId]);
 
@@ -54,7 +55,7 @@ export function NodeSidebar({ nodeId, onClose }: NodeSidebarProps) {
       {/* TODO : 지금 열릴 때만 애니메이션 적용됨 - 추후 닫힐 때 애니메이션 구현 */}
       {/* TODO : z-index 한 번에 관리할 수 있도록 정리 */}
       <aside
-        className="animate-slide-in fixed top-0 right-0 z-40 flex h-full w-2/5 flex-col border-l border-white bg-white"
+        className="animate-slide-in fixed top-0 right-0 z-90 flex h-full w-2/5 flex-col border-l border-white bg-white"
         onClick={(e) => e.stopPropagation()}
       >
         {/* TODO : 전체 페이지의 경우 페이지 닫는 아이콘으로 변경 필요 */}
@@ -62,7 +63,8 @@ export function NodeSidebar({ nodeId, onClose }: NodeSidebarProps) {
         <div className="absolute -scale-x-100 p-3">
           <IconButton
             color="semantic.label.alternative"
-            href={`/nodes/${activeNodeId}/${value}`}
+            href={`/projects/${projectId}/nodes/${activeNodeId}/${value}`}
+            onClick={handleClose}
             size={16}
             aria-label="전체화면 보기"
             as={Link}
@@ -74,7 +76,8 @@ export function NodeSidebar({ nodeId, onClose }: NodeSidebarProps) {
         <div className="flex-1 overflow-hidden px-14 pt-14">
           <NodeDetailLayout
             nodeId={nodeId}
-            noteContent={<NodeNoteTab />}
+            projectId={projectId}
+            noteContent={<NodeNoteTab nodeId={nodeId} projectId={projectId} />}
             meetingContent={<NodeMeetingTab />}
             value={value}
             onValueChange={setValue}

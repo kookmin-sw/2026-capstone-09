@@ -1,9 +1,11 @@
-import { ContentBadge } from '@wanteddev/wds';
+import { ContentBadge, ThemeColorsToken } from '@wanteddev/wds';
 import { memo } from 'react';
 import type { NodeItem } from '@/api/Api';
 import { Users } from '@/components/commons/user/UserAvatarGroup';
 import { formatDate, getVisibleTags } from '@/utils/nodeUtils';
 import { NodeMenu } from './NodeMenu';
+import { getColorToken } from '@/utils/getBadgeColorInfo';
+import { ColorType } from '@/constants/badgeColor';
 
 interface BaseNodeProps {
   node: NodeItem;
@@ -134,13 +136,9 @@ function BaseNodeComponent({
           {visibleTags.map((tag) => (
             <ContentBadge
               key={tag.tagId}
+              color="accent"
               size="xsmall"
-              variant="solid"
-              color="neutral"
-              sx={{
-                backgroundColor: `${tag.color}1A`,
-                color: tag.color,
-              }}
+              accentColor={getColorToken(tag.color as ColorType) as ThemeColorsToken}
             >
               {tag.name}
             </ContentBadge>
