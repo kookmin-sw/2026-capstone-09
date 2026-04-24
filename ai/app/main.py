@@ -4,4 +4,4 @@ from mangum import Mangum
 
 app = FastAPI()
 app.include_router(router)
-handler = Mangum(app, lifespan="off")
+handler = Mangum(app, lifespan="off", api_gateway_base_path="/default")
