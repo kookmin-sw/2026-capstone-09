@@ -4,4 +4,4 @@ from mangum import Mangum
 
 app = FastAPI()
 app.include_router(router)
-handler = Mangum(app)
+handler = Mangum(app, lifespan="off")
