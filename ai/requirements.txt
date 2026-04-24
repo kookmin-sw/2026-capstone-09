@@ -4,3 +4,4 @@ google-genai==1.68.0
 python-dotenv==1.2.2
 pydantic==2.12.5
 uvicorn==0.42.0
+python-multipart
