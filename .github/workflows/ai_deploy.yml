@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
+        with:
+          python-version: "3.11"
 
       - name: AWS CLI 설정
         uses: aws-actions/configure-aws-credentials@v2
@@ -30,6 +32,7 @@ jobs:
       - name: 패키지 설치
         run: |
           cd ai
+          pip install --upgrade pip
           pip install -r requirements.txt -t ./package
           cp -r app ./package/
 
