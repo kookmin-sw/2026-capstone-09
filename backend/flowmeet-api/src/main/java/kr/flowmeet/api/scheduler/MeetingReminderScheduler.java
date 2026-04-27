@@ -34,79 +34,89 @@ public class MeetingReminderScheduler {
     private final UserService userService;
     private final EmailSender emailSender;
 
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 * * * * *", zone = "Asia/Seoul")
     public void sendMeetingReminders() {
-        LocalDateTime now = LocalDateTime.now();
-        List<Meeting> pendingMeetings = meetingService.findPendingReminders(now);
-        if (pendingMeetings.isEmpty()) {
+        List<Meeting> meetings = findMeetingsToNotify();
+        if (meetings.isEmpty()) {
             return;
         }
+        sendNotifications(meetings);
+    }
 
-        // 이미 발송된 nodeId 일괄 조회 후 필터링
+    private List<Meeting> findMeetingsToNotify() {
+        List<Meeting> pendingMeetings = meetingService.findPendingReminders(LocalDateTime.now());
+        if (pendingMeetings.isEmpty()) {
+            return List.of();
+        }
+
         List<Long> nodeIds = pendingMeetings.stream().map(Meeting::getNodeId).toList();
         Set<Long> alreadyNotifiedNodeIds = notificationService.findAlreadyNotifiedNodeIds(nodeIds);
-        List<Meeting> meetingsToNotify = pendingMeetings.stream()
+        return pendingMeetings.stream()
                 .filter(m -> !alreadyNotifiedNodeIds.contains(m.getNodeId()))
                 .toList();
-        if (meetingsToNotify.isEmpty()) {
-            return;
-        }
+    }
 
-        // 참여자 일괄 조회
-        List<Long> meetingIds = meetingsToNotify.stream().map(Meeting::getId).toList();
-        List<MeetingParticipant> allParticipants = meetingService.findAllParticipantsByMeetingIds(meetingIds);
-        Map<Long, List<MeetingParticipant>> participantsByMeetingId = allParticipants.stream()
-                .collect(Collectors.groupingBy(MeetingParticipant::getMeetingId));
+    private void sendNotifications(List<Meeting> meetings) {
+        Map<Long, List<MeetingParticipant>> participantsByMeetingId = loadParticipantsByMeetingId(meetings);
+        Map<Long, User> userMap = loadUsersByParticipants(participantsByMeetingId);
+        Map<Long, Map<Long, NotificationSetting>> settingsByProjectId = loadSettingsByProjectId(meetings);
 
-        // 유저 일괄 조회
-        List<Long> userIds = allParticipants.stream().map(MeetingParticipant::getUserId).distinct().toList();
-        Map<Long, User> userMap = userService.findAllByIds(userIds).stream()
-                .collect(Collectors.toMap(User::getId, Function.identity()));
-
-        // 알림 설정 프로젝트별 일괄 조회
-        List<Long> projectIds = meetingsToNotify.stream()
-                .map(m -> m.getNode().getProjectId())
-                .distinct()
-                .toList();
-        Map<Long, Map<Long, NotificationSetting>> settingsByProjectId = notificationSettingService
-                .findAllByProjectIds(projectIds).stream()
-                .collect(Collectors.groupingBy(
-                        NotificationSetting::getProjectId,
-                        Collectors.toMap(NotificationSetting::getUserId, Function.identity())
-                ));
-
-        for (Meeting meeting : meetingsToNotify) {
+        meetings.forEach(meeting -> {
             Long projectId = meeting.getNode().getProjectId();
             String nodeName = meeting.getNode().getTitle();
             Long nodeId = meeting.getNodeId();
-            List<MeetingParticipant> participants = participantsByMeetingId.getOrDefault(meeting.getId(), List.of());
             Map<Long, NotificationSetting> settingByUserId = settingsByProjectId.getOrDefault(projectId, Map.of());
 
-            for (MeetingParticipant participant : participants) {
-                Long userId = participant.getUserId();
-                NotificationSetting setting = settingByUserId.get(userId);
+            for (MeetingParticipant p : participantsByMeetingId.getOrDefault(meeting.getId(), List.of())) {
+                NotificationSetting setting = settingByUserId.get(p.getUserId());
                 if (setting == null || !setting.isMeetingEnabled()) {
                     continue;
                 }
 
-                sendInAppNotification(userId, projectId, nodeId, nodeName);
+                sendInAppNotification(p.getUserId(), projectId, nodeId, nodeName);
 
                 if (setting.isEmailEnabled()) {
-                    User user = userMap.get(userId);
+                    User user = userMap.get(p.getUserId());
                     if (user != null) {
                         sendEmailNotification(user, nodeName);
                     }
                 }
-
             }
-        }
+        });
+    }
+
+    private Map<Long, List<MeetingParticipant>> loadParticipantsByMeetingId(List<Meeting> meetings) {
+        List<Long> meetingIds = meetings.stream().map(Meeting::getId).toList();
+        return meetingService.findAllParticipantsByMeetingIds(meetingIds).stream()
+                .collect(Collectors.groupingBy(MeetingParticipant::getMeetingId));
+    }
+
+    private Map<Long, User> loadUsersByParticipants(Map<Long, List<MeetingParticipant>> participantsByMeetingId) {
+        List<Long> userIds = participantsByMeetingId.values().stream()
+                .flatMap(List::stream)
+                .map(MeetingParticipant::getUserId)
+                .distinct()
+                .toList();
+        return userService.findAllByIdsAsMap(userIds);
+    }
+
+    private Map<Long, Map<Long, NotificationSetting>> loadSettingsByProjectId(List<Meeting> meetings) {
+        List<Long> projectIds = meetings.stream()
+                .map(m -> m.getNode().getProjectId())
+                .distinct()
+                .toList();
+        return notificationSettingService.findAllByProjectIds(projectIds).stream()
+                .collect(Collectors.groupingBy(
+                        NotificationSetting::getProjectId,
+                        Collectors.toMap(NotificationSetting::getUserId, Function.identity())
+                ));
     }
 
     private void sendInAppNotification(Long userId, Long projectId, Long nodeId, String nodeName) {
         try {
             notificationService.send(MeetingReminderNotificationCommand.of(userId, projectId, nodeId, nodeName));
         } catch (Exception e) {
-            log.error("[MeetingReminderScheduler] 인앱 알림 발송 실패. userId={}, nodeId={}", userId, nodeId, e);
+            log.error("[MeetingReminder] 인앱 알림 발송 실패. userId={}, nodeId={}", userId, nodeId, e);
         }
     }
 
@@ -116,7 +126,7 @@ public class MeetingReminderScheduler {
             Map<String, Object> variables = Map.of("nodeName", nodeName);
             emailSender.send(user.getEmail(), subject, REMINDER_TEMPLATE, variables);
         } catch (Exception e) {
-            log.error("[MeetingReminderScheduler] 이메일 발송 실패. userId={}, email={}", user.getId(), user.getEmail(), e);
+            log.error("[MeetingReminder] 이메일 발송 실패. userId={}, email={}", user.getId(), user.getEmail(), e);
         }
     }
 }

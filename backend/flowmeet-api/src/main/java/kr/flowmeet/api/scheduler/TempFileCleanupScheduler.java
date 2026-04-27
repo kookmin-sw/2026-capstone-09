@@ -21,7 +21,7 @@ public class TempFileCleanupScheduler {
     private final FileInformationService fileInformationService;
     private final FileStorageService fileStorageService;
 
-    @Scheduled(cron = "0 0 3 * * *")
+    @Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
     public void cleanupTempFiles() {
         LocalDateTime expiredAt = LocalDateTime.now().minusHours(TEMP_FILE_EXPIRY_HOURS);
         List<FileInformation> expiredFiles = fileInformationService.findAllExpiredTempFiles(expiredAt);
