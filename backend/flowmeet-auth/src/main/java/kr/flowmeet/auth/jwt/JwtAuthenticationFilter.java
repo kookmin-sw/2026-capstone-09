@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import kr.flowmeet.auth.exception.AuthErrorCode;
 import kr.flowmeet.auth.exception.AuthException;
+import kr.flowmeet.auth.exception.JwtAuthenticationException;
 import kr.flowmeet.auth.security.UserAuthentication;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,27 +31,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        String authorizationHeader = request.getHeader(AUTHORIZATION_HEADER);
+        try {
+            String authorizationHeader = request.getHeader(AUTHORIZATION_HEADER);
 
-        if (authorizationHeader != null && authorizationHeader.startsWith(BEARER)) {
-            String accessToken = extractAccessToken(request);
+            if (authorizationHeader != null && authorizationHeader.startsWith(BEARER)) {
+                String accessToken = extractAccessToken(request);
+                jwtProvider.validToken(accessToken);
 
-            if (!jwtProvider.validToken(accessToken)) {
-                sendUnauthorizedResponse(response);
-                return;
+                Long userId = jwtProvider.extractUserIdFromToken(accessToken)
+                        .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_ACCESS_TOKEN));
+
+                SecurityContextHolder.getContext().setAuthentication(UserAuthentication.create(userId));
             }
-
-            Long userId = jwtProvider.extractUserIdFromToken(accessToken)
-                    .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_ACCESS_TOKEN));
-
-            SecurityContextHolder.getContext().setAuthentication(UserAuthentication.create(userId));
+        } catch (AuthException e) {
+            throw new JwtAuthenticationException(e);
         }
 
         filterChain.doFilter(request, response);
-    }
-
-    private void sendUnauthorizedResponse(final HttpServletResponse response) throws IOException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     }
 
     private String extractAccessToken(final HttpServletRequest request) {

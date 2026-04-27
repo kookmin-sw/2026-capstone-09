@@ -1,6 +1,6 @@
 jwt:
   secret-key: ${JWT_SECRET_KEY}
-  access-token-expiry: 1800000
+  access-token-expiry: 180000000
   invitation-token-expiry: 604800000
   issuer: flowmeet
 

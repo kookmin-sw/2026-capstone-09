@@ -14,6 +14,7 @@ import kr.flowmeet.api.file.dto.request.CreatePresignedUrlRequest;
 import kr.flowmeet.api.file.dto.response.CreatePresignedUrlResponse;
 import kr.flowmeet.api.file.dto.response.FileInformationResponse;
 import kr.flowmeet.api.file.facade.FileFacade;
+import kr.flowmeet.api.file.success.FileSuccessCode;
 
 @RestController
 @RequestMapping("/v1/files")
@@ -26,20 +27,20 @@ public class FileController implements FileApi {
     @PostMapping("/presigned-url")
     public CommonResponse<CreatePresignedUrlResponse> createPresignedUrl(
             @Valid @RequestBody final CreatePresignedUrlRequest request) {
-        return CommonResponse.ok(fileFacade.createPresignedUrl(request));
+        return CommonResponse.ok(FileSuccessCode.CREATE_PRESIGNED_URL, fileFacade.createPresignedUrl(request));
     }
 
     @Override
     @PostMapping
     public CommonResponse<FileInformationResponse> confirmUpload(
             @Valid @RequestBody final ConfirmFileUploadRequest request) {
-        return CommonResponse.ok(fileFacade.confirmUpload(request));
+        return CommonResponse.ok(FileSuccessCode.CONFIRM_UPLOAD, fileFacade.confirmUpload(request));
     }
 
     @Override
     @DeleteMapping
     public CommonResponse<?> deleteFile(@RequestParam final String fileKey) {
         fileFacade.deleteFile(fileKey);
-        return CommonResponse.ok();
+        return CommonResponse.ok(FileSuccessCode.DELETE_FILE);
     }
 }

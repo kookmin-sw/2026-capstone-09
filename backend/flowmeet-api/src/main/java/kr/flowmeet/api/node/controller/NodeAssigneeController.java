@@ -2,17 +2,16 @@ package kr.flowmeet.api.node.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import kr.flowmeet.api.common.dto.CommonResponse;
 import kr.flowmeet.api.node.dto.request.CreateAssigneeRequest;
 import kr.flowmeet.api.node.facade.NodeAssigneeFacade;
+import kr.flowmeet.api.node.success.NodeAssigneeSuccessCode;
 import kr.flowmeet.auth.annotation.UserId;
 
 @RestController
@@ -24,7 +23,6 @@ public class NodeAssigneeController implements NodeAssigneeApi {
 
     @Override
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
     public CommonResponse<?> createAssignee(
             @UserId Long userId,
             @PathVariable Long projectId,
@@ -32,7 +30,7 @@ public class NodeAssigneeController implements NodeAssigneeApi {
             @Valid @RequestBody CreateAssigneeRequest request
     ) {
         nodeAssigneeFacade.createAssignee(userId, projectId, nodeId, request);
-        return CommonResponse.ok();
+        return CommonResponse.ok(NodeAssigneeSuccessCode.CREATE_ASSIGNEE);
     }
 
     @Override
@@ -44,6 +42,6 @@ public class NodeAssigneeController implements NodeAssigneeApi {
             @PathVariable Long assigneeId
     ) {
         nodeAssigneeFacade.deleteAssignee(userId, projectId, nodeId, assigneeId);
-        return CommonResponse.ok();
+        return CommonResponse.ok(NodeAssigneeSuccessCode.DELETE_ASSIGNEE);
     }
 }

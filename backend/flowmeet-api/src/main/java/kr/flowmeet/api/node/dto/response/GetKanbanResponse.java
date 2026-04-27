@@ -48,6 +48,8 @@ public record GetKanbanResponse(
     public record KanbanItem(
             @Schema(description = "노드 ID", example = "101")
             Long nodeId,
+            @Schema(description = "노드 번호 (노드 1번의 서브 노드라면 1.1)", example = "1.1")
+            String number,
             @Schema(description = "노드 제목", example = "로그인 화면 기획")
             String title,
             @Schema(description = "같은 상태 내 정렬 순서", example = "1024")
@@ -65,6 +67,7 @@ public record GetKanbanResponse(
         ) {
             return new KanbanItem(
                     node.getId(),
+                    node.getNumber(),
                     node.getTitle(),
                     node.getSortOrder(),
                     nodeTags.stream().map(nt -> TagItem.from(nt.getTag())).toList(),

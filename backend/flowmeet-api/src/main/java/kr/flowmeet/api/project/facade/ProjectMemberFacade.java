@@ -30,9 +30,13 @@ public class ProjectMemberFacade {
     @Transactional
     public void updateMemberRole(final Long userId, final Long projectId, final Long memberId,
                                  final UpdateProjectMemberRoleRequest request) {
-        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
+        if (request.role() == ProjectMemberRole.OWNER) {
+            projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.OWNER);
+        } else {
+            projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
+        }
 
-        projectMemberService.updateRole(projectId, memberId, request.role());
+        projectMemberService.updateRole(projectId, userId, memberId, request.role());
     }
 
     @Transactional

@@ -28,4 +28,14 @@ public class TestController {
         String token = jwtProvider.generateToken(user.getId(), user.getEmail(), user.getNickname());
         return CommonResponse.ok(token);
     }
+
+    @GetMapping("/token/template")
+    public CommonResponse<String> issueToken(
+            @RequestParam Long userId,
+            @RequestParam String email,
+            @RequestParam String nickname
+    ) {
+        String token = jwtProvider.generateToken(userId, email, nickname);
+        return CommonResponse.ok(token);
+    }
 }

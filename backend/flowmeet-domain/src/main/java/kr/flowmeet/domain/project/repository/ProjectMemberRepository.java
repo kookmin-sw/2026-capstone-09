@@ -25,6 +25,8 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
 
     int countByProjectId(Long projectId);
 
+    int countByProjectIdAndRole(Long projectId, ProjectMemberRole role);
+
     @Modifying(clearAutomatically = true)
     @Query("UPDATE ProjectMember pm SET pm.deletedAt = CURRENT_TIMESTAMP WHERE pm.projectId = :projectId")
     int softDeleteAllByProjectId(@Param("projectId") Long projectId);
