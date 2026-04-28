@@ -30,6 +30,7 @@
     "pretendard": "^1.3.9",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "reactflow": "^11.11.4",
     "tailwind-merge": "^3.5.0",
     "tiptap-markdown": "^0.9.0",
     "y-websocket": "^3.0.0",
