@@ -17,7 +17,7 @@ public class MeetingReminderNotificationCommand extends NotificationCommand {
     }
 
     @Override
-    public Long getNodeId() {
+    public Long getTargetId() {
         return nodeId;
     }
 }

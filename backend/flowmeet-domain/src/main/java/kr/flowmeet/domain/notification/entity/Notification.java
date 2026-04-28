@@ -17,7 +17,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import kr.flowmeet.domain.common.BaseCreatedTimeEntity;
-import kr.flowmeet.domain.node.entity.Node;
 import kr.flowmeet.domain.project.entity.Project;
 import kr.flowmeet.domain.user.entity.User;
 
@@ -26,8 +25,7 @@ import kr.flowmeet.domain.user.entity.User;
         name = "notifications",
         indexes = {
                 @Index(name = "idx_notifications_user_id", columnList = "user_id"),
-                @Index(name = "idx_notifications_project_id", columnList = "project_id"),
-                @Index(name = "idx_notifications_node_id", columnList = "node_id")
+                @Index(name = "idx_notifications_project_id", columnList = "project_id")
         }
 )
 @Getter
@@ -60,24 +58,20 @@ public class Notification extends BaseCreatedTimeEntity {
     @JoinColumn(name = "project_id", insertable = false, updatable = false)
     private Project project;
 
-    @Column(name = "node_id")
-    private Long nodeId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "node_id", insertable = false, updatable = false)
-    private Node node;
+    @Column(name = "target_id")
+    private Long targetId;
 
     @Column(name = "is_read", nullable = false)
     private boolean isRead;
 
     @Builder
     public Notification(Long userId, NotificationType type, String content,
-                        Long projectId, Long nodeId) {
+                        Long projectId, Long targetId) {
         this.userId = userId;
         this.type = type;
         this.content = content;
         this.projectId = projectId;
-        this.nodeId = nodeId;
+        this.targetId = targetId;
         this.isRead = false;
     }
 

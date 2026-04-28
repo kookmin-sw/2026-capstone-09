@@ -17,7 +17,7 @@ public class NotificationCommand {
         return List.copyOf(arguments);
     }
 
-    public Long getNodeId() {
+    public Long getTargetId() {
         return null;
     }
 

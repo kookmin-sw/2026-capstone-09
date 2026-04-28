@@ -9,7 +9,7 @@ public record NotificationSsePayload(
         String title,
         String content,
         Long projectId,
-        Long nodeId,
+        Long targetId,
         LocalDateTime createdAt
 ) {
 
@@ -20,7 +20,7 @@ public record NotificationSsePayload(
                 notification.getType().getTitle(),
                 notification.getContent(),
                 notification.getProjectId(),
-                notification.getNodeId(),
+                notification.getTargetId(),
                 notification.getCreatedAt()
         );
     }
