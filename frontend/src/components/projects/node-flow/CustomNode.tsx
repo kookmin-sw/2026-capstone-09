@@ -204,4 +204,4 @@ function CustomFlowNodeComponent({ data, selected }: NodeProps<CustomNodeData>) 
   );
 }
 
-export const CustomFlowNode = memo(CustomFlowNodeComponent);
+export const CustomNode = memo(CustomFlowNodeComponent);

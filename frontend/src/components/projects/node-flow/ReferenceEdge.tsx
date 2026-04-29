@@ -18,7 +18,6 @@ export function ReferenceEdge({
 }: EdgeProps) {
   const edgeData = data?.edgeData as FlowChartEdge | undefined;
 
-  // 참조노드(코멘트) 위치 계산 - 중간 지점에서 아래로 offset하여 빈 공간에 배치
   const midX = (sourceX + targetX) / 2;
   const midY = (sourceY + targetY) / 2;
   const referenceNodeOffsetY = 100;

@@ -1,7 +1,7 @@
 'use client';
 
 import { use } from 'react';
-import { NodeFlowViewReactFlow } from '@/components/projects/node-flow/NodeFlowViewReactFlow';
+import { NodeFlowView } from '@/components/projects/node-flow/NodeFlowView';
 import { useProjectDetailLayout } from '@/contexts/ProjectDetailLayoutContext';
 
 interface ProjectDetailPageProps {
@@ -19,7 +19,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
     <section className="bg-surface-canvas flex flex-1 flex-col overflow-hidden">
       {activeView === 'node-flow' && (
         <div className="flex-1 w-full h-full">
-          <NodeFlowViewReactFlow projectId={projectIdNum} />
+          <NodeFlowView projectId={projectIdNum} />
         </div>
       )}
       {activeView === 'list' && (
