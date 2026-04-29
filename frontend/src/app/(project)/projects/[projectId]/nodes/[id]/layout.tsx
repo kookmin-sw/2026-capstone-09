@@ -22,7 +22,7 @@ export default function NodePageLayout() {
           nodeId={nodeId}
           projectId={projectId}
           noteContent={<NodeNoteTab nodeId={nodeId} projectId={projectId} />}
-          meetingContent={<NodeMeetingTab />}
+          meetingContent={<NodeMeetingTab nodeId={nodeId} projectId={projectId} />}
         />
       </div>
     </div>

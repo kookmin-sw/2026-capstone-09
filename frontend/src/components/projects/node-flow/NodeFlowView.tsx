@@ -50,9 +50,9 @@ export function NodeFlowView({ projectId }: NodeFlowViewProps) {
     }
   }, [loading]);
 
-  const [clickTargetId, setClickTargetId] = useState<number | null>(null);
-  const [focusedNodeId, setFocusedNodeId] = useState<number | null>(null);
-  const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
+  const [clickTargetId, setClickTargetId] = useState<number | null>(null); // 클릭 타겟이 되는 노드
+  const [focusedNodeId, setFocusedNodeId] = useState<number | null>(null); // 한 번 클릭 노드
+  const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null); // 두 번 클릭 노드
 
   const handleClick = useSingleAndDoubleClick({
     actionSimpleClick: () => {
