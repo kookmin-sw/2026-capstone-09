@@ -38,6 +38,7 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt -t ./package
           cp -r app ./package/
+          cp lambda_sqs.py ./package/
 
       - name: zip 패키징
         run: |
