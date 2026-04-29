@@ -41,7 +41,7 @@ export const MeetingCreateModalContent = ({
     useMeetingCreateForm();
   const {
     control,
-    formState: { isSubmitting },
+    formState: { isSubmitting, isValid },
     handleSubmit,
   } = form;
 
@@ -50,36 +50,7 @@ export const MeetingCreateModalContent = ({
   });
 
   return (
-    <form
-      data-meeting-create-modal=""
-      className="flex w-full flex-col gap-8"
-      onSubmit={handleCreate}
-    >
-      <style>{`
-        [data-meeting-create-modal] [data-role='text-field-wrapper']:has(input:focus),
-        [data-meeting-create-modal] [data-role='text-field-wrapper']:focus-within,
-        [data-meeting-create-modal] :focus-within > [data-role='text-field-wrapper'],
-        [data-meeting-create-modal] :has(input:focus) > [data-role='text-field-wrapper'] {
-          box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-primary-40) 43%, transparent) !important;
-        }
-        [data-meeting-create-modal] [data-role='text-field-wrapper']:has(input[aria-expanded='true']),
-        [data-meeting-create-modal] [data-role='text-field-wrapper']:has(input[data-role='date-picker-field'][aria-expanded='true']),
-        [data-meeting-create-modal] [data-role='text-field-wrapper']:has(input[data-role='time-picker-field'][aria-expanded='true']) {
-          box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-primary-40) 43%, transparent) !important;
-        }
-        [data-meeting-create-modal] [data-role='text-field-wrapper'] input {
-          caret-color: var(--color-primary-40) !important;
-        }
-        [data-meeting-create-modal] [data-role='text-field-reset'] {
-          display: none !important;
-        }
-        [data-role^='time-list-']::after {
-          display: none !important;
-          min-height: 0 !important;
-          content: none !important;
-        }
-      `}</style>
-
+    <form className="flex w-full flex-col gap-8" onSubmit={handleCreate}>
       <div className="flex items-center justify-between">
         <h2 className="text-heading-1 text-label-normal font-medium">회의 생성</h2>
         <button
@@ -161,26 +132,7 @@ export const MeetingCreateModalContent = ({
                     open={isTimeOpen}
                     onOpenChange={setIsTimeOpen}
                     onClick={() => setIsTimeOpen(true)}
-                    contentProps={{
-                      sx: {
-                        zIndex: 10000,
-                        '[data-radix-scroll-area-scrollbar]': {
-                          display: 'none !important',
-                        },
-                        '[data-radix-scroll-area-corner]': {
-                          display: 'none !important',
-                        },
-                        '[data-radix-scroll-area-viewport]': {
-                          scrollbarWidth: 'none',
-                          overscrollBehavior: 'contain',
-                        },
-                        '[data-radix-scroll-area-viewport]::-webkit-scrollbar': {
-                          display: 'none',
-                          width: 0,
-                          height: 0,
-                        },
-                      },
-                    }}
+                    contentProps={{ sx: { zIndex: 10000 } }}
                   />
                 )}
               />
@@ -192,6 +144,7 @@ export const MeetingCreateModalContent = ({
             <Controller
               control={control}
               name="participants"
+              rules={{ validate: (participants) => participants.length > 0 }}
               render={({ field }) => (
                 <ParticipantsSelect
                   options={EXAMPLE_MEETING_PARTICIPANTS}
@@ -222,7 +175,7 @@ export const MeetingCreateModalContent = ({
             color="primary"
             size="medium"
             fullWidth
-            disabled={isSubmitting}
+            disabled={isSubmitting || !isValid}
           >
             회의 생성
           </Button>

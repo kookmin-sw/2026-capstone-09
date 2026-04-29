@@ -5,6 +5,8 @@ import { IconChevronDownThickSmall, IconClose } from '@wanteddev/wds-icon';
 import { KeyboardEvent, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { cn } from '@/utils/cn';
+
 export interface ParticipantOption {
   id: number;
   name: string;
@@ -120,7 +122,7 @@ export const ParticipantsSelect = ({
               width: anchorRect.width,
               zIndex: 10000,
             }}
-            className="border-line-solid-neutral bg-background-elevated-normal custom-scrollbar max-h-80 overflow-y-auto overscroll-contain rounded-2xl border py-2 shadow-[0_4px_6px_-1px_color-mix(in_srgb,var(--color-label-normal)_6%,transparent),0_2px_4px_-2px_color-mix(in_srgb,var(--color-label-normal)_6%,transparent)]"
+            className="border-line-solid-neutral bg-background-elevated-normal shadow-normal-small custom-scrollbar max-h-80 overflow-y-auto overscroll-contain rounded-2xl border py-2"
           >
             {filtered.length === 0 ? (
               <p className="text-body-1 text-label-alternative px-5 py-2">검색 결과가 없어요.</p>
@@ -161,9 +163,12 @@ export const ParticipantsSelect = ({
           setOpen(true);
           inputRef.current?.focus();
         }}
-        className="border-line-normal-neutral flex h-12 w-full cursor-text items-center gap-2 overflow-hidden rounded-xl border bg-transparent [box-shadow:0_1px_2px_-1px_color-mix(in_srgb,var(--color-label-normal)_10%,transparent)] focus-within:[box-shadow:inset_0_0_0_2px_color-mix(in_srgb,var(--color-primary-40)_43%,transparent)]"
+        className={cn(
+          'border-line-normal-neutral shadow-normal-xsmall flex h-12 w-full cursor-text items-center gap-2 overflow-hidden rounded-xl border bg-transparent focus-within:border-primary-40',
+          open && 'border-primary-40',
+        )}
       >
-        <div className="flex h-full flex-1 items-center gap-2 overflow-x-auto overflow-y-hidden px-3 [scrollbar-width:none] [&::-webkit-scrollbar]:h-0">
+        <div className="flex h-full flex-1 items-center gap-2 overflow-x-auto overflow-y-hidden px-3">
           {value.map((item) => (
             <div key={item.id} className="shrink-0">
               <Chip
