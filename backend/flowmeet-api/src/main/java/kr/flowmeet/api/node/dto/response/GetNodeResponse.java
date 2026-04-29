@@ -80,7 +80,7 @@ public record GetNodeResponse(
                     meeting.getStatus().name(),
                     meeting.getStartedAt(),
                     meeting.isPushEnabled(),
-                    null
+                    meeting.getPushNotifyAt()
             );
         }
     }

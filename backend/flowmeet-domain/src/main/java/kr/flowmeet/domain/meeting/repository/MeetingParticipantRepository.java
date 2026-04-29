@@ -9,6 +9,8 @@ import kr.flowmeet.domain.meeting.entity.MeetingParticipant;
 
 public interface MeetingParticipantRepository extends JpaRepository<MeetingParticipant, Long> {
 
+    List<MeetingParticipant> findAllByMeetingIdIn(List<Long> meetingIds);
+
     @Modifying(clearAutomatically = true)
     @Query("UPDATE MeetingParticipant mp SET mp.deletedAt = CURRENT_TIMESTAMP WHERE mp.meetingId IN :meetingIds")
     int softDeleteAllByMeetingIdIn(@Param("meetingIds") List<Long> meetingIds);

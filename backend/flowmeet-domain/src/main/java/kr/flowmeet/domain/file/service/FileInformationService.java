@@ -1,5 +1,6 @@
 package kr.flowmeet.domain.file.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -71,6 +72,20 @@ public class FileInformationService {
                     .findFileKeysByDomainTypeAndEntityIdIn(FileDomainType.MEETING_SUMMARY, meetingIds));
         }
         return fileKeys;
+    }
+
+    public List<FileInformation> findAllExpiredTempFiles(final LocalDateTime expiredAt) {
+        return fileInformationRepository.findAllByDomainTypeAndCreatedAtBefore(FileDomainType.TEMP, expiredAt);
+    }
+
+    @Transactional
+    public void deleteAllExpiredTempFiles(final LocalDateTime expiredAt) {
+        fileInformationRepository.deleteAllByDomainTypeAndCreatedAtBefore(FileDomainType.TEMP, expiredAt);
+    }
+
+    @Transactional
+    public void deleteAllByIds(final List<Long> fileIds) {
+        fileInformationRepository.deleteAllById(fileIds);
     }
 
     @Transactional

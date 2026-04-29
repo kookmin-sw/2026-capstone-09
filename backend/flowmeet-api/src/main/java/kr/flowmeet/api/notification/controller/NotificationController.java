@@ -1,26 +1,40 @@
 package kr.flowmeet.api.notification.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import kr.flowmeet.api.common.dto.CommonResponse;
 import kr.flowmeet.api.common.dto.CursorSliceResponse;
 import kr.flowmeet.api.notification.dto.response.NotificationSummaryResponse;
 import kr.flowmeet.api.notification.dto.response.GetUnreadCountResponse;
 import kr.flowmeet.api.notification.facade.NotificationFacade;
+import kr.flowmeet.api.notification.sse.SseEmitterService;
 import kr.flowmeet.api.notification.success.NotificationSuccessCode;
 import kr.flowmeet.auth.annotation.UserId;
 
+@Slf4j
 @RestController
 @RequestMapping("/v1/notifications")
 @RequiredArgsConstructor
 public class NotificationController implements NotificationApi {
 
     private final NotificationFacade notificationFacade;
+    private final SseEmitterService sseEmitterService;
+
+    @Override
+    @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter subscribe(@UserId Long userId, HttpServletResponse response) {
+        response.setHeader("X-Accel-Buffering", "no");
+        return sseEmitterService.subscribe(userId);
+    }
 
     @Override
     @GetMapping

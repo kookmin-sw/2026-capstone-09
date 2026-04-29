@@ -14,6 +14,8 @@ public interface NotificationSettingRepository extends JpaRepository<Notificatio
 
     List<NotificationSetting> findAllByProjectId(Long projectId);
 
+    List<NotificationSetting> findAllByProjectIdIn(List<Long> projectIds);
+
     @Modifying(clearAutomatically = true)
     @Query("DELETE FROM NotificationSetting ns WHERE ns.projectId = :projectId")
     int deleteAllByProjectId(@Param("projectId") Long projectId);

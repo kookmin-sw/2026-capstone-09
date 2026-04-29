@@ -17,6 +17,10 @@ public class NotificationCommand {
         return List.copyOf(arguments);
     }
 
+    public Long getTargetId() {
+        return null;
+    }
+
     protected NotificationCommand(Long userId, Long projectId, NotificationType type) {
         this.userId = userId;
         this.projectId = projectId;

@@ -1,5 +1,6 @@
 package kr.flowmeet.domain.file.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -36,4 +37,13 @@ public interface FileInformationRepository extends JpaRepository<FileInformation
             "WHERE f.domainType = :domainType AND f.entityId IN :entityIds")
     int deleteAllByDomainTypeAndEntityIdIn(@Param("domainType") FileDomainType domainType,
                                            @Param("entityIds") List<Long> entityIds);
+
+    @Query("SELECT f FROM FileInformation f WHERE f.domainType = :domainType AND f.createdAt < :expiredAt")
+    List<FileInformation> findAllByDomainTypeAndCreatedAtBefore(@Param("domainType") FileDomainType domainType,
+                                                                @Param("expiredAt") LocalDateTime expiredAt);
+
+    @Modifying(clearAutomatically = true)
+    @Query("DELETE FROM FileInformation f WHERE f.domainType = :domainType AND f.createdAt < :expiredAt")
+    int deleteAllByDomainTypeAndCreatedAtBefore(@Param("domainType") FileDomainType domainType,
+                                                @Param("expiredAt") LocalDateTime expiredAt);
 }

@@ -48,6 +48,7 @@ public class NotificationService {
                         .type(type)
                         .content(type.formatContent(command.getArguments().toArray(new String[0])))
                         .projectId(command.getProjectId())
+                        .targetId(command.getTargetId())
                         .build()
         );
         eventPublisher.publishEvent(new NotificationCreatedEvent(notification));

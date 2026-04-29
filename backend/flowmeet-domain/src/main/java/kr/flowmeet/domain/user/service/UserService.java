@@ -1,6 +1,10 @@
 package kr.flowmeet.domain.user.service;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +19,15 @@ import kr.flowmeet.domain.user.repository.UserRepository;
 public class UserService {
 
     private final UserRepository userRepository;
+
+    public List<User> findAllByIds(final List<Long> userIds) {
+        return userRepository.findAllById(userIds);
+    }
+
+    public Map<Long, User> findAllByIdsAsMap(final List<Long> userIds) {
+        return findAllByIds(userIds).stream()
+                .collect(Collectors.toMap(User::getId, Function.identity()));
+    }
 
     public User findById(final Long userId) {
         return userRepository.findById(userId)

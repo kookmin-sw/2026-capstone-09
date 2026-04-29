@@ -19,8 +19,8 @@ public record NotificationSummaryResponse(
         Long projectId,
         @Schema(description = "관련 프로젝트 이름", example = "FlowMeet")
         String projectName,
-        @Schema(description = "관련 노드 ID", example = "128")
-        Long nodeId,
+        @Schema(description = "알림 대상 ID", example = "128")
+        Long targetId,
         @Schema(description = "읽음 여부", example = "false")
         boolean isRead,
         @Schema(description = "알림 생성 시각", example = "2026-04-19T10:15:30")
@@ -34,7 +34,7 @@ public record NotificationSummaryResponse(
                 notification.getContent(),
                 notification.getProjectId(),
                 notification.getProject().getName(),
-                notification.getNodeId(),
+                notification.getTargetId(),
                 notification.isRead(),
                 notification.getCreatedAt()
         );
