@@ -4,7 +4,7 @@ on:
   push:
     branches: [ai/develop]
     paths:
-      - 'ai/**'
+      - 'ai/app/**'
       - '.github/workflows/ai_deploy.yml'
   workflow_dispatch:
 
