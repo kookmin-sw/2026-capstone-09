@@ -308,3 +308,14 @@ export const EXAMPLE_FLOWCHART_DATA = {
     },
   ],
 };
+
+// 프로젝트 설정 모달 - 알림 탭 초기값 더미.
+// 알림 설정 관련 API가 아직 generated 되지 않아, UI는 그대로 두고 클라이언트 상태로만 동작한다.
+export const EXAMPLE_PROJECT_NOTIFICATION_SETTINGS = {
+  meetingEnabled: true,
+  nodeEnabled: false,
+  channels: {
+    desktop: false,
+    email: false,
+  },
+} as const;
