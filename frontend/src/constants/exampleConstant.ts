@@ -308,3 +308,15 @@ export const EXAMPLE_FLOWCHART_DATA = {
     },
   ],
 };
+
+// 노드 삭제 컨펌 모달 테스트 페이지 전용 더미 데이터
+// 실제 API(`privateApi.node.deleteNode(projectId: number, nodeId: number)`)에 맞춰
+// id는 number 형태로 둔다.
+export const EXAMPLE_NODE_DELETE_TEST = {
+  projectId: 1,
+  candidates: [
+    { id: 1, name: '디자인 회의일걸요?' },
+    { id: 2, name: '메인 노드 제목입니다' },
+    { id: 3, name: '프로토타입 사용자 테스트' },
+  ],
+} as const;
