@@ -358,9 +358,14 @@
   letter-spacing: var(--typography---caption2---letter-spacing);
 }
 
-/* WDS 내 primary FlowMeet 색상으로 변경 */
+/* WDS 내 primary FlowMeet 색상으로 변경.
+   WDS 내부에서 `addOpacity(theme.semantic.primary.normal, ...)` 가
+   `rgba(var(--semantic-primary-normal-rgb), α)` 로 풀리기 때문에
+   hex와 함께 -rgb 변형도 같이 잡아둬야 TextField 포커스 테두리 등이
+   FlowMeet 컬러로 그려진다. */
 :root {
   --semantic-primary-normal: #03C98F;
+  --semantic-primary-normal-rgb: 3, 201, 143;
 }
 
 body {
