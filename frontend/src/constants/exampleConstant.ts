@@ -65,6 +65,97 @@ export const EXAMPLE_PROJECT_DETAIL_LINKS = [
   { id: 'link-4', label: 'Vercel', href: 'https://vercel.com/dashboard' },
 ] as const;
 
+export const EXAMPLE_REFERENCE_NODE_MODAL = {
+  projectId: 1,
+  startNodeId: 101,
+  referencedNodes: [
+    {
+      nodeId: 1,
+      nodeNumber: '1',
+      nodeTitle: '메인 노드 제목입니다.',
+      connectedBy: '윤신지',
+      summary:
+        '노드 노트 요약 내용입니다. 대충 이런 느낌의 내용이 들어가있을 거에요. 몇 자까지 할까요? 맞춰보세요ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ',
+    },
+    {
+      nodeId: 2,
+      nodeNumber: '2',
+      nodeTitle: '메인 노드 제목입니다.',
+      connectedBy: '윤신지',
+      summary:
+        '노드 노트 요약 내용입니다. 대충 이런 느낌의 내용이 들어가있을 거에요. 몇 자까지 할까요? 맞춰보세요...',
+    },
+    {
+      nodeId: 3,
+      nodeNumber: '3',
+      nodeTitle: '메인 노드 제목입니다.',
+      connectedBy: '윤신지',
+      summary:
+        '노드 노트 요약 내용입니다. 대충 이런 느낌의 내용이 들어가있을 거에요. 몇 자까지 할까요? 맞춰보세요...',
+    },
+    {
+      nodeId: 4,
+      nodeNumber: '4',
+      nodeTitle: '메인 노드 제목입니다.',
+      connectedBy: '윤신지',
+      summary:
+        '노드 노트 요약 내용입니다. 대충 이런 느낌의 내용이 들어가있을 거에요. 몇 자까지 할까요? 맞춰보세요...',
+    },
+    {
+      nodeId: 5,
+      nodeNumber: '5',
+      nodeTitle: '대시보드 진입 화면',
+      connectedBy: '황수민',
+      summary:
+        '대시보드 첫 진입 시 보여줄 위젯 구성과 기본 필터 상태를 정리한 노드입니다. 권한별 노출 규칙도 함께 다룹니다.',
+    },
+    {
+      nodeId: 6,
+      nodeNumber: '6',
+      nodeTitle: '사용자 세션 저장',
+      connectedBy: '박건민',
+      summary:
+        '리프레시 토큰 만료 처리와 세션 무효화 시 라우트 가드 동작을 어떻게 묶을지에 대한 결정 노드.',
+    },
+    {
+      nodeId: 7,
+      nodeNumber: '7',
+      nodeTitle: '권한별 접근 제어',
+      connectedBy: '백채린',
+      summary:
+        '워크스페이스 멤버 권한별로 노출되는 메뉴와 가능한 액션을 표 형태로 정리해 둔 노드입니다.',
+    },
+    {
+      nodeId: 8,
+      nodeNumber: '8',
+      nodeTitle: '온보딩 체크리스트',
+      connectedBy: '윤성욱',
+      summary:
+        '신규 사용자가 처음 30분 안에 도달해야 하는 핵심 액션을 단계별로 정리한 온보딩 노드.',
+    },
+  ],
+  nodeOptions: [
+    { nodeId: 102, nodeNumber: '5', nodeTitle: '대시보드 진입 화면', kind: 'main' },
+    { nodeId: 1021, nodeNumber: '5.1', nodeTitle: '대시보드 위젯 분류', kind: 'sub' },
+    { nodeId: 1022, nodeNumber: '5.2', nodeTitle: '권한별 위젯 노출', kind: 'sub' },
+    { nodeId: 1023, nodeNumber: '5.3', nodeTitle: '대시보드 진입 시 로딩', kind: 'sub' },
+    { nodeId: 201, nodeNumber: '6', nodeTitle: '사용자 세션 저장', kind: 'main' },
+    { nodeId: 2011, nodeNumber: '6.1', nodeTitle: '리프레시 토큰 정책', kind: 'sub' },
+    { nodeId: 2012, nodeNumber: '6.2', nodeTitle: '세션 만료 라우트 가드', kind: 'sub' },
+    { nodeId: 301, nodeNumber: '7', nodeTitle: '권한별 접근 제어', kind: 'main' },
+    { nodeId: 3011, nodeNumber: '7.1', nodeTitle: '워크스페이스 권한 매트릭스', kind: 'sub' },
+    { nodeId: 3012, nodeNumber: '7.2', nodeTitle: '게스트 초대 흐름', kind: 'sub' },
+    { nodeId: 401, nodeNumber: '8', nodeTitle: '온보딩 체크리스트', kind: 'main' },
+    { nodeId: 4011, nodeNumber: '8.1', nodeTitle: '튜토리얼 카드 노출', kind: 'sub' },
+    { nodeId: 4012, nodeNumber: '8.2', nodeTitle: '온보딩 완료 트래킹', kind: 'sub' },
+    { nodeId: 501, nodeNumber: '9', nodeTitle: '결제 모듈 통합', kind: 'main' },
+    { nodeId: 5011, nodeNumber: '9.1', nodeTitle: '플랜 변경 시 안내 모달', kind: 'sub' },
+    { nodeId: 601, nodeNumber: '10', nodeTitle: '알림 센터 개편', kind: 'main' },
+    { nodeId: 6011, nodeNumber: '10.1', nodeTitle: '실시간 알림 큐', kind: 'sub' },
+    { nodeId: 6012, nodeNumber: '10.2', nodeTitle: '읽음 상태 동기화', kind: 'sub' },
+  ],
+} as const;
+
 // TODO : 프로필 이미지 url 추가 + User 컴포넌트에 이미지 들어도록 수정 필요
 export const EXAMPLE_USERS = [
   { userId: 1, nickname: '황수민', email: 'tnals655@kookmin.ac.kr' },
@@ -121,7 +212,7 @@ export const EXAMPLE_NODE_DETAIL = {
   },
   createdAt: '2026-03-01T09:00:00',
   updatedAt: '2026-04-19T10:15:30',
-}
+};
 
 export const EXAMPLE_FLOWCHART_DATA = {
   nodes: [
@@ -155,7 +246,9 @@ export const EXAMPLE_FLOWCHART_DATA = {
       status: 'DONE' as const,
       sortOrder: 2048,
       tags: [{ tagId: 1, name: 'Backend', color: 'BLUE' as const }],
-      assignees: [{ userId: 1, nickname: '김개발', email: 'dev@example.com', profileImageUrl: undefined }],
+      assignees: [
+        { userId: 1, nickname: '김개발', email: 'dev@example.com', profileImageUrl: undefined },
+      ],
       hasMeeting: false,
       childNodeIds: [],
       updatedAt: '2026-04-24T15:30:00',
@@ -170,7 +263,14 @@ export const EXAMPLE_FLOWCHART_DATA = {
       status: 'IN_PROGRESS' as const,
       sortOrder: 3072,
       tags: [{ tagId: 2, name: 'Frontend', color: 'GREEN' as const }],
-      assignees: [{ userId: 2, nickname: '박프론트', email: 'frontend@example.com', profileImageUrl: undefined }],
+      assignees: [
+        {
+          userId: 2,
+          nickname: '박프론트',
+          email: 'frontend@example.com',
+          profileImageUrl: undefined,
+        },
+      ],
       hasMeeting: false,
       childNodeIds: [],
       updatedAt: '2026-04-25T09:15:00',
@@ -189,8 +289,18 @@ export const EXAMPLE_FLOWCHART_DATA = {
         { tagId: 3, name: 'Design', color: 'PURPLE' as const },
       ],
       assignees: [
-        { userId: 2, nickname: '박프론트', email: 'frontend@example.com', profileImageUrl: undefined },
-        { userId: 3, nickname: '이디자인', email: 'design@example.com', profileImageUrl: undefined },
+        {
+          userId: 2,
+          nickname: '박프론트',
+          email: 'frontend@example.com',
+          profileImageUrl: undefined,
+        },
+        {
+          userId: 3,
+          nickname: '이디자인',
+          email: 'design@example.com',
+          profileImageUrl: undefined,
+        },
       ],
       hasMeeting: true,
       childNodeIds: [21, 22, 23],
@@ -206,7 +316,14 @@ export const EXAMPLE_FLOWCHART_DATA = {
       status: 'IN_PROGRESS' as const,
       sortOrder: 5120,
       tags: [{ tagId: 2, name: 'Frontend', color: 'GREEN' as const }],
-      assignees: [{ userId: 2, nickname: '박프론트', email: 'frontend@example.com', profileImageUrl: undefined }],
+      assignees: [
+        {
+          userId: 2,
+          nickname: '박프론트',
+          email: 'frontend@example.com',
+          profileImageUrl: undefined,
+        },
+      ],
       hasMeeting: false,
       childNodeIds: [],
       updatedAt: '2026-04-25T11:00:00',
@@ -221,7 +338,14 @@ export const EXAMPLE_FLOWCHART_DATA = {
       status: 'WAITING' as const,
       sortOrder: 6144,
       tags: [{ tagId: 3, name: 'Design', color: 'PURPLE' as const }],
-      assignees: [{ userId: 3, nickname: '이디자인', email: 'design@example.com', profileImageUrl: undefined }],
+      assignees: [
+        {
+          userId: 3,
+          nickname: '이디자인',
+          email: 'design@example.com',
+          profileImageUrl: undefined,
+        },
+      ],
       hasMeeting: false,
       childNodeIds: [],
       updatedAt: '2026-04-24T16:00:00',
@@ -236,7 +360,14 @@ export const EXAMPLE_FLOWCHART_DATA = {
       status: 'WAITING' as const,
       sortOrder: 7168,
       tags: [{ tagId: 2, name: 'Frontend', color: 'GREEN' as const }],
-      assignees: [{ userId: 2, nickname: '박프론트', email: 'frontend@example.com', profileImageUrl: undefined }],
+      assignees: [
+        {
+          userId: 2,
+          nickname: '박프론트',
+          email: 'frontend@example.com',
+          profileImageUrl: undefined,
+        },
+      ],
       hasMeeting: false,
       childNodeIds: [],
       updatedAt: '2026-04-23T14:30:00',
@@ -271,7 +402,9 @@ export const EXAMPLE_FLOWCHART_DATA = {
       status: 'WAITING' as const,
       sortOrder: 9216,
       tags: [{ tagId: 4, name: 'Database', color: 'RED' as const }],
-      assignees: [{ userId: 1, nickname: '김개발', email: 'dev@example.com', profileImageUrl: undefined }],
+      assignees: [
+        { userId: 1, nickname: '김개발', email: 'dev@example.com', profileImageUrl: undefined },
+      ],
       hasMeeting: false,
       childNodeIds: [],
       updatedAt: '2026-04-22T15:00:00',
@@ -286,7 +419,9 @@ export const EXAMPLE_FLOWCHART_DATA = {
       status: 'WAITING' as const,
       sortOrder: 10240,
       tags: [{ tagId: 1, name: 'Backend', color: 'BLUE' as const }],
-      assignees: [{ userId: 1, nickname: '김개발', email: 'dev@example.com', profileImageUrl: undefined }],
+      assignees: [
+        { userId: 1, nickname: '김개발', email: 'dev@example.com', profileImageUrl: undefined },
+      ],
       hasMeeting: false,
       childNodeIds: [],
       updatedAt: '2026-04-21T11:30:00',
