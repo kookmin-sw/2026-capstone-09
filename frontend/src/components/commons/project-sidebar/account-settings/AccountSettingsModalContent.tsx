@@ -39,8 +39,16 @@ export const AccountSettingsModalContent = ({ onClose }: AccountSettingsModalCon
   const { openDialog, closeDialog } = useDialog();
   const toast = usePositionedToast();
 
-  const { info, setInfoEmail, nickname, setNickname, nicknameMaxLength } = useAccountSettingsForm({
-    onSaveSuccess: () => {
+  const {
+    info,
+    setInfoEmail,
+    nickname,
+    setNickname,
+    nicknameMaxLength,
+    uploadProfileImage,
+    profileImageAcceptAttr,
+  } = useAccountSettingsForm({
+    onNicknameSaved: () => {
       toast({
         content: '닉네임을 수정했어요',
         variant: 'normal',
@@ -48,7 +56,39 @@ export const AccountSettingsModalContent = ({ onClose }: AccountSettingsModalCon
         duration: 'short',
       });
     },
+    onNicknameError: (message) => {
+      toast({
+        content: message,
+        variant: 'negative',
+        placement: 'bottom-left',
+        duration: 'short',
+      });
+    },
+    onProfileImageUploaded: () => {
+      toast({
+        content: '프로필 이미지를 변경했어요',
+        variant: 'normal',
+        placement: 'bottom-left',
+        duration: 'short',
+      });
+    },
+    onProfileImageError: (message) => {
+      toast({
+        content: message,
+        variant: 'negative',
+        placement: 'bottom-left',
+        duration: 'short',
+      });
+    },
   });
+
+  const handleProfileImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    // 같은 파일을 다시 선택해도 onChange 가 발화되도록 input value 를 리셋한다.
+    event.target.value = '';
+    if (!file) return;
+    void uploadProfileImage(file);
+  };
 
   const emailForm = useEmailEditForm({
     nickname,
@@ -138,12 +178,29 @@ export const AccountSettingsModalContent = ({ onClose }: AccountSettingsModalCon
         <div className="flex w-full flex-col gap-6">
           {/* 프로필 + 이름 */}
           <div className="flex items-center gap-8">
-            <Avatar
-              variant="person"
-              size={84}
-              src={info?.profileImageUrl}
-              alt={info?.nickname ?? '프로필'}
-            />
+            <label
+              htmlFor="account-settings-profile-image"
+              aria-label="프로필 사진 변경"
+              className="group relative inline-flex shrink-0 cursor-pointer overflow-hidden rounded-full"
+            >
+              <Avatar
+                variant="person"
+                size={84}
+                src={info?.profileImageUrl}
+                alt={info?.nickname ?? '프로필'}
+              />
+              <span
+                aria-hidden="true"
+                className="bg-label-normal/0 group-hover:bg-label-normal/20 pointer-events-none absolute inset-0 rounded-full transition-colors duration-150"
+              />
+              <input
+                id="account-settings-profile-image"
+                type="file"
+                accept={profileImageAcceptAttr}
+                className="sr-only"
+                onChange={handleProfileImageChange}
+              />
+            </label>
             <div className="flex w-84 min-w-0 flex-col gap-2">
               <label
                 htmlFor="account-settings-nickname"
