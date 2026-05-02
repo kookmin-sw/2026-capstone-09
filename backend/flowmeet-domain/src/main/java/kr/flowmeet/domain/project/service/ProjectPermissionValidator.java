@@ -1,5 +1,6 @@
 package kr.flowmeet.domain.project.service;
 
+import java.util.List;
 import kr.flowmeet.domain.common.exception.BusinessException;
 import kr.flowmeet.domain.project.entity.ProjectMember;
 import kr.flowmeet.domain.project.entity.ProjectMemberRole;
@@ -32,5 +33,14 @@ public class ProjectPermissionValidator {
         }
     }
 
-
+    public void validateAllAreMembers(final Long projectId, final List<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return;
+        }
+        List<Long> distinctIds = userIds.stream().distinct().toList();
+        int matched = projectMemberRepository.countByProjectIdAndUserIdIn(projectId, distinctIds);
+        if (matched != distinctIds.size()) {
+            throw new BusinessException(ProjectErrorCode.MEMBER_NOT_FOUND);
+        }
+    }
 }

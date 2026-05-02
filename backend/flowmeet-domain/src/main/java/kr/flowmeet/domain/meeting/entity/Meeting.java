@@ -75,10 +75,16 @@ public class Meeting extends BaseTimeEntity {
     @Column(name = "reminder_sent", nullable = false)
     private boolean reminderSent;
 
+    @Column(name = "meeting_url")
+    private String meetingUrl;
+
+    @Column(name = "external_event_id")
+    private String externalEventId;
+
     @Builder
     public Meeting(Long nodeId, Long createdById, MeetingStatus status,
                    LocalDateTime startedAt, boolean isPushEnabled, LocalDateTime pushNotifyAt,
-                   String summary) {
+                   String summary, String meetingUrl, String externalEventId) {
         this.nodeId = nodeId;
         this.createdById = createdById;
         this.status = status;
@@ -87,6 +93,26 @@ public class Meeting extends BaseTimeEntity {
         this.pushNotifyAt = pushNotifyAt;
         this.summary = summary;
         this.reminderSent = false;
+        this.meetingUrl = meetingUrl;
+        this.externalEventId = externalEventId;
+    }
+
+    public void updateSchedule(final LocalDateTime startedAt, final LocalDateTime pushNotifyAt) {
+        this.startedAt = startedAt;
+        this.pushNotifyAt = pushNotifyAt;
+        this.reminderSent = false;
+    }
+
+    public boolean isCreatedBy(final Long userId) {
+        return this.createdById.equals(userId);
+    }
+
+    public boolean isInProgress() {
+        return this.status == MeetingStatus.IN_PROGRESS;
+    }
+
+    public boolean isScheduled() {
+        return this.status == MeetingStatus.SCHEDULED;
     }
 
 }

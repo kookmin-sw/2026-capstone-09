@@ -35,4 +35,7 @@ public final class ValidationMessage {
 
     public static final String NICKNAME_REQUIRED = "닉네임은 필수로 입력해 주세요.";
     public static final String NICKNAME_MAX_LENGTH = "닉네임은 최대 20자까지 입력할 수 있어요.";
+
+    public static final String MEETING_STARTED_AT_REQUIRED = "회의 시작 시간은 필수로 입력해 주세요.";
+    public static final String MEETING_PARTICIPANTS_REQUIRED = "참여자는 필수로 입력해 주세요.";
 }

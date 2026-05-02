@@ -11,7 +11,13 @@ public interface MeetingParticipantRepository extends JpaRepository<MeetingParti
 
     List<MeetingParticipant> findAllByMeetingIdIn(List<Long> meetingIds);
 
+    List<MeetingParticipant> findAllByMeetingId(Long meetingId);
+
     @Modifying(clearAutomatically = true)
     @Query("UPDATE MeetingParticipant mp SET mp.deletedAt = CURRENT_TIMESTAMP WHERE mp.meetingId IN :meetingIds")
     int softDeleteAllByMeetingIdIn(@Param("meetingIds") List<Long> meetingIds);
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE MeetingParticipant mp SET mp.deletedAt = CURRENT_TIMESTAMP WHERE mp.meetingId = :meetingId")
+    int softDeleteAllByMeetingId(@Param("meetingId") Long meetingId);
 }
