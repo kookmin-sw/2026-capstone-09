@@ -14,3 +14,11 @@ cloud:
       bucket: ${S3_BUCKET:flowmeet-bucket}
       region: ${S3_REGION:ap-northeast-2}
       cdn-url: ${S3_CDN_URL:}
+
+google:
+  meet:
+    application-name: ${GOOGLE_APP_NAME:FlowMeet}
+    service-account-key-path: ${GOOGLE_SERVICE_ACCOUNT_KEY_PATH:}
+    impersonation-user: ${GOOGLE_IMPERSONATION_USER:}
+    calendar-id: ${GOOGLE_CALENDAR_ID:primary}
+    timezone: ${GOOGLE_MEET_TIMEZONE:Asia/Seoul}
