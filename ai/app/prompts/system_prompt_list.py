@@ -237,4 +237,8 @@ CREATE_ANAL_MERMAID_PROMPT="""
 
 [출력]
 - 설명 없이 Mermaid 코드만 출력
+- 예시:
+graph TD
+    A["회의명"] ---|"relation"| B["회의명"]
+    B["회의명"] ---|"relation"| C["회의명"]
 """
