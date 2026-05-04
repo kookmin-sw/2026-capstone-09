@@ -1,6 +1,5 @@
 package kr.flowmeet.api.chat.facade;
 
-import java.util.ArrayList;
 import java.util.List;
 import kr.flowmeet.api.chat.dto.request.CreateChatSessionRequest;
 import kr.flowmeet.api.chat.dto.response.AddChatNodeResponse;
@@ -90,12 +89,11 @@ public class ChatFacade {
 
         ChatSession session = chatSessionService.create(projectId, userId, request.title());
 
-        List<Node> nodes = new ArrayList<>();
-        if (request.nodeIds() != null) {
+        List<Node> nodes = List.of();
+        if (request.nodeIds() != null && !request.nodeIds().isEmpty()) {
+            nodes = nodeService.findAllByIdsAndProjectId(request.nodeIds(), projectId);
             for (Long nodeId : request.nodeIds()) {
-                Node node = nodeService.findByIdAndProjectId(nodeId, projectId);
                 chatSessionNodeService.add(session.getId(), nodeId);
-                nodes.add(node);
             }
         }
 

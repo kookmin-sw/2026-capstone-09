@@ -43,6 +43,14 @@ public class NodeService {
         return nodeRepository.findAllByProjectId(projectId);
     }
 
+    public List<Node> findAllByIdsAndProjectId(final List<Long> nodeIds, final Long projectId) {
+        List<Node> nodes = nodeRepository.findAllByIdInAndProjectId(nodeIds, projectId);
+        if (nodes.size() != nodeIds.size()) {
+            throw new BusinessException(NodeErrorCode.NODE_NOT_FOUND);
+        }
+        return nodes;
+    }
+
     public List<Long> findAllIdsByProjectId(final Long projectId) {
         return findAllByProjectId(projectId).stream()
                 .map(Node::getId)
