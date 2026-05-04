@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { ProjectDetailHeader } from '@/components/projects/project-detail/ProjectDetailHeader';
 import { ProjectDetailLinks } from '@/components/projects/project-detail/ProjectDetailLinks';
@@ -14,8 +14,22 @@ interface ProjectDetailLayoutProps {
   children: React.ReactNode;
 }
 
+const STORAGE_KEY = 'project-active-view';
+
 export default function ProjectDetailLayout({ children }: ProjectDetailLayoutProps) {
   const [activeView, setActiveView] = useState<ProjectViewTypes>('node-flow');
+
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved && (saved === 'node-flow' || saved === 'list' || saved === 'kanban')) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setActiveView(saved as ProjectViewTypes);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, activeView);
+  }, [activeView]);
 
   return (
     <ProjectDetailLayoutContext.Provider value={{ activeView }}>
