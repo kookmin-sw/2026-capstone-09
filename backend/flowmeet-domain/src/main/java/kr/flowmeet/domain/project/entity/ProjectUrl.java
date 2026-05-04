@@ -44,15 +44,20 @@ public class ProjectUrl extends BaseTimeEntity {
     private Project project;
 
     @Column(nullable = false, columnDefinition = "TEXT")
+    private String name;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String url;
 
     @Builder
-    public ProjectUrl(Long projectId, String url) {
+    public ProjectUrl(Long projectId, String name, String url) {
         this.projectId = projectId;
+        this.name = name;
         this.url = url;
     }
 
-    public void updateUrl(final String url) {
+    public void update(final String name, final String url) {
+        this.name = name;
         this.url = url;
     }
 }

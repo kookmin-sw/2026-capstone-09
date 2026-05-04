@@ -27,6 +27,7 @@ public final class ValidationMessage {
 
     public static final String PROJECT_NAME_REQUIRED = "프로젝트 이름은 필수로 입력해 주세요.";
     public static final String PROJECT_URL_REQUIRED = "URL은 필수로 입력해 주세요.";
+    public static final String PROJECT_URL_NAME_REQUIRED = "URL 이름은 필수로 입력해 주세요.";
     public static final String PROJECT_MEMBER_ROLE_REQUIRED = "역할은 필수로 입력해 주세요.";
     public static final String INVITATION_TOKEN_REQUIRED = "초대 토큰은 필수로 입력해 주세요.";
 
