@@ -1,8 +1,8 @@
 'use client';
 
 import { use } from 'react';
-import { NodeFlowView } from '@/components/projects/node-flow/NodeFlowView';
 import { KanbanView } from '@/components/projects/kanban/KanbanView';
+import { NodeFlowView } from '@/components/projects/node-flow/NodeFlowView';
 import { useProjectDetailLayout } from '@/contexts/ProjectDetailLayoutContext';
 
 interface ProjectDetailPageProps {
