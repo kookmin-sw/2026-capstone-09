@@ -45,7 +45,7 @@ public class MeetingFacade {
         meetingService.validateCreatable(nodeId, request.startedAt());
 
         Node node = nodeService.findByIdAndProjectId(nodeId, projectId);
-        MeetingRoom room = meetingRoomProvider.create(toCreateRoomCommand(node, request.startedAt()));
+        MeetingRoom room = meetingRoomProvider.create(toCreateRoomCommand(node, request.startedAt(), null));
         meetingService.create(nodeId, userId, room.url(), room.externalEventId(), request.toCommand());
     }
 
@@ -78,15 +78,20 @@ public class MeetingFacade {
         meetingService.delete(meeting);
 
         if (externalEventId != null && !externalEventId.isBlank()) {
-            meetingRoomProvider.delete(externalEventId);
+            meetingRoomProvider.delete(externalEventId, null);
         }
     }
 
-    private CreateMeetingRoomCommand toCreateRoomCommand(final Node node, final LocalDateTime startedAt) {
+    private CreateMeetingRoomCommand toCreateRoomCommand(
+            final Node node,
+            final LocalDateTime startedAt,
+            final String hostRefreshToken
+    ) {
         return new CreateMeetingRoomCommand(
                 node.getTitle(),
                 startedAt,
-                startedAt.plusMinutes(DEFAULT_MEETING_DURATION_MINUTES)
+                startedAt.plusMinutes(DEFAULT_MEETING_DURATION_MINUTES),
+                hostRefreshToken
         );
     }
 

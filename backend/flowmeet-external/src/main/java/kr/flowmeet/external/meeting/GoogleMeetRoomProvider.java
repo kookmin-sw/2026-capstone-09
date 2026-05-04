@@ -1,6 +1,9 @@
 package kr.flowmeet.external.meeting;
 
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.ConferenceData;
@@ -8,7 +11,10 @@ import com.google.api.services.calendar.model.ConferenceSolutionKey;
 import com.google.api.services.calendar.model.CreateConferenceRequest;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
+import com.google.auth.http.HttpCredentialsAdapter;
+import com.google.auth.oauth2.UserCredentials;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -19,24 +25,20 @@ import kr.flowmeet.external.meeting.dto.CreateMeetingRoomCommand;
 import kr.flowmeet.external.meeting.dto.MeetingRoom;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.stereotype.Component;
 
 @Slf4j
-@Component
 @RequiredArgsConstructor
-@ConditionalOnBean(Calendar.class)
 public class GoogleMeetRoomProvider implements MeetingRoomProvider {
 
     private static final String CONFERENCE_SOLUTION_TYPE = "hangoutsMeet";
     private static final int CONFERENCE_DATA_VERSION = 1;
     private static final String SEND_UPDATES = "none";
 
-    private final Calendar calendar;
     private final GoogleMeetProperties properties;
 
     @Override
     public MeetingRoom create(final CreateMeetingRoomCommand command) {
+        Calendar calendar = buildCalendar(command.hostRefreshToken());
         try {
             Event event = buildEvent(command);
             Event created = calendar.events()
@@ -45,12 +47,18 @@ public class GoogleMeetRoomProvider implements MeetingRoomProvider {
                     .setSendUpdates(SEND_UPDATES)
                     .execute();
 
+            log.info("[GoogleMeetRoomProvider] event created. event={}", created);
+
             String hangoutLink = created.getHangoutLink();
             if (hangoutLink == null || hangoutLink.isBlank()) {
                 log.error("[GoogleMeetRoomProvider] hangoutLink is empty. eventId={}", created.getId());
                 throw new ExternalException(MeetingExternalErrorCode.MEETING_PROVIDER_CREATE_FAILED);
             }
-            return MeetingRoom.of(hangoutLink, created.getId());
+
+            MeetingRoom meetingRoom = MeetingRoom.of(hangoutLink, created.getId());
+            log.info("[GoogleMeetRoomProvider] meeting room created. meetingRoom={}", meetingRoom);
+
+            return meetingRoom;
         } catch (IOException e) {
             log.error("[GoogleMeetRoomProvider] create failed", e);
             throw new ExternalException(MeetingExternalErrorCode.MEETING_PROVIDER_CREATE_FAILED);
@@ -58,10 +66,11 @@ public class GoogleMeetRoomProvider implements MeetingRoomProvider {
     }
 
     @Override
-    public void delete(final String externalEventId) {
+    public void delete(final String externalEventId, final String hostRefreshToken) {
         if (externalEventId == null || externalEventId.isBlank()) {
             return;
         }
+        Calendar calendar = buildCalendar(hostRefreshToken);
         try {
             calendar.events()
                     .delete(properties.calendarId(), externalEventId)
@@ -77,6 +86,32 @@ public class GoogleMeetRoomProvider implements MeetingRoomProvider {
         } catch (IOException e) {
             log.error("[GoogleMeetRoomProvider] delete failed. eventId={}", externalEventId, e);
             throw new ExternalException(MeetingExternalErrorCode.MEETING_PROVIDER_DELETE_FAILED);
+        }
+    }
+
+    private Calendar buildCalendar(final String hostRefreshToken) {
+        if (hostRefreshToken == null || hostRefreshToken.isBlank()) {
+            log.error("[GoogleMeetRoomProvider] host refresh token is missing");
+            throw new ExternalException(MeetingExternalErrorCode.MEETING_PROVIDER_NOT_AVAILABLE);
+        }
+        try {
+            UserCredentials credentials = UserCredentials.newBuilder()
+                    .setClientId(properties.clientId())
+                    .setClientSecret(properties.clientSecret())
+                    .setRefreshToken(hostRefreshToken)
+                    .build();
+
+            NetHttpTransport transport = GoogleNetHttpTransport.newTrustedTransport();
+            return new Calendar.Builder(
+                    transport,
+                    GsonFactory.getDefaultInstance(),
+                    new HttpCredentialsAdapter(credentials)
+            )
+                    .setApplicationName(properties.applicationName())
+                    .build();
+        } catch (GeneralSecurityException | IOException e) {
+            log.error("[GoogleMeetRoomProvider] failed to build calendar client", e);
+            throw new ExternalException(MeetingExternalErrorCode.MEETING_PROVIDER_NOT_AVAILABLE);
         }
     }
 

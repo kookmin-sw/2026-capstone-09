@@ -1,17 +1,12 @@
 package kr.flowmeet.external.meeting;
 
-import com.google.api.services.calendar.Calendar;
 import java.security.SecureRandom;
 import java.util.UUID;
 import kr.flowmeet.external.meeting.dto.CreateMeetingRoomCommand;
 import kr.flowmeet.external.meeting.dto.MeetingRoom;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.stereotype.Component;
 
 @Slf4j
-@Component
-@ConditionalOnMissingBean(Calendar.class)
 public class LocalMeetingRoomProvider implements MeetingRoomProvider {
 
     private static final String MEET_URL_PREFIX = "https://meet.google.com/";
@@ -30,7 +25,7 @@ public class LocalMeetingRoomProvider implements MeetingRoomProvider {
     }
 
     @Override
-    public void delete(final String externalEventId) {
+    public void delete(final String externalEventId, final String hostRefreshToken) {
         log.info("[LocalMeetingRoomProvider] delete stub meeting. externalEventId={}", externalEventId);
     }
 

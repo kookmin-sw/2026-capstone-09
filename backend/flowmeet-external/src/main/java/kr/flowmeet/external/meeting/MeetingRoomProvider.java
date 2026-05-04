@@ -7,5 +7,5 @@ public interface MeetingRoomProvider {
 
     MeetingRoom create(CreateMeetingRoomCommand command);
 
-    void delete(String externalEventId);
+    void delete(String externalEventId, String hostRefreshToken);
 }

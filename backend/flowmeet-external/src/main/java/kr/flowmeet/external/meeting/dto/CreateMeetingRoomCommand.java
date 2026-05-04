@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 public record CreateMeetingRoomCommand(
         String title,
         LocalDateTime startedAt,
-        LocalDateTime endedAt
+        LocalDateTime endedAt,
+        String hostRefreshToken
 ) {
 }
