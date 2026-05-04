@@ -36,10 +36,11 @@ public class MeetingController implements MeetingApi {
     }
 
     @Override
-    @PutMapping("/meetings/{meetingId}")
+    @PutMapping("/nodes/{nodeId}/meetings/{meetingId}")
     public CommonResponse<?> updateMeeting(
             @UserId Long userId,
             @PathVariable Long projectId,
+            @PathVariable Long nodeId,
             @PathVariable Long meetingId,
             @Valid @RequestBody UpdateMeetingRequest request
     ) {
@@ -48,10 +49,11 @@ public class MeetingController implements MeetingApi {
     }
 
     @Override
-    @DeleteMapping("/meetings/{meetingId}")
+    @DeleteMapping("/nodes/{nodeId}/meetings/{meetingId}")
     public CommonResponse<?> deleteMeeting(
             @UserId Long userId,
             @PathVariable Long projectId,
+            @PathVariable Long nodeId,
             @PathVariable Long meetingId
     ) {
         meetingFacade.deleteMeeting(userId, projectId, meetingId);

@@ -46,6 +46,7 @@ public interface MeetingApi {
     CommonResponse<?> updateMeeting(
             @UserId Long userId,
             @PathVariable Long projectId,
+            @PathVariable Long nodeId,
             @PathVariable Long meetingId,
             @Valid @RequestBody UpdateMeetingRequest request
     );
@@ -61,6 +62,7 @@ public interface MeetingApi {
     CommonResponse<?> deleteMeeting(
             @UserId Long userId,
             @PathVariable Long projectId,
+            @PathVariable Long nodeId,
             @PathVariable Long meetingId
     );
 }
