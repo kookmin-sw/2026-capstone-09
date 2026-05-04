@@ -13,6 +13,8 @@ public record GetProjectResponse(
         Long projectId,
         @Schema(description = "프로젝트 이름", example = "FlowMeet 리뉴얼")
         String name,
+        @Schema(description = "프로젝트 프로필 이미지 URL", example = "https://static.flowmeet.kr/projects/1.png")
+        String profileImageUrl,
         @Schema(description = "내 권한", example = "OWNER", allowableValues = {"VIEWER", "MEMBER", "OWNER"})
         ProjectMemberRole myRole,
         @Schema(description = "프로젝트 멤버 수", example = "8")
@@ -29,6 +31,7 @@ public record GetProjectResponse(
         return new GetProjectResponse(
                 project.getId(),
                 project.getName(),
+                project.getProfileImageUrl(),
                 myRole,
                 memberCount,
                 urls.stream().map(UrlItem::from).toList(),
