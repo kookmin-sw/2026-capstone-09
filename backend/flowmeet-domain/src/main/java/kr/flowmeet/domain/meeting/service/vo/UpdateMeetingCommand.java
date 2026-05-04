@@ -5,6 +5,7 @@ import java.util.List;
 
 public record UpdateMeetingCommand(
         LocalDateTime startedAt,
-        List<Long> participantUserIds
+        List<Long> participantUserIds,
+        boolean isPushEnabled
 ) {
 }

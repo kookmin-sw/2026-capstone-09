@@ -98,8 +98,13 @@ public class Meeting extends BaseTimeEntity {
     }
 
     public void updateSchedule(final LocalDateTime startedAt, final LocalDateTime pushNotifyAt) {
-        this.startedAt = startedAt;
         this.pushNotifyAt = pushNotifyAt;
+
+        if (this.startedAt != null && this.startedAt.isEqual(startedAt)) {
+            return;
+        }
+
+        this.startedAt = startedAt;
         this.reminderSent = false;
     }
 

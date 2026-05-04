@@ -119,7 +119,7 @@ public class MeetingService {
                         .createdById(createdById)
                         .status(MeetingStatus.SCHEDULED)
                         .startedAt(command.startedAt())
-                        .isPushEnabled(true)
+                        .isPushEnabled(command.isPushEnabled())
                         .pushNotifyAt(command.startedAt().minusMinutes(DEFAULT_REMINDER_MINUTES_BEFORE_START))
                         .meetingUrl(meetingUrl)
                         .externalEventId(externalEventId)

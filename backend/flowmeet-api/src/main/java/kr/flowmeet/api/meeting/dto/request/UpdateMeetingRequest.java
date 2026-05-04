@@ -15,9 +15,11 @@ public record UpdateMeetingRequest(
         LocalDateTime startedAt,
         @Schema(description = "참여자 사용자 ID 목록", example = "[10, 20, 30]")
         @NotEmpty(message = ValidationMessage.MEETING_PARTICIPANTS_REQUIRED)
-        List<Long> participantUserIds
+        List<Long> participantUserIds,
+        @Schema(description = "알림 발송 여부")
+        boolean isPushEnabled
 ) {
     public UpdateMeetingCommand toCommand() {
-        return new UpdateMeetingCommand(startedAt, participantUserIds);
+        return new UpdateMeetingCommand(startedAt, participantUserIds, isPushEnabled);
     }
 }
