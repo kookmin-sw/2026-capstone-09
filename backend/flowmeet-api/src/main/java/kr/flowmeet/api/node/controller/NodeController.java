@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import kr.flowmeet.api.common.dto.CommonResponse;
 import kr.flowmeet.api.node.dto.request.CreateNodeRequest;
+import kr.flowmeet.api.node.dto.request.UpdateNodeKanbanRequest;
 import kr.flowmeet.api.node.dto.request.UpdateNodeRequest;
 import kr.flowmeet.api.node.dto.request.UpdateNodeStatusRequest;
 import kr.flowmeet.api.node.dto.response.GetFlowchartResponse;
@@ -98,6 +99,18 @@ public class NodeController implements NodeApi {
             @PathVariable Long projectId
     ) {
         return CommonResponse.ok(NodeSuccessCode.GET_KANBAN, nodeFacade.getKanban(userId, projectId));
+    }
+
+    @Override
+    @PatchMapping("/nodes/{nodeId}/kanban")
+    public CommonResponse<?> updateNodeKanban(
+            @UserId Long userId,
+            @PathVariable Long projectId,
+            @PathVariable Long nodeId,
+            @Valid @RequestBody UpdateNodeKanbanRequest request
+    ) {
+        nodeFacade.updateNodeKanban(userId, projectId, nodeId, request);
+        return CommonResponse.ok(NodeSuccessCode.UPDATE_NODE_KANBAN);
     }
 
     @Override

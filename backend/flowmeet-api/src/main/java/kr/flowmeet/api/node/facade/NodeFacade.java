@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import kr.flowmeet.api.common.exception.ApiException;
 import kr.flowmeet.api.node.dto.request.CreateNodeRequest;
+import kr.flowmeet.api.node.dto.request.UpdateNodeKanbanRequest;
 import kr.flowmeet.api.node.dto.request.UpdateNodeRequest;
 import kr.flowmeet.api.node.dto.request.UpdateNodeStatusRequest;
 import kr.flowmeet.api.node.dto.response.GetFlowchartResponse;
@@ -161,6 +162,18 @@ public class NodeFacade {
                 .collect(Collectors.groupingBy(Node::getStatus));
 
         return GetKanbanResponse.of(statusMap, nodeTagMap, assigneeMap);
+    }
+
+    @Transactional
+    public void updateNodeKanban(
+            final Long userId,
+            final Long projectId,
+            final Long nodeId,
+            final UpdateNodeKanbanRequest request
+    ) {
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
+
+        nodeService.updateNodeKanban(projectId, nodeId, request.toCommand());
     }
 
     @Transactional
