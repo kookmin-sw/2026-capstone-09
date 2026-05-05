@@ -66,6 +66,12 @@ export interface CreateProjectResponse {
 /** 프로젝트 URL 등록/수정 요청 */
 export interface ProjectUrlRequest {
   /**
+   * URL 이름(라벨)
+   * @minLength 1
+   * @example "GitHub 레포지토리"
+   */
+  name: string;
+  /**
    * 프로젝트에 연결할 URL
    * @minLength 1
    * @example "https://github.com/kookmin-sw/2026-capstone-09"
@@ -103,6 +109,11 @@ export interface ProjectUrlResponse {
    * @example 3
    */
   urlId?: number;
+  /**
+   * URL 이름(라벨)
+   * @example "GitHub 레포지토리"
+   */
+  name?: string;
   /**
    * URL 값
    * @example "https://github.com/kookmin-sw/2026-capstone-09"
@@ -837,6 +848,11 @@ export interface GetProjectResponse {
    */
   name?: string;
   /**
+   * 프로젝트 프로필 이미지 URL
+   * @example "https://static.flowmeet.kr/projects/1.png"
+   */
+  profileImageUrl?: string;
+  /**
    * 내 권한
    * @example "OWNER"
    */
@@ -871,6 +887,11 @@ export interface UrlItem {
    * @example 3
    */
   urlId?: number;
+  /**
+   * URL 이름(라벨)
+   * @example "GitHub 레포지토리"
+   */
+  name?: string;
   /**
    * URL 값
    * @example "https://github.com/kookmin-sw/2026-capstone-09"
@@ -979,18 +1000,37 @@ export interface SearchItem {
    */
   title?: string;
   /**
+   * 노드 설명
+   * @example "OAuth2 로그인 플로우 정리"
+   */
+  description?: string;
+  /**
    * 노드 상태
    * @example "IN_PROGRESS"
    */
   status?: "WAITING" | "IN_PROGRESS" | "DONE";
   /** 부여된 태그 목록 */
   tags?: TagItem[];
+  /**
+   * 생성 시각
+   * @format date-time
+   * @example "2026-03-01T09:00:00"
+   */
+  createdAt?: string;
+  /**
+   * 마지막 수정 시각
+   * @format date-time
+   * @example "2026-04-19T10:15:30"
+   */
+  updatedAt?: string;
 }
 
 /** 노드 검색 응답 */
 export interface SearchNodeResponse {
   /** 검색된 노드 목록 */
   nodes?: SearchItem[];
+  /** @format int64 */
+  totalCount?: number;
 }
 
 /** 노드 담당자 정보 */
@@ -1040,7 +1080,7 @@ export interface CommonResponseGetFlowchartResponse {
   data?: GetFlowchartResponse;
 }
 
-/** 엣지 생성자 정보 */
+/** 연결선 생성자 정보 */
 export interface EdgeCreatorItem {
   /**
    * 사용자 ID
@@ -1060,15 +1100,15 @@ export interface EdgeCreatorItem {
   email?: string;
   /**
    * 프로필 이미지 URL
-   * @example "https://cdn.flowmeet.kr/profile/91.png"
+   * @example "https://static.flowmeet.kr/profile/91.png"
    */
   profileImageUrl?: string;
 }
 
-/** 노드 간 엣지 항목 */
+/** 노드 간 연결선 항목 */
 export interface EdgeItem {
   /**
-   * 엣지 ID
+   * 연결선 ID
    * @format int64
    * @example 9001
    */
@@ -1085,20 +1125,26 @@ export interface EdgeItem {
    * @example 102
    */
   endNodeId?: number;
-  /** 엣지를 생성한 사용자 정보 */
+  /** 연결선을 생성한 사용자 정보 */
   createdBy?: EdgeCreatorItem;
   /**
-   * 엣지 설명
+   * 연결선 설명
    * @example "로그인 성공 시 대시보드로 이동"
    */
   comment?: string;
+  /**
+   * 연결선 생성 시각
+   * @format date-time
+   * @example "2026-04-19T10:15:30"
+   */
+  createdAt?: string;
 }
 
-/** 플로우차트 조회 응답 (노드와 엣지) */
+/** 플로우차트 조회 응답 (노드와 연결선) */
 export interface GetFlowchartResponse {
   /** 노드 목록 */
   nodes?: NodeItem[];
-  /** 노드 간 엣지 목록 */
+  /** 노드 간 연결선 목록 */
   edges?: EdgeItem[];
 }
 
@@ -1423,6 +1469,18 @@ export interface KanbanItem {
   tags?: TagItem[];
   /** 담당자 목록 */
   assignees?: AssigneeItem[];
+  /**
+   * 생성 시각
+   * @format date-time
+   * @example "2026-03-01T09:00:00"
+   */
+  createdAt?: string;
+  /**
+   * 마지막 수정 시각
+   * @format date-time
+   * @example "2026-04-19T10:15:30"
+   */
+  updatedAt?: string;
 }
 
 /** 공통 응답 형식 */
@@ -1581,11 +1639,11 @@ export interface NotificationSummaryResponse {
    */
   projectName?: string;
   /**
-   * 관련 노드 ID
+   * 알림 대상 ID
    * @format int64
    * @example 128
    */
-  nodeId?: number;
+  targetId?: number;
   /**
    * 읽음 여부
    * @example false
@@ -1629,6 +1687,11 @@ export interface GetUnreadCountResponse {
    * @example 5
    */
   unreadCount?: number;
+}
+
+export interface SseEmitter {
+  /** @format int64 */
+  timeout?: number;
 }
 
 export type QueryParamsType = Record<string | number, any>;
@@ -2240,7 +2303,10 @@ export class Api<
      */
     updateProfileImage1: (
       projectId: number,
-      data: number,
+      data: {
+        /** @format binary */
+        profileImage: File;
+      },
       params: RequestParams = {},
     ) =>
       this.request<
@@ -2742,7 +2808,7 @@ export class Api<
            * @example "플로우차트를 조회했어요."
            */
           message?: object;
-          /** 플로우차트 조회 응답 (노드와 엣지) */
+          /** 플로우차트 조회 응답 (노드와 연결선) */
           data?: GetFlowchartResponse;
         },
         any
@@ -3630,7 +3696,13 @@ export class Api<
      * @request PATCH:/v1/users/me/profile-image
      * @secure
      */
-    updateProfileImage: (data: number, params: RequestParams = {}) =>
+    updateProfileImage: (
+      data: {
+        /** @format binary */
+        profileImage: File;
+      },
+      params: RequestParams = {},
+    ) =>
       this.request<
         {
           /**
@@ -4122,6 +4194,23 @@ export class Api<
         any
       >({
         path: `/v1/notifications/unread-count`,
+        method: "GET",
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * @description SSE 연결 후 알림이 발생하면 `notification` 이벤트로 실시간 전달됩니다. 연결 타임아웃은 30분이며 클라이언트가 자동 재연결해야 합니다.
+     *
+     * @tags Notification
+     * @name Subscribe
+     * @summary 알림 실시간 구독 (SSE)
+     * @request GET:/v1/notifications/subscribe
+     * @secure
+     */
+    subscribe: (params: RequestParams = {}) =>
+      this.request<SseEmitter, any>({
+        path: `/v1/notifications/subscribe`,
         method: "GET",
         secure: true,
         ...params,
