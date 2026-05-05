@@ -14,6 +14,7 @@ public enum NodeSuccessCode implements SuccessCode {
     DELETE_NODE("노드를 삭제했어요."),
     GET_NODE_LIST("노드 리스트를 조회했어요."),
     GET_KANBAN("칸반 보드를 조회했어요."),
+    UPDATE_NODE_KANBAN("칸반 카드를 옮겼어요."),
     UPDATE_NODE_STATUS("노드 상태를 변경했어요."),
     SEARCH("검색을 완료했어요.");
 

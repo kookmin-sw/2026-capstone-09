@@ -6,17 +6,14 @@ import kr.flowmeet.api.common.validation.ValidationMessage;
 import kr.flowmeet.domain.node.entity.NodeStatus;
 import kr.flowmeet.domain.node.service.vo.UpdateNodeStatusCommand;
 
-@Schema(description = "노드 상태 변경(드래그 앤 드롭) 요청")
+@Schema(description = "노드 상태 변경 요청")
 public record UpdateNodeStatusRequest(
         @Schema(description = "변경할 노드 상태", example = "IN_PROGRESS", allowableValues = {"WAITING", "IN_PROGRESS", "DONE"})
         @NotNull(message = ValidationMessage.NODE_STATUS_REQUIRED)
-        NodeStatus status,
-        @Schema(description = "칸반 내 정렬 순서", example = "1024")
-        @NotNull(message = ValidationMessage.NODE_SORT_ORDER_REQUIRED)
-        Integer sortOrder
+        NodeStatus status
 ) {
 
     public UpdateNodeStatusCommand toCommand() {
-        return new UpdateNodeStatusCommand(status, sortOrder);
+        return new UpdateNodeStatusCommand(status);
     }
 }

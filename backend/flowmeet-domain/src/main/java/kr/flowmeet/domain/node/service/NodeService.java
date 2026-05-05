@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import kr.flowmeet.domain.node.entity.NodeStatus;
-import kr.flowmeet.domain.node.entity.NodeType;
 import kr.flowmeet.domain.node.service.vo.CreateNodeCommand;
 import kr.flowmeet.domain.node.service.vo.UpdateNodeCommand;
+import kr.flowmeet.domain.node.service.vo.UpdateNodeKanbanCommand;
 import kr.flowmeet.domain.node.service.vo.UpdateNodeStatusCommand;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -160,9 +160,16 @@ public class NodeService {
     }
 
     @Transactional
+    public void updateNodeKanban(final Long projectId, final Long nodeId, final UpdateNodeKanbanCommand command) {
+        Node node = findByIdAndProjectId(nodeId, projectId);
+
+        node.updateKanban(command.status(), command.sortOrder());
+    }
+
+    @Transactional
     public void updateNodeStatus(final Long projectId, final Long nodeId, final UpdateNodeStatusCommand command) {
         Node node = findByIdAndProjectId(nodeId, projectId);
 
-        node.updateStatus(command.status(), command.sortOrder());
+        node.updateStatus(command.status());
     }
 }
