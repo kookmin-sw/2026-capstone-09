@@ -19,8 +19,6 @@ interface ListViewProps {
 
 type SortOption = 'latest' | 'alphabetical';
 
-const SORT_STORAGE_KEY = 'listViewSortBy';
-
 export function ListView({ projectId }: ListViewProps) {
   const toast = usePositionedToast();
   const [loading, setLoading] = useState(true);
@@ -29,17 +27,6 @@ export function ListView({ projectId }: ListViewProps) {
   const [sortBy, setSortBy] = useState<SortOption>('latest');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSelectOpen, setIsSelectOpen] = useState(false);
-
-  useEffect(() => {
-    const saved = localStorage.getItem(SORT_STORAGE_KEY);
-    if (saved && (saved === 'latest' || saved === 'alphabetical')) {
-      setSortBy(saved as SortOption);
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem(SORT_STORAGE_KEY, sortBy);
-  }, [sortBy]);
 
   const loadListData = useCallback(async () => {
     try {
@@ -171,22 +158,22 @@ export function ListView({ projectId }: ListViewProps) {
                 hasMeeting={node.hasMeeting}
                 onDoubleClick={() => handleNodeDoubleClick(node.nodeId ?? 0)}
                 onCreateSubNode={() => {
-                  // TODO: 서브 노드 생성 구현
+                  // TODO: 서브 노드 생성 모달
                 }}
                 onCreateMeeting={() => {
-                  // TODO: 회의 생성 구현
+                  // TODO: 회의 생성 모달
                 }}
                 onEditMeeting={() => {
-                  // TODO: 회의 수정 구현
+                  // TODO: 회의 수정 모달
                 }}
                 onDeleteMeeting={() => {
-                  // TODO: 회의 삭제 구현
+                  // TODO: 회의 삭제 모달
                 }}
                 onCreateReference={() => {
-                  // TODO: 참조 노드 구현
+                  // TODO: 참조 노드 모달
                 }}
                 onDelete={() => {
-                  // TODO: 삭제 구현
+                  // TODO: 삭제 모달
                 }}
               />
             ))}
