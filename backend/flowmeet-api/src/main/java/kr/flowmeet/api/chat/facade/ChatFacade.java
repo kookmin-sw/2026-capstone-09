@@ -63,6 +63,7 @@ public class ChatFacade {
         projectPermissionValidator.validate(projectId, userId);
 
         ChatSession session = chatSessionService.findByIdAndProjectId(chatSessionId, projectId);
+        chatSessionService.validateCreatedBy(session, userId);
         List<Node> nodes = chatSessionNodeService.findAllNodesByChatSessionId(chatSessionId);
         List<ChatMessage> messages = chatMessageService.findAllByChatSessionId(chatSessionId, cursorId, size);
 
@@ -107,6 +108,7 @@ public class ChatFacade {
         projectPermissionValidator.validate(projectId, userId);
 
         ChatSession session = chatSessionService.findByIdAndProjectId(chatSessionId, projectId);
+        chatSessionService.validateCreatedBy(session, userId);
         session.updateTitle(title);
 
         return UpdateChatSessionResponse.from(session);
@@ -117,6 +119,7 @@ public class ChatFacade {
         projectPermissionValidator.validate(projectId, userId);
 
         ChatSession session = chatSessionService.findByIdAndProjectId(chatSessionId, projectId);
+        chatSessionService.validateCreatedBy(session, userId);
         chatSessionNodeService.deleteAllByChatSessionId(chatSessionId);
         chatMessageService.softDeleteAllByChatSessionId(chatSessionId);
         chatSessionService.delete(session);
@@ -130,7 +133,9 @@ public class ChatFacade {
             final String content
     ) {
         projectPermissionValidator.validate(projectId, userId);
-        chatSessionService.findByIdAndProjectId(chatSessionId, projectId);
+
+        ChatSession session = chatSessionService.findByIdAndProjectId(chatSessionId, projectId);
+        chatSessionService.validateCreatedBy(session, userId);
 
         ChatMessage message = chatMessageService.create(chatSessionId, content);
 
@@ -153,7 +158,9 @@ public class ChatFacade {
             final Long nodeId
     ) {
         projectPermissionValidator.validate(projectId, userId);
-        chatSessionService.findByIdAndProjectId(chatSessionId, projectId);
+
+        ChatSession session = chatSessionService.findByIdAndProjectId(chatSessionId, projectId);
+        chatSessionService.validateCreatedBy(session, userId);
 
         Node node = nodeService.findByIdAndProjectId(nodeId, projectId);
         chatSessionNodeService.add(chatSessionId, nodeId);
@@ -169,7 +176,9 @@ public class ChatFacade {
             final Long nodeId
     ) {
         projectPermissionValidator.validate(projectId, userId);
-        chatSessionService.findByIdAndProjectId(chatSessionId, projectId);
+
+        ChatSession session = chatSessionService.findByIdAndProjectId(chatSessionId, projectId);
+        chatSessionService.validateCreatedBy(session, userId);
 
         chatSessionNodeService.remove(chatSessionId, nodeId);
     }

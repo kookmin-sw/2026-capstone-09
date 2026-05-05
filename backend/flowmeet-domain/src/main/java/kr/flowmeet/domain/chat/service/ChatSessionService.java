@@ -23,6 +23,12 @@ public class ChatSessionService {
                 .orElseThrow(() -> new BusinessException(ChatErrorCode.CHAT_SESSION_NOT_FOUND));
     }
 
+    public void validateCreatedBy(final ChatSession session, final Long userId) {
+        if (!session.isCreatedBy(userId)) {
+            throw new BusinessException(ChatErrorCode.CHAT_SESSION_ACCESS_DENIED);
+        }
+    }
+
     public List<ChatSession> findAllByProjectId(final Long projectId, final String search,
                                                     final Long cursorId, final int size) {
         return chatSessionRepository.findAllByProjectId(projectId, search, cursorId, size);

@@ -63,6 +63,10 @@ public class ChatSession extends BaseTimeEntity {
         this.title = title;
     }
 
+    public boolean isCreatedBy(final Long userId) {
+        return this.createdById.equals(userId);
+    }
+
     public void updateTitle(final String title) {
         this.title = title;
     }
