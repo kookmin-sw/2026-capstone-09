@@ -3,8 +3,10 @@
 import { ContentBadge, ThemeColorsToken, Typography } from '@wanteddev/wds';
 import { IconClose } from '@wanteddev/wds-icon';
 import { useEffect, useRef, useState } from 'react';
+
 import { privateApi } from '@/api';
 import { TagItem } from '@/api/Api';
+import { usePositionedToast } from '@/components/commons/custom-toast/usePositionedToast';
 import { ColorType } from '@/constants/badgeColor';
 import { getColorToken } from '@/utils/getBadgeColorInfo';
 
@@ -20,6 +22,12 @@ export function TagField({ projectId, nodeId, tags, onAdd, onRemove }: TagFieldP
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [allTags, setAllTags] = useState<TagItem[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
+  const toast = usePositionedToast();
+
+  const showErrorToast = (err: unknown, fallback: string) => {
+    const message = (err as { error?: { message?: string } })?.error?.message ?? fallback;
+    toast({ content: message, variant: 'negative', placement: 'top-center' });
+  };
 
   useEffect(() => {
     if (!isPickerOpen) return;
@@ -35,8 +43,8 @@ export function TagField({ projectId, nodeId, tags, onAdd, onRemove }: TagFieldP
       try {
         const res = await privateApi.tag.getAllTags(projectId);
         setAllTags(res.data.data?.tags ?? []);
-      } catch {
-        // TODO: 태그 목록 로딩 실패 처리
+      } catch (err) {
+        showErrorToast(err, '태그 목록을 불러오지 못했어요.');
       }
     }
     setIsPickerOpen(true);
@@ -47,9 +55,9 @@ export function TagField({ projectId, nodeId, tags, onAdd, onRemove }: TagFieldP
     onAdd(tag);
     try {
       await privateApi.tag.addNodeTag(projectId, nodeId, { tagId: tag.tagId });
-    } catch {
-      // TODO: 에러 토스트 알림 추가 필요
+    } catch (err) {
       onRemove(tag.tagId);
+      showErrorToast(err, '태그 추가에 실패했어요.');
     }
   };
 
@@ -58,9 +66,9 @@ export function TagField({ projectId, nodeId, tags, onAdd, onRemove }: TagFieldP
     onRemove(tagId);
     try {
       await privateApi.tag.removeNodeTag(projectId, nodeId, tagId);
-    } catch {
-      // TODO: 에러 토스트 알림 추가 필요
+    } catch (err) {
       if (removedTag) onAdd(removedTag);
+      showErrorToast(err, '태그 제거에 실패했어요.');
     }
   };
 
