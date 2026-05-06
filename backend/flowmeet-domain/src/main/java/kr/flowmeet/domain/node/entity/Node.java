@@ -108,9 +108,13 @@ public class Node extends BaseTimeEntity {
         this.sortOrder = sortOrder;
     }
 
-    public void updateStatus(final NodeStatus status, final int sortOrder) {
+    public void updateKanban(final NodeStatus status, final int sortOrder) {
         this.status = status;
         this.sortOrder = sortOrder;
+    }
+
+    public void updateStatus(final NodeStatus status) {
+        this.status = status;
     }
 
 }

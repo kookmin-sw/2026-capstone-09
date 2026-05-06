@@ -10,6 +10,7 @@ import kr.flowmeet.api.common.dto.CommonResponse;
 import kr.flowmeet.api.common.swagger.ApiErrorCode;
 import kr.flowmeet.api.common.swagger.ApiSuccessCode;
 import kr.flowmeet.api.node.dto.request.CreateNodeRequest;
+import kr.flowmeet.api.node.dto.request.UpdateNodeKanbanRequest;
 import kr.flowmeet.api.node.dto.request.UpdateNodeRequest;
 import kr.flowmeet.api.node.dto.request.UpdateNodeStatusRequest;
 import kr.flowmeet.api.node.dto.response.GetFlowchartResponse;
@@ -79,7 +80,17 @@ public interface NodeApi {
     @ApiSuccessCode(code = NodeSuccessCode.class, name = "GET_KANBAN")
     CommonResponse<GetKanbanResponse> getKanban(@UserId Long userId, @PathVariable Long projectId);
 
-    @Operation(summary = "칸반 상태 변경", description = "드래그 & 드롭으로 상태와 순서를 변경합니다.")
+    @Operation(summary = "칸반 카드 이동", description = "드래그 & 드롭으로 상태와 순서를 동시에 변경합니다.")
+    @ApiSuccessCode(code = NodeSuccessCode.class, name = "UPDATE_NODE_KANBAN")
+    @ApiErrorCode(code = NodeErrorCode.class, names = {"NODE_NOT_FOUND"})
+    CommonResponse<?> updateNodeKanban(
+            @UserId Long userId,
+            @PathVariable Long projectId,
+            @PathVariable Long nodeId,
+            @Valid @RequestBody UpdateNodeKanbanRequest request
+    );
+
+    @Operation(summary = "노드 상태 변경", description = "노드의 상태(WAITING/IN_PROGRESS/DONE)만 변경합니다.")
     @ApiSuccessCode(code = NodeSuccessCode.class, name = "UPDATE_NODE_STATUS")
     @ApiErrorCode(code = NodeErrorCode.class, names = {"NODE_NOT_FOUND"})
     CommonResponse<?> updateNodeStatus(
