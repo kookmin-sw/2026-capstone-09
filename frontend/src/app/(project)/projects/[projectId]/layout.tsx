@@ -8,6 +8,7 @@ import { EXAMPLE_USERS } from '@/constants/exampleConstant';
 import {
   ProjectDetailLayoutContext,
   type ProjectViewTypes,
+  VALID_VIEWS,
 } from '@/contexts/ProjectDetailLayoutContext';
 
 interface ProjectDetailLayoutProps {
@@ -21,7 +22,7 @@ export default function ProjectDetailLayout({ children }: ProjectDetailLayoutPro
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved && (saved === 'node-flow' || saved === 'list' || saved === 'kanban')) {
+    if (saved && VALID_VIEWS.includes(saved as ProjectViewTypes)) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveView(saved as ProjectViewTypes);
     }
