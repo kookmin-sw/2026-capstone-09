@@ -19,6 +19,7 @@ public class DiscordErrorNotifier implements ErrorNotifier {
     private static final int CODE_BLOCK_OVERHEAD = "```\n\n```".length();
     private static final int CODE_BLOCK_CONTENT_LIMIT = MessageEmbed.VALUE_MAX_LENGTH - CODE_BLOCK_OVERHEAD;
     private static final String TRUNCATION_SUFFIX = "...";
+    private static final String ANONYMOUS_USER = "anonymous";
 
     private final JDA jda;
     private final DiscordProperties properties;
@@ -27,6 +28,7 @@ public class DiscordErrorNotifier implements ErrorNotifier {
     public void notifyError(
             final String title,
             final String description,
+            final Long userId,
             final String requestBody,
             final Throwable throwable
     ) {
@@ -37,7 +39,7 @@ public class DiscordErrorNotifier implements ErrorNotifier {
                 return;
             }
 
-            MessageEmbed embed = buildEmbed(title, description, requestBody, throwable);
+            MessageEmbed embed = buildEmbed(title, description, userId, requestBody, throwable);
             channel.sendMessageEmbeds(embed).queue(
                     success -> {},
                     failure -> log.error("[DiscordErrorNotifier] send failed", failure)
@@ -50,6 +52,7 @@ public class DiscordErrorNotifier implements ErrorNotifier {
     private MessageEmbed buildEmbed(
             final String title,
             final String description,
+            final Long userId,
             final String requestBody,
             final Throwable throwable
     ) {
@@ -62,8 +65,10 @@ public class DiscordErrorNotifier implements ErrorNotifier {
             embed.setDescription(truncate(description, MessageEmbed.DESCRIPTION_MAX_LENGTH));
         }
 
+        embed.addField("User ID", userId != null ? String.valueOf(userId) : ANONYMOUS_USER, true);
+
         if (throwable != null) {
-            embed.addField("Exception", truncate(throwable.getClass().getName(), MessageEmbed.VALUE_MAX_LENGTH), false);
+            embed.addField("Exception", truncate(throwable.getClass().getName(), MessageEmbed.VALUE_MAX_LENGTH), true);
         }
 
         if (requestBody != null && !requestBody.isBlank()) {

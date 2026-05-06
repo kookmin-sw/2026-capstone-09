@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import kr.flowmeet.api.common.dto.CommonResponse;
 import kr.flowmeet.api.common.util.SensitiveDataMasker;
+import kr.flowmeet.auth.security.CurrentUserProvider;
 import kr.flowmeet.common.exception.CustomException;
 import kr.flowmeet.common.exception.ErrorCode;
 import kr.flowmeet.external.notification.ErrorNotifier;
@@ -26,6 +27,7 @@ public class GlobalExceptionHandler {
     private static final int REQUEST_BODY_LOG_LIMIT = 1500;
 
     private final ErrorNotifier errorNotifier;
+    private final CurrentUserProvider currentUserProvider;
 
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<CommonResponse<?>> handleCustomException(final CustomException exception) {
@@ -51,6 +53,7 @@ public class GlobalExceptionHandler {
         errorNotifier.notifyError(
                 "[" + exception.getClass().getSimpleName() + "] (" + request.getMethod() + ") " + request.getRequestURI(),
                 exception.getMessage(),
+                currentUserProvider.getCurrentUserId().orElse(null),
                 extractRequestBody(request),
                 exception
         );

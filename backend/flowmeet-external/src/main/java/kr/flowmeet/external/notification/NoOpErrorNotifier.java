@@ -9,6 +9,7 @@ public class NoOpErrorNotifier implements ErrorNotifier {
     public void notifyError(
             final String title,
             final String description,
+            final Long userId,
             final String requestBody,
             final Throwable throwable
     ) {
