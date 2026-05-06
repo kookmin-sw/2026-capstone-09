@@ -8,6 +8,7 @@ import kr.flowmeet.domain.meeting.service.MeetingService;
 import kr.flowmeet.domain.node.entity.Node;
 import kr.flowmeet.domain.node.service.NodeService;
 import kr.flowmeet.domain.node.service.NodeValidator;
+import kr.flowmeet.domain.project.entity.ProjectMember;
 import kr.flowmeet.domain.project.entity.ProjectMemberRole;
 import kr.flowmeet.domain.project.service.ProjectMemberService;
 import kr.flowmeet.domain.project.service.ProjectPermissionValidator;
@@ -42,7 +43,6 @@ public class MeetingFacade {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
         nodeValidator.validateIsIn(nodeId, projectId);
         projectPermissionValidator.validateAllAreMembers(projectId, request.participantUserIds());
-        meetingService.validateCreatable(nodeId, request.startedAt());
 
         Node node = nodeService.findByIdAndProjectId(nodeId, projectId);
         MeetingRoom room = meetingRoomProvider.create(toCreateRoomCommand(node, request.startedAt(), null));
@@ -59,11 +59,14 @@ public class MeetingFacade {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         Meeting meeting = meetingService.findById(meetingId);
+
         nodeValidator.validateIsIn(meeting.getNodeId(), projectId);
-        meetingService.validateUpdatable(meeting, userId, isOwner(projectId, userId));
+
+        ProjectMember projectMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
+
         projectPermissionValidator.validateAllAreMembers(projectId, request.participantUserIds());
 
-        meetingService.updateSchedule(meeting, request.toCommand());
+        meetingService.updateMeeting(projectMember, meeting, request.toCommand());
     }
 
     @Transactional
@@ -72,10 +75,11 @@ public class MeetingFacade {
 
         Meeting meeting = meetingService.findById(meetingId);
         nodeValidator.validateIsIn(meeting.getNodeId(), projectId);
-        meetingService.validateDeletable(meeting, userId, isOwner(projectId, userId));
 
+        ProjectMember projectMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
         String externalEventId = meeting.getExternalEventId();
-        meetingService.delete(meeting);
+
+        meetingService.delete(projectMember, meeting);
 
         if (externalEventId != null && !externalEventId.isBlank()) {
             meetingRoomProvider.delete(externalEventId, null);

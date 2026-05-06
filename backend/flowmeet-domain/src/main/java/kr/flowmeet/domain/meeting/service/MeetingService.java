@@ -15,6 +15,7 @@ import kr.flowmeet.domain.meeting.repository.MeetingParticipantRepository;
 import kr.flowmeet.domain.meeting.repository.MeetingRepository;
 import kr.flowmeet.domain.meeting.service.vo.CreateMeetingCommand;
 import kr.flowmeet.domain.meeting.service.vo.UpdateMeetingCommand;
+import kr.flowmeet.domain.project.entity.ProjectMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -84,24 +85,6 @@ public class MeetingService {
         meetingRepository.softDeleteAllByIdIn(meetingIds);
     }
 
-    public void validateUpdatable(final Meeting meeting, final Long userId, final boolean isOwner) {
-        if (!meeting.isScheduled()) {
-            throw new BusinessException(MeetingErrorCode.MEETING_NOT_SCHEDULED);
-        }
-        if (!isCreatorOrOwner(meeting, userId, isOwner)) {
-            throw new BusinessException(MeetingErrorCode.MEETING_UPDATE_FORBIDDEN);
-        }
-    }
-
-    public void validateDeletable(final Meeting meeting, final Long userId, final boolean isOwner) {
-        if (meeting.isInProgress()) {
-            throw new BusinessException(MeetingErrorCode.MEETING_IN_PROGRESS);
-        }
-        if (!isCreatorOrOwner(meeting, userId, isOwner)) {
-            throw new BusinessException(MeetingErrorCode.MEETING_DELETE_FORBIDDEN);
-        }
-    }
-
     @Transactional
     public Meeting create(
             final Long nodeId,
@@ -136,8 +119,13 @@ public class MeetingService {
     }
 
     @Transactional
-    public void updateSchedule(final Meeting meeting, final UpdateMeetingCommand command) {
+    public void updateMeeting(final ProjectMember projectMember, final Meeting meeting, final UpdateMeetingCommand command) {
+        if (!meeting.isScheduled()) {
+            throw new BusinessException(MeetingErrorCode.MEETING_NOT_SCHEDULED);
+        }
+
         validateFutureTime(command.startedAt());
+        validateCreatorOrOwner(meeting, projectMember);
 
         meeting.updateSchedule(
                 command.startedAt(),
@@ -174,7 +162,13 @@ public class MeetingService {
     }
 
     @Transactional
-    public void delete(final Meeting meeting) {
+    public void delete(final ProjectMember projectMember, final Meeting meeting) {
+        if (meeting.isInProgress()) {
+            throw new BusinessException(MeetingErrorCode.MEETING_IN_PROGRESS);
+        }
+
+        validateCreatorOrOwner(meeting, projectMember);
+
         meetingParticipantRepository.softDeleteAllByMeetingId(meeting.getId());
         meetingRepository.delete(meeting);
     }
@@ -193,10 +187,6 @@ public class MeetingService {
         meetingParticipantRepository.saveAll(participants);
     }
 
-    private boolean isCreatorOrOwner(final Meeting meeting, final Long userId, final boolean isOwner) {
-        return meeting.isCreatedBy(userId) || isOwner;
-    }
-
     private void validateNoDuplicate(final Long nodeId) {
         if (meetingRepository.existsByNodeId(nodeId)) {
             throw new BusinessException(MeetingErrorCode.MEETING_ALREADY_EXISTS);
@@ -206,6 +196,12 @@ public class MeetingService {
     private void validateFutureTime(final LocalDateTime startedAt) {
         if (startedAt.isBefore(LocalDateTime.now())) {
             throw new BusinessException(MeetingErrorCode.MEETING_INVALID_TIME);
+        }
+    }
+
+    private void validateCreatorOrOwner(final Meeting meeting, final ProjectMember projectMember) {
+        if ((!meeting.isCreatedBy(projectMember.getUserId())) && (!projectMember.isOwner())) {
+            throw new BusinessException(MeetingErrorCode.MEETING_DELETE_FORBIDDEN);
         }
     }
 }
