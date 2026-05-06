@@ -32,6 +32,8 @@ public class GlobalExceptionHandler {
 
         log.error("에러 발생: ({}) {}", exception.getClass().getSimpleName(), exception.getMessage());
 
+        exception.printStackTrace();
+
         CommonResponse<?> response = CommonResponse.error(exception);
 
         return ResponseEntity

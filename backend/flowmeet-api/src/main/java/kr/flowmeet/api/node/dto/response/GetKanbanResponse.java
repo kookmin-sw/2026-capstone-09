@@ -1,6 +1,7 @@
 package kr.flowmeet.api.node.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import kr.flowmeet.domain.node.entity.Node;
@@ -57,7 +58,11 @@ public record GetKanbanResponse(
             @Schema(description = "부여된 태그 목록")
             List<TagItem> tags,
             @Schema(description = "담당자 목록")
-            List<AssigneeItem> assignees
+            List<AssigneeItem> assignees,
+            @Schema(description = "생성 시각", example = "2026-03-01T09:00:00")
+            LocalDateTime createdAt,
+            @Schema(description = "마지막 수정 시각", example = "2026-04-19T10:15:30")
+            LocalDateTime updatedAt
     ) {
 
         public static KanbanItem from(
@@ -71,7 +76,9 @@ public record GetKanbanResponse(
                     node.getTitle(),
                     node.getSortOrder(),
                     nodeTags.stream().map(nt -> TagItem.from(nt.getTag())).toList(),
-                    nodeAssignees.stream().map(na -> AssigneeItem.from(na.getUser())).toList()
+                    nodeAssignees.stream().map(na -> AssigneeItem.from(na.getUser())).toList(),
+                    node.getCreatedAt(),
+                    node.getUpdatedAt()
             );
         }
     }

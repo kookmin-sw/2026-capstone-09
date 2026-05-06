@@ -13,6 +13,8 @@ public record GetProjectResponse(
         Long projectId,
         @Schema(description = "프로젝트 이름", example = "FlowMeet 리뉴얼")
         String name,
+        @Schema(description = "프로젝트 프로필 이미지 URL", example = "https://static.flowmeet.kr/projects/1.png")
+        String profileImageUrl,
         @Schema(description = "내 권한", example = "OWNER", allowableValues = {"VIEWER", "MEMBER", "OWNER"})
         ProjectMemberRole myRole,
         @Schema(description = "프로젝트 멤버 수", example = "8")
@@ -29,6 +31,7 @@ public record GetProjectResponse(
         return new GetProjectResponse(
                 project.getId(),
                 project.getName(),
+                project.getProfileImageUrl(),
                 myRole,
                 memberCount,
                 urls.stream().map(UrlItem::from).toList(),
@@ -41,11 +44,13 @@ public record GetProjectResponse(
     public record UrlItem(
             @Schema(description = "URL ID", example = "3")
             Long urlId,
+            @Schema(description = "URL 이름(라벨)", example = "GitHub 레포지토리")
+            String name,
             @Schema(description = "URL 값", example = "https://github.com/kookmin-sw/2026-capstone-09")
             String url
     ) {
         public static UrlItem from(final ProjectUrl projectUrl) {
-            return new UrlItem(projectUrl.getId(), projectUrl.getUrl());
+            return new UrlItem(projectUrl.getId(), projectUrl.getName(), projectUrl.getUrl());
         }
     }
 }

@@ -7,9 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import kr.flowmeet.domain.node.entity.NodeStatus;
-import kr.flowmeet.domain.node.entity.NodeType;
 import kr.flowmeet.domain.node.service.vo.CreateNodeCommand;
-import kr.flowmeet.domain.node.service.vo.UpdateNodeCommand;
+import kr.flowmeet.domain.node.service.vo.UpdateNodeKanbanCommand;
 import kr.flowmeet.domain.node.service.vo.UpdateNodeStatusCommand;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -41,6 +40,14 @@ public class NodeService {
 
     public List<Node> findAllByProjectId(final Long projectId) {
         return nodeRepository.findAllByProjectId(projectId);
+    }
+
+    public List<Node> findAllByIdsAndProjectId(final List<Long> nodeIds, final Long projectId) {
+        List<Node> nodes = nodeRepository.findAllByIdInAndProjectId(nodeIds, projectId);
+        if (nodes.size() != nodeIds.size()) {
+            throw new BusinessException(NodeErrorCode.NODE_NOT_FOUND);
+        }
+        return nodes;
     }
 
     public List<Long> findAllIdsByProjectId(final Long projectId) {
@@ -147,22 +154,37 @@ public class NodeService {
     }
 
     @Transactional
-    public void updateNode(final Long projectId, final Long nodeId, final UpdateNodeCommand command) {
+    public void updateNodeTitle(final Long projectId, final Long nodeId, final String title) {
         Node node = findByIdAndProjectId(nodeId, projectId);
 
-        node.update(
-                command.title(),
-                command.description(),
-                command.noteContent(),
-                command.status(),
-                command.sortOrder()
-        );
+        node.updateTitle(title);
+    }
+
+    @Transactional
+    public void updateNodeDescription(final Long projectId, final Long nodeId, final String description) {
+        Node node = findByIdAndProjectId(nodeId, projectId);
+
+        node.updateDescription(description);
+    }
+
+    @Transactional
+    public void updateNodeNote(final Long projectId, final Long nodeId, final String noteContent) {
+        Node node = findByIdAndProjectId(nodeId, projectId);
+
+        node.updateNoteContent(noteContent);
+    }
+
+    @Transactional
+    public void updateNodeKanban(final Long projectId, final Long nodeId, final UpdateNodeKanbanCommand command) {
+        Node node = findByIdAndProjectId(nodeId, projectId);
+
+        node.updateKanban(command.status(), command.sortOrder());
     }
 
     @Transactional
     public void updateNodeStatus(final Long projectId, final Long nodeId, final UpdateNodeStatusCommand command) {
         Node node = findByIdAndProjectId(nodeId, projectId);
 
-        node.updateStatus(command.status(), command.sortOrder());
+        node.updateStatus(command.status());
     }
 }

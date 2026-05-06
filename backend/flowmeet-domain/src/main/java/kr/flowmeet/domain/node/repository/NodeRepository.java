@@ -14,6 +14,8 @@ public interface NodeRepository extends JpaRepository<Node, Long>, NodeRepositor
 
     List<Node> findAllByProjectId(Long projectId);
 
+    List<Node> findAllByIdInAndProjectId(List<Long> ids, Long projectId);
+
     Optional<Node> findByIdAndProjectId(Long id, Long projectId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)

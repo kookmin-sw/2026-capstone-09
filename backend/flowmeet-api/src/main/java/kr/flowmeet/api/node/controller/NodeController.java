@@ -13,8 +13,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import kr.flowmeet.api.common.dto.CommonResponse;
 import kr.flowmeet.api.node.dto.request.CreateNodeRequest;
-import kr.flowmeet.api.node.dto.request.UpdateNodeRequest;
+import kr.flowmeet.api.node.dto.request.UpdateNodeDescriptionRequest;
+import kr.flowmeet.api.node.dto.request.UpdateNodeKanbanRequest;
+import kr.flowmeet.api.node.dto.request.UpdateNodeNoteRequest;
 import kr.flowmeet.api.node.dto.request.UpdateNodeStatusRequest;
+import kr.flowmeet.api.node.dto.request.UpdateNodeTitleRequest;
 import kr.flowmeet.api.node.dto.response.GetFlowchartResponse;
 import kr.flowmeet.api.node.dto.response.GetKanbanResponse;
 import kr.flowmeet.api.node.dto.response.GetNodeListResponse;
@@ -59,15 +62,39 @@ public class NodeController implements NodeApi {
     }
 
     @Override
-    @PatchMapping("/nodes/{nodeId}")
-    public CommonResponse<?> updateNode(
+    @PatchMapping("/nodes/{nodeId}/title")
+    public CommonResponse<?> updateNodeTitle(
             @UserId Long userId,
             @PathVariable Long projectId,
             @PathVariable Long nodeId,
-            @Valid @RequestBody UpdateNodeRequest request
+            @Valid @RequestBody UpdateNodeTitleRequest request
     ) {
-        nodeFacade.updateNode(userId, projectId, nodeId, request);
-        return CommonResponse.ok(NodeSuccessCode.UPDATE_NODE);
+        nodeFacade.updateNodeTitle(userId, projectId, nodeId, request.title());
+        return CommonResponse.ok(NodeSuccessCode.UPDATE_NODE_TITLE);
+    }
+
+    @Override
+    @PatchMapping("/nodes/{nodeId}/description")
+    public CommonResponse<?> updateNodeDescription(
+            @UserId Long userId,
+            @PathVariable Long projectId,
+            @PathVariable Long nodeId,
+            @Valid @RequestBody UpdateNodeDescriptionRequest request
+    ) {
+        nodeFacade.updateNodeDescription(userId, projectId, nodeId, request.description());
+        return CommonResponse.ok(NodeSuccessCode.UPDATE_NODE_DESCRIPTION);
+    }
+
+    @Override
+    @PatchMapping("/nodes/{nodeId}/note")
+    public CommonResponse<?> updateNodeNote(
+            @UserId Long userId,
+            @PathVariable Long projectId,
+            @PathVariable Long nodeId,
+            @Valid @RequestBody UpdateNodeNoteRequest request
+    ) {
+        nodeFacade.updateNodeNote(userId, projectId, nodeId, request.noteContent());
+        return CommonResponse.ok(NodeSuccessCode.UPDATE_NODE_NOTE);
     }
 
     @Override
@@ -98,6 +125,18 @@ public class NodeController implements NodeApi {
             @PathVariable Long projectId
     ) {
         return CommonResponse.ok(NodeSuccessCode.GET_KANBAN, nodeFacade.getKanban(userId, projectId));
+    }
+
+    @Override
+    @PatchMapping("/nodes/{nodeId}/kanban")
+    public CommonResponse<?> updateNodeKanban(
+            @UserId Long userId,
+            @PathVariable Long projectId,
+            @PathVariable Long nodeId,
+            @Valid @RequestBody UpdateNodeKanbanRequest request
+    ) {
+        nodeFacade.updateNodeKanban(userId, projectId, nodeId, request);
+        return CommonResponse.ok(NodeSuccessCode.UPDATE_NODE_KANBAN);
     }
 
     @Override

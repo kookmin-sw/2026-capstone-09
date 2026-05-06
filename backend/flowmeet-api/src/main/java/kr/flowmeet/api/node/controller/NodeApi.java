@@ -10,8 +10,11 @@ import kr.flowmeet.api.common.dto.CommonResponse;
 import kr.flowmeet.api.common.swagger.ApiErrorCode;
 import kr.flowmeet.api.common.swagger.ApiSuccessCode;
 import kr.flowmeet.api.node.dto.request.CreateNodeRequest;
-import kr.flowmeet.api.node.dto.request.UpdateNodeRequest;
+import kr.flowmeet.api.node.dto.request.UpdateNodeDescriptionRequest;
+import kr.flowmeet.api.node.dto.request.UpdateNodeKanbanRequest;
+import kr.flowmeet.api.node.dto.request.UpdateNodeNoteRequest;
 import kr.flowmeet.api.node.dto.request.UpdateNodeStatusRequest;
+import kr.flowmeet.api.node.dto.request.UpdateNodeTitleRequest;
 import kr.flowmeet.api.node.dto.response.GetFlowchartResponse;
 import kr.flowmeet.api.node.dto.response.GetKanbanResponse;
 import kr.flowmeet.api.node.dto.response.GetNodeListResponse;
@@ -47,14 +50,34 @@ public interface NodeApi {
             @Valid @RequestBody CreateNodeRequest request
     );
 
-    @Operation(summary = "노드 수정", description = "노드 제목, 설명, 노트, 상태, 정렬순서를 수정합니다.")
-    @ApiSuccessCode(code = NodeSuccessCode.class, name = "UPDATE_NODE")
-    @ApiErrorCode(code = NodeErrorCode.class, names = {"NODE_NOT_FOUND", "NODE_UPDATE_FORBIDDEN"})
-    CommonResponse<?> updateNode(
+    @Operation(summary = "노드 제목 수정", description = "노드의 제목만 수정합니다.")
+    @ApiSuccessCode(code = NodeSuccessCode.class, name = "UPDATE_NODE_TITLE")
+    @ApiErrorCode(code = NodeErrorCode.class, names = {"NODE_NOT_FOUND"})
+    CommonResponse<?> updateNodeTitle(
             @UserId Long userId,
             @PathVariable Long projectId,
             @PathVariable Long nodeId,
-            @Valid @RequestBody UpdateNodeRequest request
+            @Valid @RequestBody UpdateNodeTitleRequest request
+    );
+
+    @Operation(summary = "노드 설명 수정", description = "노드의 설명만 수정합니다.")
+    @ApiSuccessCode(code = NodeSuccessCode.class, name = "UPDATE_NODE_DESCRIPTION")
+    @ApiErrorCode(code = NodeErrorCode.class, names = {"NODE_NOT_FOUND"})
+    CommonResponse<?> updateNodeDescription(
+            @UserId Long userId,
+            @PathVariable Long projectId,
+            @PathVariable Long nodeId,
+            @Valid @RequestBody UpdateNodeDescriptionRequest request
+    );
+
+    @Operation(summary = "노드 노트 수정", description = "노드의 노트(마크다운)만 수정합니다.")
+    @ApiSuccessCode(code = NodeSuccessCode.class, name = "UPDATE_NODE_NOTE")
+    @ApiErrorCode(code = NodeErrorCode.class, names = {"NODE_NOT_FOUND"})
+    CommonResponse<?> updateNodeNote(
+            @UserId Long userId,
+            @PathVariable Long projectId,
+            @PathVariable Long nodeId,
+            @Valid @RequestBody UpdateNodeNoteRequest request
     );
 
     @Operation(summary = "노드 삭제", description = "노드 삭제. 하위 서브 노드도 연쇄 삭제됩니다.")
@@ -79,7 +102,17 @@ public interface NodeApi {
     @ApiSuccessCode(code = NodeSuccessCode.class, name = "GET_KANBAN")
     CommonResponse<GetKanbanResponse> getKanban(@UserId Long userId, @PathVariable Long projectId);
 
-    @Operation(summary = "칸반 상태 변경", description = "드래그 & 드롭으로 상태와 순서를 변경합니다.")
+    @Operation(summary = "칸반 카드 이동", description = "드래그 & 드롭으로 상태와 순서를 동시에 변경합니다.")
+    @ApiSuccessCode(code = NodeSuccessCode.class, name = "UPDATE_NODE_KANBAN")
+    @ApiErrorCode(code = NodeErrorCode.class, names = {"NODE_NOT_FOUND"})
+    CommonResponse<?> updateNodeKanban(
+            @UserId Long userId,
+            @PathVariable Long projectId,
+            @PathVariable Long nodeId,
+            @Valid @RequestBody UpdateNodeKanbanRequest request
+    );
+
+    @Operation(summary = "노드 상태 변경", description = "노드의 상태(WAITING/IN_PROGRESS/DONE)만 변경합니다.")
     @ApiSuccessCode(code = NodeSuccessCode.class, name = "UPDATE_NODE_STATUS")
     @ApiErrorCode(code = NodeErrorCode.class, names = {"NODE_NOT_FOUND"})
     CommonResponse<?> updateNodeStatus(

@@ -22,7 +22,7 @@ public class ProjectUrlFacade {
     public ProjectUrlResponse addUrl(final Long userId, final Long projectId, final ProjectUrlRequest request) {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
-        ProjectUrl projectUrl = projectUrlService.create(projectId, request.url());
+        ProjectUrl projectUrl = projectUrlService.create(projectId, request.toCommand());
 
         return ProjectUrlResponse.from(projectUrl);
     }
@@ -32,7 +32,7 @@ public class ProjectUrlFacade {
                                         final ProjectUrlRequest request) {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
-        ProjectUrl projectUrl = projectUrlService.updateUrl(projectId, urlId, request.url());
+        ProjectUrl projectUrl = projectUrlService.update(projectId, urlId, request.toCommand());
 
         return ProjectUrlResponse.from(projectUrl);
     }
