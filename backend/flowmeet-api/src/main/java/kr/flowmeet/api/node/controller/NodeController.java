@@ -26,6 +26,7 @@ import kr.flowmeet.api.node.dto.response.SearchNodeResponse;
 import kr.flowmeet.api.node.facade.NodeFacade;
 import kr.flowmeet.api.node.success.NodeSuccessCode;
 import kr.flowmeet.auth.annotation.UserId;
+import kr.flowmeet.domain.node.service.NodeSortType;
 
 @RestController
 @RequestMapping("/v1/projects/{projectId}")
@@ -113,7 +114,7 @@ public class NodeController implements NodeApi {
     public CommonResponse<GetNodeListResponse> getNodeList(
             @UserId Long userId,
             @PathVariable Long projectId,
-            @RequestParam(required = false) String sort
+            @RequestParam(defaultValue = "LATEST") NodeSortType sort
     ) {
         return CommonResponse.ok(NodeSuccessCode.GET_NODE_LIST, nodeFacade.getNodeList(userId, projectId, sort));
     }

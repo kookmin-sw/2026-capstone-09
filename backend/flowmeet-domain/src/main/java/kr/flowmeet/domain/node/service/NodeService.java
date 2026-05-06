@@ -42,6 +42,10 @@ public class NodeService {
         return nodeRepository.findAllByProjectId(projectId);
     }
 
+    public List<Node> findAllByProjectId(final Long projectId, final NodeSortType sort) {
+        return nodeRepository.findAllByProjectId(projectId, sort);
+    }
+
     public List<Node> findAllByIdsAndProjectId(final List<Long> nodeIds, final Long projectId) {
         List<Node> nodes = nodeRepository.findAllByIdInAndProjectId(nodeIds, projectId);
         if (nodes.size() != nodeIds.size()) {

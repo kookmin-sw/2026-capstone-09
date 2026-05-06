@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import kr.flowmeet.domain.common.BaseTimeEntity;
+import kr.flowmeet.domain.node.service.NodeSortType;
 import kr.flowmeet.domain.node.service.NodeValidator;
 import kr.flowmeet.domain.project.entity.ProjectMember;
 import kr.flowmeet.domain.project.entity.ProjectMemberRole;
@@ -169,18 +170,16 @@ public class NodeFacade {
     public GetNodeListResponse getNodeList(
         final Long userId,
         final Long projectId,
-        final String sort
+        final NodeSortType sort
     ) {
         projectPermissionValidator.validate(projectId, userId);
 
-        List<Node> nodes = nodeService.findAllByProjectId(projectId);
+        List<Node> nodes = nodeService.findAllByProjectId(projectId, sort);
 
         List<Long> nodeIds = getNodeIdFromNodes(nodes);
         Map<Long, List<NodeTag>> nodeTagMap = nodeTagService.findAllByNodeIdsAsMap(nodeIds);
         Map<Long, List<NodeAssignee>> assigneeMap = nodeAssigneeService.findAllByNodeIdsAsMap(nodeIds);
         Set<Long> meetingNodeIds = meetingService.findAllMeetingNodeIds(nodeIds);
-
-        //TODO: 정렬 QueryDSL로 처리하기
 
         return GetNodeListResponse.of(nodes, nodeTagMap, assigneeMap, meetingNodeIds);
     }

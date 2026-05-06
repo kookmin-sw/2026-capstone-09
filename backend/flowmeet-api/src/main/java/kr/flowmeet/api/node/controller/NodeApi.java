@@ -24,6 +24,7 @@ import kr.flowmeet.api.node.success.NodeSuccessCode;
 import kr.flowmeet.auth.annotation.UserId;
 import kr.flowmeet.domain.meeting.exception.MeetingErrorCode;
 import kr.flowmeet.domain.node.exception.NodeErrorCode;
+import kr.flowmeet.domain.node.service.NodeSortType;
 
 @Tag(name = "Node", description = "노드")
 public interface NodeApi {
@@ -90,12 +91,12 @@ public interface NodeApi {
             @PathVariable Long nodeId
     );
 
-    @Operation(summary = "리스트 뷰 조회", description = "노드를 리스트 형태로 조회합니다.")
+    @Operation(summary = "리스트 뷰 조회", description = "노드를 리스트 형태로 조회합니다. (LATEST: 최신순, NAME: 가나다순)")
     @ApiSuccessCode(code = NodeSuccessCode.class, name = "GET_NODE_LIST")
     CommonResponse<GetNodeListResponse> getNodeList(
             @UserId Long userId,
             @PathVariable Long projectId,
-            @RequestParam(required = false) String sort
+            @RequestParam(defaultValue = "LATEST") NodeSortType sort
     );
 
     @Operation(summary = "칸반 보드 조회", description = "상태별 그룹으로 노드를 조회합니다.")
