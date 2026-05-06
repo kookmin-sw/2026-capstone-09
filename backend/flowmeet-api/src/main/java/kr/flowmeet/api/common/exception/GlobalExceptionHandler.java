@@ -1,7 +1,9 @@
 package kr.flowmeet.api.common.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import java.nio.charset.StandardCharsets;
 import kr.flowmeet.api.common.dto.CommonResponse;
+import kr.flowmeet.api.common.util.SensitiveDataMasker;
 import kr.flowmeet.common.exception.CustomException;
 import kr.flowmeet.common.exception.ErrorCode;
 import kr.flowmeet.external.notification.ErrorNotifier;
@@ -14,11 +16,14 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.util.ContentCachingRequestWrapper;
 
 @Slf4j
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
+
+    private static final int REQUEST_BODY_LOG_LIMIT = 1500;
 
     private final ErrorNotifier errorNotifier;
 
@@ -46,6 +51,7 @@ public class GlobalExceptionHandler {
         errorNotifier.notifyError(
                 "[" + exception.getClass().getSimpleName() + "] (" + request.getMethod() + ") " + request.getRequestURI(),
                 exception.getMessage(),
+                extractRequestBody(request),
                 exception
         );
 
@@ -82,5 +88,29 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(status)
                 .body(CommonResponse.error(exception, status, message));
+    }
+
+    private String extractRequestBody(final HttpServletRequest request) {
+        ContentCachingRequestWrapper wrapper = unwrapCachingRequest(request);
+        if (wrapper == null) {
+            return null;
+        }
+        byte[] buf = wrapper.getContentAsByteArray();
+        if (buf.length == 0) {
+            return null;
+        }
+        String body = new String(buf, StandardCharsets.UTF_8);
+        String masked = SensitiveDataMasker.mask(body);
+        if (masked.length() > REQUEST_BODY_LOG_LIMIT) {
+            return masked.substring(0, REQUEST_BODY_LOG_LIMIT) + "...";
+        }
+        return masked;
+    }
+
+    private ContentCachingRequestWrapper unwrapCachingRequest(final HttpServletRequest request) {
+        if (request instanceof ContentCachingRequestWrapper wrapper) {
+            return wrapper;
+        }
+        return null;
     }
 }

@@ -27,6 +27,7 @@ public class DiscordErrorNotifier implements ErrorNotifier {
     public void notifyError(
             final String title,
             final String description,
+            final String requestBody,
             final Throwable throwable
     ) {
         try {
@@ -36,7 +37,7 @@ public class DiscordErrorNotifier implements ErrorNotifier {
                 return;
             }
 
-            MessageEmbed embed = buildEmbed(title, description, throwable);
+            MessageEmbed embed = buildEmbed(title, description, requestBody, throwable);
             channel.sendMessageEmbeds(embed).queue(
                     success -> {},
                     failure -> log.error("[DiscordErrorNotifier] send failed", failure)
@@ -49,6 +50,7 @@ public class DiscordErrorNotifier implements ErrorNotifier {
     private MessageEmbed buildEmbed(
             final String title,
             final String description,
+            final String requestBody,
             final Throwable throwable
     ) {
         EmbedBuilder embed = new EmbedBuilder()
@@ -62,6 +64,13 @@ public class DiscordErrorNotifier implements ErrorNotifier {
 
         if (throwable != null) {
             embed.addField("Exception", truncate(throwable.getClass().getName(), MessageEmbed.VALUE_MAX_LENGTH), false);
+        }
+
+        if (requestBody != null && !requestBody.isBlank()) {
+            embed.addField("Request Body", asCodeBlock(requestBody), false);
+        }
+
+        if (throwable != null) {
             embed.addField("Stack Trace", asCodeBlock(formatStackTrace(throwable)), false);
         }
 
