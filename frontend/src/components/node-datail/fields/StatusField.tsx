@@ -37,8 +37,14 @@ export function StatusField({ projectId, nodeId, status, onUpdate }: StatusField
       await privateApi.node.updateNodeStatus(projectId, nodeId, { status: newStatus });
     } catch (err) {
       if (previous) onUpdate(previous);
-      const message = (err as { message?: string })?.message ?? '상태 업데이트에 실패했습니다.';
-      toast({ content: message, variant: 'negative', placement: 'bottom-right' });
+      const message =
+        (err as { error?: { message?: string } })?.error?.message ??
+        '상태 업데이트에 실패했습니다.';
+
+      // const message = '문제가 발생했어요. 다시 시도해 주세요.';
+
+      // 일단 중앙 상단... 인데 아진짜중앙상단괜찮나
+      toast({ content: message, variant: 'negative', placement: 'top-center' });
     }
   };
 

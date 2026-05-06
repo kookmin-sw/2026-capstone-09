@@ -22,7 +22,7 @@ export function DescriptionField({
     const previous = description ?? '';
     onUpdate(text);
     try {
-      await privateApi.node.updateNode(projectId, nodeId, { description: text });
+      await privateApi.node.updateNodeDescription(projectId, nodeId, { description: text });
     } catch {
       onUpdate(previous);
     }

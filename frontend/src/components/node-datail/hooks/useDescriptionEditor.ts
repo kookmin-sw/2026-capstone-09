@@ -32,7 +32,10 @@ export function useDescriptionEditor(
           name: 'preventEnterRevertOnEscape',
           addKeyboardShortcuts() {
             return {
-              Enter: () => true,
+              Enter: ({ editor }) => {
+                editor.view.dom.blur();
+                return true;
+              },
               Escape: ({ editor }) => {
                 editor.commands.setContent(descriptionRef.current ?? '');
                 editor.commands.blur();

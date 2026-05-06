@@ -806,35 +806,14 @@ export interface GetNotificationSettingResponse {
   emailEnabled?: boolean;
 }
 
-/** 노드 수정 요청 (변경할 필드만 전달) */
-export interface UpdateNodeRequest {
+/** 노드 제목 수정 요청 */
+export interface UpdateNodeTitleRequest {
   /**
    * 변경할 제목
+   * @minLength 1
    * @example "로그인 화면 기획 (v2)"
    */
-  title?: string;
-  /**
-   * 변경할 설명
-   * @example "OAuth2 로그인 플로우 정리 및 와이어프레임 첨부"
-   */
-  description?: string;
-  /**
-   * 변경할 노트 내용(마크다운)
-   * @example "## 로그인 시나리오
-   * - Google OAuth ..."
-   */
-  noteContent?: string;
-  /**
-   * 변경할 노드 상태
-   * @example "IN_PROGRESS"
-   */
-  status?: "WAITING" | "IN_PROGRESS" | "DONE";
-  /**
-   * 칸반 내 정렬 순서
-   * @format int32
-   * @example 1024
-   */
-  sortOrder?: number;
+  title: string;
 }
 
 /** 노드 상태 변경 요청 */
@@ -844,6 +823,16 @@ export interface UpdateNodeStatusRequest {
    * @example "IN_PROGRESS"
    */
   status: "WAITING" | "IN_PROGRESS" | "DONE";
+}
+
+/** 노드 노트 수정 요청 */
+export interface UpdateNodeNoteRequest {
+  /**
+   * 변경할 노트 내용(마크다운)
+   * @example "## 로그인 시나리오
+   * - Google OAuth ..."
+   */
+  noteContent?: string;
 }
 
 /** 칸반 카드 이동(드래그 앤 드롭) 요청 */
@@ -859,6 +848,15 @@ export interface UpdateNodeKanbanRequest {
    * @example 1024
    */
   sortOrder: number;
+}
+
+/** 노드 설명 수정 요청 */
+export interface UpdateNodeDescriptionRequest {
+  /**
+   * 변경할 설명
+   * @example "OAuth2 로그인 플로우 정리 및 와이어프레임 첨부"
+   */
+  description?: string;
 }
 
 /** 프로젝트 멤버 권한 변경 요청 */
@@ -3264,6 +3262,312 @@ export class Api<
       }),
 
     /**
+     * @description 노드의 제목만 수정합니다.
+     *
+     * @tags Node
+     * @name UpdateNodeTitle
+     * @summary 노드 제목 수정
+     * @request PATCH:/v1/projects/{projectId}/nodes/{nodeId}/title
+     * @secure
+     */
+    updateNodeTitle: (
+      projectId: number,
+      nodeId: number,
+      data: UpdateNodeTitleRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "UPDATE_NODE_TITLE"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "노드 제목을 수정했어요."
+           */
+          message?: object;
+          /** 응답 데이터 */
+          data?: object;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/projects/${projectId}/nodes/${nodeId}/title`,
+        method: "PATCH",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description 노드의 상태(WAITING/IN_PROGRESS/DONE)만 변경합니다.
+     *
+     * @tags Node
+     * @name UpdateNodeStatus
+     * @summary 노드 상태 변경
+     * @request PATCH:/v1/projects/{projectId}/nodes/{nodeId}/status
+     * @secure
+     */
+    updateNodeStatus: (
+      projectId: number,
+      nodeId: number,
+      data: UpdateNodeStatusRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "UPDATE_NODE_STATUS"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "노드 상태를 변경했어요."
+           */
+          message?: object;
+          /** 응답 데이터 */
+          data?: object;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/projects/${projectId}/nodes/${nodeId}/status`,
+        method: "PATCH",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description 노드의 노트(마크다운)만 수정합니다.
+     *
+     * @tags Node
+     * @name UpdateNodeNote
+     * @summary 노드 노트 수정
+     * @request PATCH:/v1/projects/{projectId}/nodes/{nodeId}/note
+     * @secure
+     */
+    updateNodeNote: (
+      projectId: number,
+      nodeId: number,
+      data: UpdateNodeNoteRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "UPDATE_NODE_NOTE"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "노드 노트를 수정했어요."
+           */
+          message?: object;
+          /** 응답 데이터 */
+          data?: object;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/projects/${projectId}/nodes/${nodeId}/note`,
+        method: "PATCH",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description 드래그 & 드롭으로 상태와 순서를 동시에 변경합니다.
+     *
+     * @tags Node
+     * @name UpdateNodeKanban
+     * @summary 칸반 카드 이동
+     * @request PATCH:/v1/projects/{projectId}/nodes/{nodeId}/kanban
+     * @secure
+     */
+    updateNodeKanban: (
+      projectId: number,
+      nodeId: number,
+      data: UpdateNodeKanbanRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "UPDATE_NODE_KANBAN"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "칸반 카드를 옮겼어요."
+           */
+          message?: object;
+          /** 응답 데이터 */
+          data?: object;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/projects/${projectId}/nodes/${nodeId}/kanban`,
+        method: "PATCH",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description 노드의 설명만 수정합니다.
+     *
+     * @tags Node
+     * @name UpdateNodeDescription
+     * @summary 노드 설명 수정
+     * @request PATCH:/v1/projects/{projectId}/nodes/{nodeId}/description
+     * @secure
+     */
+    updateNodeDescription: (
+      projectId: number,
+      nodeId: number,
+      data: UpdateNodeDescriptionRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "UPDATE_NODE_DESCRIPTION"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "노드 설명을 수정했어요."
+           */
+          message?: object;
+          /** 응답 데이터 */
+          data?: object;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/projects/${projectId}/nodes/${nodeId}/description`,
+        method: "PATCH",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description 노드 제목, 키워드로 검색합니다.
+     *
+     * @tags Node
+     * @name Search
+     * @summary 프로젝트 내 검색
+     * @request GET:/v1/projects/{projectId}/search
+     * @secure
+     */
+    search: (
+      projectId: number,
+      query: {
+        query: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "SEARCH"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "검색을 완료했어요."
+           */
+          message?: object;
+          /** 노드 검색 응답 */
+          data?: SearchNodeResponse;
+        },
+        any
+      >({
+        path: `/v1/projects/${projectId}/search`,
+        method: "GET",
+        query: query,
+        secure: true,
+        ...params,
+      }),
+
+    /**
      * @description 노드 클릭 시 사이드바 상세 정보를 조회합니다.
      *
      * @tags Node
@@ -3353,208 +3657,6 @@ export class Api<
       >({
         path: `/v1/projects/${projectId}/nodes/${nodeId}`,
         method: "DELETE",
-        secure: true,
-        ...params,
-      }),
-
-    /**
-     * @description 노드 제목, 설명, 노트, 상태, 정렬순서를 수정합니다.
-     *
-     * @tags Node
-     * @name UpdateNode
-     * @summary 노드 수정
-     * @request PATCH:/v1/projects/{projectId}/nodes/{nodeId}
-     * @secure
-     */
-    updateNode: (
-      projectId: number,
-      nodeId: number,
-      data: UpdateNodeRequest,
-      params: RequestParams = {},
-    ) =>
-      this.request<
-        {
-          /**
-           * HTTP 상태 코드
-           * @format int32
-           * @example 200
-           */
-          status?: object;
-          /**
-           * 응답 코드
-           * @example "UPDATE_NODE"
-           */
-          code?: object;
-          /**
-           * 응답 메시지
-           * @example "노드를 수정했어요."
-           */
-          message?: object;
-          /** 응답 데이터 */
-          data?: object;
-        },
-        {
-          /** @format int32 */
-          status?: number;
-          code?: string;
-          message?: string;
-          data?: object;
-        }
-      >({
-        path: `/v1/projects/${projectId}/nodes/${nodeId}`,
-        method: "PATCH",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        ...params,
-      }),
-
-    /**
-     * @description 노드의 상태(WAITING/IN_PROGRESS/DONE)만 변경합니다.
-     *
-     * @tags Node
-     * @name UpdateNodeStatus
-     * @summary 노드 상태 변경
-     * @request PATCH:/v1/projects/{projectId}/nodes/{nodeId}/status
-     * @secure
-     */
-    updateNodeStatus: (
-      projectId: number,
-      nodeId: number,
-      data: UpdateNodeStatusRequest,
-      params: RequestParams = {},
-    ) =>
-      this.request<
-        {
-          /**
-           * HTTP 상태 코드
-           * @format int32
-           * @example 200
-           */
-          status?: object;
-          /**
-           * 응답 코드
-           * @example "UPDATE_NODE_STATUS"
-           */
-          code?: object;
-          /**
-           * 응답 메시지
-           * @example "노드 상태를 변경했어요."
-           */
-          message?: object;
-          /** 응답 데이터 */
-          data?: object;
-        },
-        {
-          /** @format int32 */
-          status?: number;
-          code?: string;
-          message?: string;
-          data?: object;
-        }
-      >({
-        path: `/v1/projects/${projectId}/nodes/${nodeId}/status`,
-        method: "PATCH",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        ...params,
-      }),
-
-    /**
-     * @description 드래그 & 드롭으로 상태와 순서를 동시에 변경합니다.
-     *
-     * @tags Node
-     * @name UpdateNodeKanban
-     * @summary 칸반 카드 이동
-     * @request PATCH:/v1/projects/{projectId}/nodes/{nodeId}/kanban
-     * @secure
-     */
-    updateNodeKanban: (
-      projectId: number,
-      nodeId: number,
-      data: UpdateNodeKanbanRequest,
-      params: RequestParams = {},
-    ) =>
-      this.request<
-        {
-          /**
-           * HTTP 상태 코드
-           * @format int32
-           * @example 200
-           */
-          status?: object;
-          /**
-           * 응답 코드
-           * @example "UPDATE_NODE_KANBAN"
-           */
-          code?: object;
-          /**
-           * 응답 메시지
-           * @example "칸반 카드를 옮겼어요."
-           */
-          message?: object;
-          /** 응답 데이터 */
-          data?: object;
-        },
-        {
-          /** @format int32 */
-          status?: number;
-          code?: string;
-          message?: string;
-          data?: object;
-        }
-      >({
-        path: `/v1/projects/${projectId}/nodes/${nodeId}/kanban`,
-        method: "PATCH",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        ...params,
-      }),
-
-    /**
-     * @description 노드 제목, 키워드로 검색합니다.
-     *
-     * @tags Node
-     * @name Search
-     * @summary 프로젝트 내 검색
-     * @request GET:/v1/projects/{projectId}/search
-     * @secure
-     */
-    search: (
-      projectId: number,
-      query: {
-        query: string;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<
-        {
-          /**
-           * HTTP 상태 코드
-           * @format int32
-           * @example 200
-           */
-          status?: object;
-          /**
-           * 응답 코드
-           * @example "SEARCH"
-           */
-          code?: object;
-          /**
-           * 응답 메시지
-           * @example "검색을 완료했어요."
-           */
-          message?: object;
-          /** 노드 검색 응답 */
-          data?: SearchNodeResponse;
-        },
-        any
-      >({
-        path: `/v1/projects/${projectId}/search`,
-        method: "GET",
-        query: query,
         secure: true,
         ...params,
       }),
