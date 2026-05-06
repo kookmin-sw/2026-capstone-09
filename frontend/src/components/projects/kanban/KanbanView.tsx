@@ -9,7 +9,7 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 
 import { privateApi } from '@/api';
@@ -36,6 +36,12 @@ export function KanbanView({ projectId }: KanbanViewProps) {
     DONE: [],
   });
   const [sidebarNodeId, setSidebarNodeId] = useState<number | null>(null);
+
+  const groupedNodesRef = useRef(groupedNodes);
+
+  useEffect(() => {
+    groupedNodesRef.current = groupedNodes;
+  }, [groupedNodes]);
 
   // 8px 이상 움직였을 때만 드래그 시작
   const sensors = useSensors(
@@ -177,12 +183,13 @@ export function KanbanView({ projectId }: KanbanViewProps) {
       }
 
       const nodeId = Number(active.id);
-      const targetStatus = findNodeStatus(nodeId, groupedNodes);
+      const currentNodes = groupedNodesRef.current;
+      const targetStatus = findNodeStatus(nodeId, currentNodes);
 
       if (!targetStatus) return;
 
       try {
-        const nodes = groupedNodes[targetStatus];
+        const nodes = currentNodes[targetStatus];
         const nodeIndex = nodes.findIndex((n) => n.nodeId === nodeId);
 
         // sortOrder 계산
@@ -217,7 +224,7 @@ export function KanbanView({ projectId }: KanbanViewProps) {
         await loadKanbanData();
       }
     },
-    [findNodeStatus, groupedNodes, loadKanbanData, projectId, toast]
+    [findNodeStatus, loadKanbanData, projectId, toast]
   );
 
   if (loading) {
