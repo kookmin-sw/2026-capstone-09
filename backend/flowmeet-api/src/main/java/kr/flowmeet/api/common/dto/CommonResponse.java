@@ -18,6 +18,7 @@ public record CommonResponse<T>(
 ) {
     private static final String SUCCESS_CODE = "OK";
     private static final String SUCCESS_MESSAGE = "요청에 성공했습니다.";
+    private static final String DEFAULT_ERROR_MESSAGE = "오류가 발생했어요. 잠시 후 다시 시도해 주세요.";
 
     public static CommonResponse<?> ok() {
         return ok(null);
@@ -44,7 +45,7 @@ public record CommonResponse<T>(
     }
 
     public static CommonResponse<?> error(final Exception exception, final HttpStatus httpStatus) {
-        return error(exception, httpStatus, exception.getMessage());
+        return error(exception, httpStatus, DEFAULT_ERROR_MESSAGE);
     }
 
     public static CommonResponse<?> error(final Exception exception) {

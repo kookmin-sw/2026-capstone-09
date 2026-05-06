@@ -23,3 +23,9 @@ google:
     client-secret: ${OAUTH2_GOOGLE_CLIENT_SECRET:}
     calendar-id: ${GOOGLE_CALENDAR_ID:primary}
     timezone: ${GOOGLE_MEET_TIMEZONE:Asia/Seoul}
+
+discord:
+  error-notifier:
+    enabled: ${DISCORD_ERROR_NOTIFIER_ENABLED:false}
+    bot-token: ${DISCORD_BOT_TOKEN:}
+    channel-id: ${DISCORD_ERROR_CHANNEL_ID:}
