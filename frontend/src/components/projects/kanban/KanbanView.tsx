@@ -24,14 +24,7 @@ interface KanbanViewProps {
   projectId: number;
 }
 
-const KANBAN_COLUMNS: Array<{
-  id: NodeStatusType;
-  borderColor: string;
-}> = [
-  { id: 'WAITING', borderColor: 'border-t-4 border-t-neutral-400' },
-  { id: 'IN_PROGRESS', borderColor: 'border-t-4 border-t-orange-500' },
-  { id: 'DONE', borderColor: 'border-t-4 border-t-green-500' },
-];
+const KANBAN_STATUSES: NodeStatusType[] = ['WAITING', 'IN_PROGRESS', 'DONE'];
 
 export function KanbanView({ projectId }: KanbanViewProps) {
   const toast = usePositionedToast();
@@ -226,12 +219,11 @@ export function KanbanView({ projectId }: KanbanViewProps) {
     <DndContext sensors={sensors} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
       <div className="flex-1 h-full w-full p-10 bg-surface-canvas">
         <div className="flex gap-2.5 h-full">
-          {KANBAN_COLUMNS.map((column) => (
+          {KANBAN_STATUSES.map((status) => (
             <KanbanColumn
-              key={column.id}
-              status={column.id}
-              nodes={groupedNodes[column.id]}
-              borderColor={column.borderColor}
+              key={status}
+              status={status}
+              nodes={groupedNodes[status]}
               onNodeDoubleClick={handleNodeDoubleClick}
             />
           ))}

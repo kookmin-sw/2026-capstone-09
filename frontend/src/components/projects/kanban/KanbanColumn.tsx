@@ -1,6 +1,7 @@
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { ContentBadge, ThemeColorsToken, Typography } from '@wanteddev/wds';
+import clsx from 'clsx';
 
 import { KanbanItem } from '@/api/Api';
 import { NodeStatusType } from '@/constants/nodeStatus';
@@ -11,11 +12,10 @@ import { NodeCard } from './NodeCard';
 interface KanbanColumnProps {
   status: NodeStatusType;
   nodes: KanbanItem[];
-  borderColor: string;
   onNodeDoubleClick?: (nodeId: number) => void;
 }
 
-export function KanbanColumn({ status, nodes, borderColor, onNodeDoubleClick }: KanbanColumnProps) {
+export function KanbanColumn({ status, nodes, onNodeDoubleClick }: KanbanColumnProps) {
   const { setNodeRef } = useDroppable({
     id: status,
   });
@@ -25,7 +25,14 @@ export function KanbanColumn({ status, nodes, borderColor, onNodeDoubleClick }: 
 
   return (
     <div className="flex flex-col flex-1 min-w-0 h-full">
-      <div className={`flex-1 min-h-0 bg-line-normal-alternative rounded-xl flex flex-col ${borderColor}`}>
+      <div
+        className={clsx(
+          'flex-1 min-h-0 bg-line-normal-alternative rounded-xl flex flex-col',
+          status === 'WAITING' && 'border-t-4 border-t-neutral-400',
+          status === 'IN_PROGRESS' && 'border-t-4 border-t-orange-500',
+          status === 'DONE' && 'border-t-4 border-t-green-500'
+        )}
+      >
         <div className="pt-6 pr-6 pl-3">
           <ContentBadge
             size="medium"
