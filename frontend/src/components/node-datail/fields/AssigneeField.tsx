@@ -3,8 +3,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Avatar, Typography } from '@wanteddev/wds';
 import { IconClose } from '@wanteddev/wds-icon';
-import { AssigneeItem, ProjectMemberInfo } from '@/api/Api';
+
 import { privateApi } from '@/api';
+import { AssigneeItem, ProjectMemberInfo } from '@/api/Api';
+import { usePositionedToast } from '@/components/commons/custom-toast/usePositionedToast';
 
 interface AssigneeFieldProps {
   projectId: number;
@@ -24,6 +26,7 @@ export function AssigneeField({
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [members, setMembers] = useState<ProjectMemberInfo[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
+  const toast = usePositionedToast();
 
   useEffect(() => {
     if (!isPickerOpen) return;
@@ -34,13 +37,18 @@ export function AssigneeField({
     return () => document.removeEventListener('mousedown', handleMouseDown);
   }, [isPickerOpen]);
 
+  const showErrorToast = (err: unknown, fallback: string) => {
+    const message = (err as { error?: { message?: string } })?.error?.message ?? fallback;
+    toast({ content: message, variant: 'negative', placement: 'top-center' });
+  };
+
   const openPicker = async () => {
     if (members.length === 0) {
       try {
         const res = await privateApi.projectMember.getAllMembers(projectId);
         setMembers(res.data.data?.members ?? []);
-      } catch {
-        // TODO: 멤버 목록 로딩 실패 처리
+      } catch (err) {
+        showErrorToast(err, '멤버 목록을 불러오지 못했어요.');
       }
     }
     setIsPickerOpen(true);
@@ -57,9 +65,9 @@ export function AssigneeField({
     onAdd(newAssignee);
     try {
       await privateApi.nodeAssignee.createAssignee(projectId, nodeId, { userId: member.userId });
-    } catch {
-      // TODO: 에러 토스트 알림 추가 필요
+    } catch (err) {
       onRemove(member.userId);
+      showErrorToast(err, '담당자 추가에 실패했어요.');
     }
   };
 
@@ -67,12 +75,10 @@ export function AssigneeField({
     const removedAssignee = assignees.find((a) => a.userId === userId);
     onRemove(userId);
     try {
-      // TODO: API의 deleteAssignee 파라미터가 assigneeId인데 AssigneeItem에는 userId만 존재함
-      // assigneeId가 userId와 동일한지, 별도 ID인지 백엔드 확인 필요
       await privateApi.nodeAssignee.deleteAssignee(projectId, nodeId, userId);
-    } catch {
-      // TODO: 에러 토스트 알림 추가 필요
+    } catch (err) {
       if (removedAssignee) onAdd(removedAssignee);
+      showErrorToast(err, '담당자 제거에 실패했어요.');
     }
   };
 
@@ -82,7 +88,9 @@ export function AssigneeField({
   return (
     <div ref={containerRef} className="relative w-full">
       <div
-        onClick={() => { if (!isPickerOpen) void openPicker(); }}
+        onClick={() => {
+          if (!isPickerOpen) void openPicker();
+        }}
         className={`flex w-full cursor-text flex-wrap items-center gap-2.5 rounded-t-sm ${isPickerOpen ? 'bg-line-normal-alternative border-line-solid-normal border border-b-0 p-2.5' : ''}`}
       >
         {assignees.length === 0 && (
