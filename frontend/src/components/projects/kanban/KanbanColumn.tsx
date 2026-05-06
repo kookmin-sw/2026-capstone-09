@@ -6,6 +6,7 @@ import clsx from 'clsx';
 import { KanbanItem } from '@/api/Api';
 import { NodeStatusType } from '@/constants/nodeStatus';
 import { getNodeStatusColor, getNodeStatusIcon, getNodeStatusLabel } from '@/utils/getNodeStatus';
+import { formatDate } from '@/utils/nodeUtils';
 
 import { NodeCard } from './NodeCard';
 
@@ -55,7 +56,7 @@ export function KanbanColumn({ status, nodes, onNodeDoubleClick }: KanbanColumnP
                 key={node.nodeId}
                 nodeId={node.nodeId}
                 nodeNumber={node.number || ''}
-                date=""
+                date={node.updatedAt ? formatDate(node.updatedAt) : ''}
                 title={node.title || '제목 없음'}
                 tags={node.tags?.map((tag) => ({
                   tagId: tag.tagId ?? 0,
