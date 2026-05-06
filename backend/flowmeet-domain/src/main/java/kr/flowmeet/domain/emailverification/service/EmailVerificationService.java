@@ -67,10 +67,6 @@ public class EmailVerificationService {
                 .findTopByUserIdAndEmailAndVerifiedAtIsNotNullOrderByCreatedAtDesc(userId, email)
                 .orElseThrow(() -> new BusinessException(EmailVerificationErrorCode.EMAIL_VERIFICATION_REQUIRED));
 
-        if (verification.isExpired()) {
-            throw new BusinessException(EmailVerificationErrorCode.EMAIL_VERIFICATION_CODE_EXPIRED);
-        }
-
         emailVerificationRepository.deleteAllByUserIdAndEmail(userId, email);
     }
 
