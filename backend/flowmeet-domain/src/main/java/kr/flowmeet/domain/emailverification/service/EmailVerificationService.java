@@ -3,10 +3,12 @@ package kr.flowmeet.domain.emailverification.service;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import kr.flowmeet.domain.common.exception.BusinessException;
 import kr.flowmeet.domain.emailverification.entity.EmailVerification;
+import kr.flowmeet.domain.emailverification.event.EmailVerificationIssuedEvent;
 import kr.flowmeet.domain.emailverification.exception.EmailVerificationErrorCode;
 import kr.flowmeet.domain.emailverification.repository.EmailVerificationRepository;
 
@@ -22,6 +24,7 @@ public class EmailVerificationService {
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private final EmailVerificationRepository emailVerificationRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public EmailVerification issueCode(final Long userId, final String email) {
@@ -34,7 +37,11 @@ public class EmailVerificationService {
                 .expiresAt(LocalDateTime.now().plusMinutes(EXPIRATION_MINUTES))
                 .build();
 
-        return emailVerificationRepository.save(verification);
+        EmailVerification saved = emailVerificationRepository.save(verification);
+
+        eventPublisher.publishEvent(EmailVerificationIssuedEvent.of(saved.getEmail(), saved.getCode()));
+
+        return saved;
     }
 
     @Transactional

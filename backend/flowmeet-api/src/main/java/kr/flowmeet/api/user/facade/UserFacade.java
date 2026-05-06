@@ -1,6 +1,5 @@
 package kr.flowmeet.api.user.facade;
 
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,27 +10,21 @@ import kr.flowmeet.api.user.dto.request.UpdateUserRequest;
 import kr.flowmeet.api.user.dto.request.VerifyEmailRequest;
 import kr.flowmeet.api.user.dto.response.GetUserResponse;
 import kr.flowmeet.api.user.dto.response.UpdateUserResponse;
-import kr.flowmeet.domain.emailverification.entity.EmailVerification;
 import kr.flowmeet.domain.emailverification.service.EmailVerificationService;
 import kr.flowmeet.domain.file.entity.FileDomainType;
 import kr.flowmeet.domain.project.service.ProjectMemberService;
 import kr.flowmeet.domain.user.entity.User;
 import kr.flowmeet.domain.user.service.UserService;
-import kr.flowmeet.external.email.EmailSender;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class UserFacade {
 
-    private static final String EMAIL_VERIFICATION_TEMPLATE = "email/email-verification";
-    private static final String EMAIL_VERIFICATION_SUBJECT = "[FlowMeet] 이메일 인증 코드";
-
     private final UserService userService;
     private final EmailVerificationService emailVerificationService;
     private final ProjectMemberService projectMemberService;
     private final ImageUploader imageUploader;
-    private final EmailSender emailSender;
 
     public GetUserResponse getMe(final Long userId) {
         User user = userService.findById(userId);
@@ -80,17 +73,11 @@ public class UserFacade {
         User user = userService.findById(userId);
         userService.validateEmailChangeable(request.email(), user.getEmail());
 
-        EmailVerification verification = emailVerificationService.issueCode(userId, request.email());
-        sendVerificationCodeEmail(request.email(), verification.getCode());
+        emailVerificationService.issueCode(userId, request.email());
     }
 
     @Transactional
     public void verifyEmail(final Long userId, final VerifyEmailRequest request) {
         emailVerificationService.verify(userId, request.email(), request.code());
-    }
-
-    private void sendVerificationCodeEmail(final String email, final String code) {
-        Map<String, Object> variables = Map.of("code", code);
-        emailSender.send(email, EMAIL_VERIFICATION_SUBJECT, EMAIL_VERIFICATION_TEMPLATE, variables);
     }
 }
