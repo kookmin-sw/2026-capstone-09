@@ -210,7 +210,7 @@ export function KanbanView({ projectId }: KanbanViewProps) {
           newSortOrder = ((prevNode?.sortOrder ?? 0) + (nextNode?.sortOrder ?? 0)) / 2;
         }
 
-        await privateApi.node.updateNodeStatus(projectId, nodeId, {
+        await privateApi.node.updateNodeKanban(projectId, nodeId, {
           status: targetStatus,
           sortOrder: newSortOrder,
         });
