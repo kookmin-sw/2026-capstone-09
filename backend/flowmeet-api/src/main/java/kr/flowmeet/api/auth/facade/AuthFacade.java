@@ -53,7 +53,7 @@ public class AuthFacade {
         SocialIdentity identity = new SocialIdentity(request.socialProvider(), userInfo.socialId());
 
         if (userService.existsBySocialIdentity(identity)) {
-            throw new AuthException(AuthErrorCode.AUTH_INVALID_SOCIAL_TOKEN);
+            throw new AuthException(AuthErrorCode.AUTH_SOCIAL_ID_DUPLICATED);
         }
 
         CreateUserCommand command = CreateUserCommand.of(
