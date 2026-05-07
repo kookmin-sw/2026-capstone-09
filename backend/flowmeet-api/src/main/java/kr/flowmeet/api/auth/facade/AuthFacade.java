@@ -33,7 +33,6 @@ public class AuthFacade {
     private final JwtProvider jwtProvider;
     private final SocialOAuthGateway oauthGateway;
 
-    @Transactional
     public LoginResult login(final SocialProvider provider, final SocialLoginRequest request) {
         SocialTokens tokens = oauthGateway.exchangeCode(provider, request.code(), request.redirectUri());
         SocialUserInfo userInfo = oauthGateway.fetchUserInfo(provider, tokens.accessToken());
@@ -43,7 +42,6 @@ public class AuthFacade {
                 .orElseGet(() -> handleNewUser(provider, tokens, userInfo));
     }
 
-    @Transactional
     public TokenResponse signup(final SignupRequest request) {
         SocialUserInfo userInfo = oauthGateway.fetchUserInfo(
                 request.socialProvider(), request.socialAccessToken());
@@ -88,9 +86,7 @@ public class AuthFacade {
     }
 
     private LoginResult handleExistingUser(final User user, final SocialTokens tokens) {
-        if (tokens.refreshToken() != null && !tokens.refreshToken().isBlank()) {
-            user.updateGoogleRefreshToken(tokens.refreshToken());
-        }
+        userService.updateGoogleRefreshToken(user.getId(), tokens.refreshToken());
         TokenResponse issued = issueTokens(user.getId(), user.getEmail(), user.getNickname());
         return new LoginResult.LoggedIn(issued);
     }

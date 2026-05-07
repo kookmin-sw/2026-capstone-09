@@ -75,6 +75,15 @@ public class UserService {
     }
 
     @Transactional
+    public void updateGoogleRefreshToken(final Long userId, final String refreshToken) {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            return;
+        }
+        User user = findById(userId);
+        user.updateGoogleRefreshToken(refreshToken);
+    }
+
+    @Transactional
     public User create(final CreateUserCommand command) {
         validateNicknameNotDuplicated(command.nickname());
         validateEmailNotDuplicated(command.email());
