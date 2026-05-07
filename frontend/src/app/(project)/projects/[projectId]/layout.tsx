@@ -18,15 +18,13 @@ interface ProjectDetailLayoutProps {
 const STORAGE_KEY = 'project-active-view';
 
 export default function ProjectDetailLayout({ children }: ProjectDetailLayoutProps) {
-  const [activeView, setActiveView] = useState<ProjectViewTypes>('node-flow');
-
-  useEffect(() => {
+  const [activeView, setActiveView] = useState<ProjectViewTypes>(() => {
+    if (typeof window === 'undefined') return 'node-flow';
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved && VALID_VIEWS.includes(saved as ProjectViewTypes)) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setActiveView(saved as ProjectViewTypes);
-    }
-  }, []);
+    return saved && VALID_VIEWS.includes(saved as ProjectViewTypes)
+      ? (saved as ProjectViewTypes)
+      : 'node-flow';
+  });
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, activeView);
@@ -36,7 +34,7 @@ export default function ProjectDetailLayout({ children }: ProjectDetailLayoutPro
 
   return (
     <ProjectDetailLayoutContext.Provider value={contextValue}>
-      <div className="flex h-full w-full flex-1 flex-col overflow-hidden">
+      <div className="flex h-full w-full flex-1 flex-col overflow-hidden" suppressHydrationWarning>
         <ProjectDetailHeader activeView={activeView} onlineUsers={EXAMPLE_USERS} onViewChange={setActiveView} />
         <ProjectDetailLinks />
         {children}
