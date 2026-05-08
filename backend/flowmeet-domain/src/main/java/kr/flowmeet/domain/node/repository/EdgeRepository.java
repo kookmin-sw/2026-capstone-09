@@ -19,8 +19,8 @@ public interface EdgeRepository extends JpaRepository<Edge, Long> {
     boolean existsByStartNodeIdAndEndNodeId(Long startNodeId, Long endNodeId);
 
     @Modifying(clearAutomatically = true)
-    @Query("UPDATE Edge e SET e.deletedAt = CURRENT_TIMESTAMP WHERE e.projectId = :projectId")
-    int softDeleteAllByProjectId(@Param("projectId") Long projectId);
+    @Query("DELETE FROM Edge e WHERE e.projectId = :projectId")
+    int deleteAllByProjectId(@Param("projectId") Long projectId);
 
     @Query("SELECT e FROM Edge e JOIN FETCH e.createdBy WHERE e.projectId = :projectId")
     List<Edge> findAllWithCreatedBy(@Param("projectId") Long projectId);

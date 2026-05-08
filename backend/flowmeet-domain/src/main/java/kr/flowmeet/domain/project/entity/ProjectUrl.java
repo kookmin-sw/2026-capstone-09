@@ -16,7 +16,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
-import kr.flowmeet.domain.common.BaseTimeEntity;
+import kr.flowmeet.domain.common.BaseSoftDeleteEntity;
 
 @Entity
 @Table(
@@ -29,7 +29,7 @@ import kr.flowmeet.domain.common.BaseTimeEntity;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLDelete(sql = "UPDATE project_urls SET deleted_at = CURRENT_TIMESTAMP WHERE project_url_id = ?")
 @SQLRestriction("deleted_at IS NULL")
-public class ProjectUrl extends BaseTimeEntity {
+public class ProjectUrl extends BaseSoftDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

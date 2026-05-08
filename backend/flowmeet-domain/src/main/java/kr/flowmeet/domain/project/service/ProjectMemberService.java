@@ -117,7 +117,7 @@ public class ProjectMemberService {
 
     @Transactional
     public void deleteAllByProjectId(final Long projectId) {
-        projectMemberRepository.softDeleteAllByProjectId(projectId);
+        projectMemberRepository.deleteAllByProjectId(projectId);
     }
 
     @Transactional

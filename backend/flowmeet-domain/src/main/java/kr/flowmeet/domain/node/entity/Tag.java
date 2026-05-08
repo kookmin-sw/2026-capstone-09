@@ -13,7 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import kr.flowmeet.domain.common.BaseTimeEntity;
+import kr.flowmeet.domain.common.BaseSoftDeleteEntity;
 import kr.flowmeet.domain.project.entity.Project;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -36,7 +36,7 @@ import org.hibernate.annotations.SQLRestriction;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLDelete(sql = "UPDATE tags SET deleted_at = CURRENT_TIMESTAMP WHERE tag_id = ?")
 @SQLRestriction("deleted_at IS NULL")
-public class Tag extends BaseTimeEntity {
+public class Tag extends BaseSoftDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

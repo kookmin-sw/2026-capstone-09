@@ -14,9 +14,14 @@ public interface TagRepository extends JpaRepository<Tag, Long> {
 
     Optional<Tag> findByIdAndProjectId(Long id, Long projectId);
 
-    boolean existsByProjectIdAndName(Long projectId, String name);
-
     boolean existsByIdAndProjectId(Long id, Long projectId);
+
+    @Query(value = "SELECT * FROM tags WHERE project_id = :projectId AND name = :name LIMIT 1", nativeQuery = true)
+    Optional<Tag> findByProjectIdAndNameIncludingDeleted(@Param("projectId") Long projectId, @Param("name") String name);
+
+    @Modifying(clearAutomatically = true)
+    @Query(value = "DELETE FROM tags WHERE tag_id = :tagId", nativeQuery = true)
+    void hardDeleteById(@Param("tagId") Long tagId);
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Tag t SET t.deletedAt = CURRENT_TIMESTAMP WHERE t.projectId = :projectId")
