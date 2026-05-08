@@ -114,7 +114,7 @@ public interface NodeApi {
             @Valid @RequestBody UpdateNodeKanbanRequest request
     );
 
-    @Operation(summary = "노드 상태 변경", description = "노드의 상태(WAITING/IN_PROGRESS/DONE)만 변경합니다.")
+    @Operation(summary = "노드 상태 변경", description = "노드의 상태(WAITING/IN_PROGRESS/ON_HOLD/DONE/CLOSED)만 변경합니다.")
     @ApiSuccessCode(code = NodeSuccessCode.class, name = "UPDATE_NODE_STATUS")
     @ApiErrorCode(code = NodeErrorCode.class, names = {"NODE_NOT_FOUND"})
     CommonResponse<?> updateNodeStatus(
