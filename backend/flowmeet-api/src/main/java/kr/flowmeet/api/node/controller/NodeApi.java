@@ -17,6 +17,7 @@ import kr.flowmeet.api.node.dto.request.UpdateNodeStatusRequest;
 import kr.flowmeet.api.node.dto.request.UpdateNodeTitleRequest;
 import kr.flowmeet.api.node.dto.response.GetFlowchartResponse;
 import kr.flowmeet.api.node.dto.response.GetKanbanResponse;
+import kr.flowmeet.api.node.dto.response.GetLinkedNodesResponse;
 import kr.flowmeet.api.node.dto.response.GetNodeListResponse;
 import kr.flowmeet.api.node.dto.response.GetNodeResponse;
 import kr.flowmeet.api.node.dto.response.SearchNodeResponse;
@@ -121,6 +122,15 @@ public interface NodeApi {
             @PathVariable Long projectId,
             @PathVariable Long nodeId,
             @Valid @RequestBody UpdateNodeStatusRequest request
+    );
+
+    @Operation(summary = "연결된 노드 조회", description = "노드와 연결선으로 이어진 상대 노드 목록을 조회합니다.")
+    @ApiSuccessCode(code = NodeSuccessCode.class, name = "GET_LINKED_NODES")
+    @ApiErrorCode(code = NodeErrorCode.class, names = {"NODE_NOT_FOUND"})
+    CommonResponse<GetLinkedNodesResponse> getLinkedNodes(
+            @UserId Long userId,
+            @PathVariable Long projectId,
+            @PathVariable Long nodeId
     );
 
     @Operation(summary = "프로젝트 내 검색", description = "노드 제목, 키워드로 검색합니다.")

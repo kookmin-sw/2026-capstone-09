@@ -18,6 +18,7 @@ import kr.flowmeet.api.node.dto.request.UpdateNodeKanbanRequest;
 import kr.flowmeet.api.node.dto.request.UpdateNodeStatusRequest;
 import kr.flowmeet.api.node.dto.response.GetFlowchartResponse;
 import kr.flowmeet.api.node.dto.response.GetKanbanResponse;
+import kr.flowmeet.api.node.dto.response.GetLinkedNodesResponse;
 import kr.flowmeet.api.node.dto.response.GetNodeListResponse;
 import kr.flowmeet.api.node.dto.response.GetNodeResponse;
 import kr.flowmeet.api.node.dto.response.SearchNodeResponse;
@@ -217,6 +218,19 @@ public class NodeFacade {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         nodeService.updateNodeStatus(projectId, nodeId, request.toCommand());
+    }
+
+    public GetLinkedNodesResponse getLinkedNodes(
+            final Long userId,
+            final Long projectId,
+            final Long nodeId
+    ) {
+        projectPermissionValidator.validate(projectId, userId);
+        nodeValidator.validateIsIn(nodeId, projectId);
+
+        List<Edge> edges = edgeService.findAllLinkedByNodeId(projectId, nodeId);
+
+        return GetLinkedNodesResponse.of(nodeId, edges);
     }
 
     public SearchNodeResponse search(final Long userId, final Long projectId, final String query) {

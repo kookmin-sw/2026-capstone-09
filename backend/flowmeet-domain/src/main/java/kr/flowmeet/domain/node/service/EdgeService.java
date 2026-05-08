@@ -26,6 +26,10 @@ public class EdgeService {
                 .orElseThrow(() -> new BusinessException(EdgeErrorCode.EDGE_NOT_FOUND));
     }
 
+    public List<Edge> findAllLinkedByNodeId(final Long projectId, final Long nodeId) {
+        return edgeRepository.findAllLinkedByNodeId(projectId, nodeId);
+    }
+
     @Transactional
     public Edge create(final Long projectId, final Long createdById, final CreateEdgeCommand command) {
         Long startNodeId = command.startNodeId();

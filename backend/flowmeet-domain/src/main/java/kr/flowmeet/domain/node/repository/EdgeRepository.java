@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import kr.flowmeet.domain.node.entity.Edge;
 
-public interface EdgeRepository extends JpaRepository<Edge, Long> {
+public interface EdgeRepository extends JpaRepository<Edge, Long>, EdgeRepositoryCustom {
 
     List<Edge> findAllByProjectId(Long projectId);
 

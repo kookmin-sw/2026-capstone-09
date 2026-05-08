@@ -20,6 +20,7 @@ import kr.flowmeet.api.node.dto.request.UpdateNodeStatusRequest;
 import kr.flowmeet.api.node.dto.request.UpdateNodeTitleRequest;
 import kr.flowmeet.api.node.dto.response.GetFlowchartResponse;
 import kr.flowmeet.api.node.dto.response.GetKanbanResponse;
+import kr.flowmeet.api.node.dto.response.GetLinkedNodesResponse;
 import kr.flowmeet.api.node.dto.response.GetNodeListResponse;
 import kr.flowmeet.api.node.dto.response.GetNodeResponse;
 import kr.flowmeet.api.node.dto.response.SearchNodeResponse;
@@ -150,6 +151,19 @@ public class NodeController implements NodeApi {
     ) {
         nodeFacade.updateNodeStatus(userId, projectId, nodeId, request);
         return CommonResponse.ok(NodeSuccessCode.UPDATE_NODE_STATUS);
+    }
+
+    @Override
+    @GetMapping("/nodes/{nodeId}/linked-nodes")
+    public CommonResponse<GetLinkedNodesResponse> getLinkedNodes(
+            @UserId Long userId,
+            @PathVariable Long projectId,
+            @PathVariable Long nodeId
+    ) {
+        return CommonResponse.ok(
+                NodeSuccessCode.GET_LINKED_NODES,
+                nodeFacade.getLinkedNodes(userId, projectId, nodeId)
+        );
     }
 
     @Override

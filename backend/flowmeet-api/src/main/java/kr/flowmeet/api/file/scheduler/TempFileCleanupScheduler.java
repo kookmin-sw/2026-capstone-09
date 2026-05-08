@@ -1,4 +1,4 @@
-package kr.flowmeet.api.scheduler;
+package kr.flowmeet.api.file.scheduler;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
