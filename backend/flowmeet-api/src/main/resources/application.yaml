@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: flowmeet
+  config:
+    import:
+      - classpath:config/domain.yaml
+      - classpath:config/auth.yaml
+      - classpath:config/external.yaml
+
+server:
+  port: 8080
+  shutdown: graceful
+
+logging:
+  level:
+    root: INFO
+    kr.flowmeet: DEBUG

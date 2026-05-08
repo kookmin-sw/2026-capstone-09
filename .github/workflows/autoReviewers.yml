@@ -1,0 +1,37 @@
+name: Review Assign
+
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set Reviewers Based on Author
+        id: set_reviewers
+        run: |
+          ACTOR="${{ github.actor }}"
+          REVIEWERS=""
+
+          case $ACTOR in
+            "sinji2102") REVIEWERS="pkm021118, chael-in" ;;
+            "pkm021118")  REVIEWERS="sinji2102, chael-in" ;;
+            "chael-in")  REVIEWERS="sinji2102, pkm021118" ;;
+
+            "tnals0924") REVIEWERS="wngktjd13" ;;
+            "wngktjd13") REVIEWERS="tnals0924" ;;
+
+            "ovepje2004") REVIEWERS="tnals0924, wngktjd13" ;;
+
+            # 리스트에 없는 사람이 PR을 올렸을 때
+            *) REVIEWERS="sinji2102, pkm021118, chael-in, tnals0924, wngktjd13" ;;
+          esac
+
+          echo "list=$REVIEWERS" >> $GITHUB_OUTPUT
+
+      - name: Review Assign Action
+        uses: hkusu/review-assign-action@v1
+        with:
+          assignees: ${{ github.actor }}
+          reviewers: ${{ steps.set_reviewers.outputs.list }}

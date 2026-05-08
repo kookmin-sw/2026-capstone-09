@@ -1,0 +1,34 @@
+apply plugin: 'org.springframework.boot'
+
+bootJar {
+    archiveFileName = 'flowmeet-api.jar'
+    archiveVersion = project.version
+}
+
+jar {
+    enabled = false
+}
+
+dependencies {
+    implementation project(':flowmeet-auth')
+    implementation project(':flowmeet-domain')
+    implementation project(':flowmeet-common')
+    implementation project(':flowmeet-external')
+
+    // Web
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // Thymeleaf (미사용, 추후 활용 예정)
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+
+    // Mail (미사용, 추후 활용 예정)
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    // H2 Console
+    implementation 'org.springframework.boot:spring-boot-h2console'
+
+    // DevTools
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+}
