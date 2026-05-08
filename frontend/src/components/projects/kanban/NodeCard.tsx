@@ -49,7 +49,7 @@ export function NodeCard({
     <div
       ref={setNodeRef}
       style={style}
-      className="self-stretch p-4 bg-white rounded-lg border border-neutral-200 flex flex-col cursor-pointer hover:shadow-md transition-shadow select-none"
+      className="self-stretch p-4 bg-white rounded-lg border border-neutral-200 flex flex-col cursor-pointer hover:shadow-sm transition-shadow select-none"
       onClick={onClick}
       onDoubleClick={onDoubleClick}
     >
