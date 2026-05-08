@@ -1,5 +1,5 @@
 -- =========================================================
--- V12__cleanup_soft_deleted_relation_rows.sql
+-- V13__cleanup_soft_deleted_relation_rows.sql
 -- 관계 테이블 hard delete 전환에 따른 기존 soft-deleted 행 정리
 -- =========================================================
 
