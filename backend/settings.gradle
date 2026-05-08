@@ -1,0 +1,4 @@
+rootProject.name = 'flowmeet-server'
+
+include 'flowmeet-api', 'flowmeet-auth', 'flowmeet-common',
+        'flowmeet-domain', 'flowmeet-external', 'flowmeet-global-utils'
