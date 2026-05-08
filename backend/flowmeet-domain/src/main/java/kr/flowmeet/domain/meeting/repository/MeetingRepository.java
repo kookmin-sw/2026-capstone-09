@@ -23,6 +23,9 @@ public interface MeetingRepository extends JpaRepository<Meeting, Long> {
     @Query("SELECT m FROM Meeting m JOIN FETCH m.node WHERE m.isPushEnabled = true AND m.reminderSent = false AND m.pushNotifyAt BETWEEN :from AND :now AND m.status = :status")
     List<Meeting> findPendingReminders(@Param("from") LocalDateTime from, @Param("now") LocalDateTime now, @Param("status") MeetingStatus status);
 
+    @Query("SELECT m FROM Meeting m WHERE m.status = :status AND m.startedAt <= :now")
+    List<Meeting> findAllByStatusAndStartedAtBefore(@Param("status") MeetingStatus status, @Param("now") LocalDateTime now);
+
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Meeting m SET m.reminderSent = true WHERE m.id IN :meetingIds")
     int markRemindersSent(@Param("meetingIds") List<Long> meetingIds);

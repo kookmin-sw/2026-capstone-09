@@ -59,6 +59,10 @@ public class MeetingService {
                 .collect(Collectors.toSet());
     }
 
+    public List<Meeting> findScheduledMeetingsToStart(final LocalDateTime now) {
+        return meetingRepository.findAllByStatusAndStartedAtBefore(MeetingStatus.SCHEDULED, now);
+    }
+
     public List<Meeting> findPendingReminders(final LocalDateTime now) {
         return meetingRepository.findPendingReminders(now.minusHours(1), now, MeetingStatus.SCHEDULED);
     }
