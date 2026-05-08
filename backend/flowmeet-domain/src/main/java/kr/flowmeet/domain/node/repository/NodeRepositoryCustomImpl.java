@@ -8,11 +8,21 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 import kr.flowmeet.domain.node.entity.Node;
+import kr.flowmeet.domain.node.service.NodeSortType;
 
 @RequiredArgsConstructor
 public class NodeRepositoryCustomImpl implements NodeRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
+
+    @Override
+    public List<Node> findAllByProjectId(final Long projectId, final NodeSortType sort) {
+        return queryFactory
+                .selectFrom(node)
+                .where(node.projectId.eq(projectId))
+                .orderBy(sort.toOrderSpecifier(), node.id.asc())
+                .fetch();
+    }
 
     @Override
     public List<Node> searchByQuery(final Long projectId, final String query) {
