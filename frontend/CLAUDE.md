@@ -6,7 +6,7 @@ App Router를 사용하는 Next.js 16 플로우 기반 기획 애플리케이션
 
 - **Framework**: Next.js 16.1.6 (App Router)
 - **React**: 19.2.3
-- **상태관리**: Tanstack-Query 사용 예정(현재 미사용)
+- **상태관리**: Tanstack-Query 5.100.9
 - **스타일링**: Tailwind CSS 4
 - **디자인 시스템**: @wanteddev/wds 3.4.6
 - **패키지 매니저**: pnpm 10.10.0

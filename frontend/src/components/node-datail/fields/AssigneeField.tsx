@@ -4,10 +4,10 @@ import { useRef, useState } from 'react';
 import { Avatar, Theme, Typography } from '@wanteddev/wds';
 import { IconClose } from '@wanteddev/wds-icon';
 
-import { privateApi } from '@/api';
 import { AssigneeItem, ProjectMemberInfo } from '@/api/Api';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import { useAddAssigneeMutation, useProjectMembersQuery, useRemoveAssigneeMutation } from '@/queries/member';
 
 interface AssigneeFieldProps {
   projectId: number;
@@ -25,25 +25,16 @@ export function AssigneeField({
   onRemove,
 }: AssigneeFieldProps) {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
-  const [members, setMembers] = useState<ProjectMemberInfo[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const showErrorToast = useErrorToast();
 
+  const { data: members = [] } = useProjectMembersQuery(projectId);
+  const { mutate: addAssignee } = useAddAssigneeMutation(projectId, nodeId);
+  const { mutate: removeAssignee } = useRemoveAssigneeMutation(projectId, nodeId);
+
   useClickOutside(containerRef, isPickerOpen, () => setIsPickerOpen(false));
 
-  const openPicker = async () => {
-    if (members.length === 0) {
-      try {
-        const res = await privateApi.projectMember.getAllMembers(projectId);
-        setMembers(res.data.data?.members ?? []);
-      } catch (err) {
-        showErrorToast(err, '멤버 목록을 불러오지 못했어요.');
-      }
-    }
-    setIsPickerOpen(true);
-  };
-
-  const handleAdd = async (member: ProjectMemberInfo) => {
+  const handleAdd = (member: ProjectMemberInfo) => {
     if (!member.userId) return;
     const newAssignee: AssigneeItem = {
       userId: member.userId,
@@ -52,23 +43,23 @@ export function AssigneeField({
       profileImageUrl: member.profileImageUrl,
     };
     onAdd(newAssignee);
-    try {
-      await privateApi.nodeAssignee.createAssignee(projectId, nodeId, { userId: member.userId });
-    } catch (err) {
-      onRemove(member.userId);
-      showErrorToast(err, '담당자 추가에 실패했어요.');
-    }
+    addAssignee(member.userId, {
+      onError: (err) => {
+        onRemove(member.userId!);
+        showErrorToast(err, '담당자 추가에 실패했어요.');
+      },
+    });
   };
 
-  const handleRemove = async (userId: number) => {
+  const handleRemove = (userId: number) => {
     const removedAssignee = assignees.find((a) => a.userId === userId);
     onRemove(userId);
-    try {
-      await privateApi.nodeAssignee.deleteAssignee(projectId, nodeId, userId);
-    } catch (err) {
-      if (removedAssignee) onAdd(removedAssignee);
-      showErrorToast(err, '담당자 제거에 실패했어요.');
-    }
+    removeAssignee(userId, {
+      onError: (err) => {
+        if (removedAssignee) onAdd(removedAssignee);
+        showErrorToast(err, '담당자 제거에 실패했어요.');
+      },
+    });
   };
 
   const assignedUserIds = new Set(assignees.map((a) => a.userId));
@@ -78,7 +69,7 @@ export function AssigneeField({
     <div ref={containerRef} className="relative w-full">
       <div
         onClick={() => {
-          if (!isPickerOpen) void openPicker();
+          if (!isPickerOpen) setIsPickerOpen(true);
         }}
         className={`flex w-full cursor-text flex-wrap items-center gap-2.5 rounded-t-sm ${isPickerOpen ? 'bg-line-normal-alternative border-line-solid-normal border border-b-0 p-2.5' : ''}`}
       >

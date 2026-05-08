@@ -3,10 +3,10 @@
 import { ContentBadge, ThemeColorsToken, Typography } from '@wanteddev/wds';
 import { useRef, useState } from 'react';
 
-import { privateApi } from '@/api';
 import { NodeStatusType, NODE_STATUS_INFO } from '@/constants/nodeStatus';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import { useUpdateNodeStatusMutation } from '@/queries/node';
 import { getNodeStatusColor, getNodeStatusIcon, getNodeStatusLabel } from '@/utils/getNodeStatus';
 
 interface StatusFieldProps {
@@ -20,19 +20,20 @@ export function StatusField({ projectId, nodeId, status, onUpdate }: StatusField
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const showErrorToast = useErrorToast();
+  const { mutate: updateStatus } = useUpdateNodeStatusMutation(projectId, nodeId);
 
   useClickOutside(containerRef, isOpen, () => setIsOpen(false));
 
-  const handleSelect = async (newStatus: NodeStatusType) => {
+  const handleSelect = (newStatus: NodeStatusType) => {
     setIsOpen(false);
     const previous = status;
     onUpdate(newStatus);
-    try {
-      await privateApi.node.updateNodeStatus(projectId, nodeId, { status: newStatus });
-    } catch (err) {
-      if (previous) onUpdate(previous);
-      showErrorToast(err, '상태 업데이트에 실패했어요.');
-    }
+    updateStatus(newStatus, {
+      onError: (err) => {
+        if (previous) onUpdate(previous);
+        showErrorToast(err, '상태 업데이트에 실패했어요.');
+      },
+    });
   };
 
   return (

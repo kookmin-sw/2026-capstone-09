@@ -12,14 +12,13 @@ import {
 } from '@wanteddev/wds-icon';
 import { useEffect } from 'react';
 
-import { privateApi } from '@/api';
 import { AssigneeItem, GetNodeResponse, TagItem } from '@/api/Api';
 import { GoogleMeetIcon } from '@/assets/svgs/GoogleMeetIcon';
 import { EXAMPLE_USERS } from '@/constants/exampleConstant';
 import { NodeStatusType } from '@/constants/nodeStatus';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { nodeKeys } from '@/queries/keys/nodeKeys';
-import { useNodeDetailQuery } from '@/queries/node';
+import { useNodeDetailQuery, useUpdateNodeTitleMutation } from '@/queries/node';
 import { formatDatetoString } from '@/utils/formatData';
 import { AssigneeField } from './fields/AssigneeField';
 import { DescriptionField } from './fields/DescriptionField';
@@ -60,15 +59,13 @@ export function NodeDetailLayout({
     );
   };
 
-  const handleTitleUpdate = async (title: string) => {
+  const { mutate: updateTitle } = useUpdateNodeTitleMutation(projectId, nodeId);
+
+  const handleTitleUpdate = (title: string) => {
     if (!nodeId || title === (nodeDetail?.title ?? '')) return;
-    const previous = nodeDetail?.title ?? '';
-    updateCache((prev) => ({ ...prev, title }));
-    try {
-      await privateApi.node.updateNodeTitle(projectId, nodeId, { title });
-    } catch {
-      updateCache((prev) => ({ ...prev, title: previous }));
-    }
+    updateTitle(title, {
+      onError: (err) => showErrorToast(err, '제목 수정에 실패했어요.'),
+    });
   };
 
   const titleEditor = useTitleEditor(nodeDetail?.title, handleTitleUpdate);

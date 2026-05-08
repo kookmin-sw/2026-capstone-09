@@ -4,11 +4,12 @@ import { ContentBadge, ThemeColorsToken, Typography } from '@wanteddev/wds';
 import { IconClose } from '@wanteddev/wds-icon';
 import { useRef, useState } from 'react';
 
-import { privateApi } from '@/api';
 import { TagItem } from '@/api/Api';
 import { ColorType } from '@/constants/badgeColor';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import { useAddNodeTagMutation, useRemoveNodeTagMutation } from '@/queries/tag';
+import { useProjectTagsQuery } from '@/queries/tag';
 import { getColorToken } from '@/utils/getBadgeColorInfo';
 
 interface TagFieldProps {
@@ -21,44 +22,35 @@ interface TagFieldProps {
 
 export function TagField({ projectId, nodeId, tags, onAdd, onRemove }: TagFieldProps) {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
-  const [allTags, setAllTags] = useState<TagItem[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const showErrorToast = useErrorToast();
 
+  const { data: allTags = [] } = useProjectTagsQuery(projectId);
+  const { mutate: addTag } = useAddNodeTagMutation(projectId, nodeId);
+  const { mutate: removeTag } = useRemoveNodeTagMutation(projectId, nodeId);
+
   useClickOutside(containerRef, isPickerOpen, () => setIsPickerOpen(false));
 
-  const openPicker = async () => {
-    if (allTags.length === 0) {
-      try {
-        const res = await privateApi.tag.getAllTags(projectId);
-        setAllTags(res.data.data?.tags ?? []);
-      } catch (err) {
-        showErrorToast(err, '태그 목록을 불러오지 못했어요.');
-      }
-    }
-    setIsPickerOpen(true);
-  };
-
-  const handleAdd = async (tag: TagItem) => {
+  const handleAdd = (tag: TagItem) => {
     if (!tag.tagId) return;
     onAdd(tag);
-    try {
-      await privateApi.tag.addNodeTag(projectId, nodeId, { tagId: tag.tagId });
-    } catch (err) {
-      onRemove(tag.tagId);
-      showErrorToast(err, '태그 추가에 실패했어요.');
-    }
+    addTag(tag.tagId, {
+      onError: (err) => {
+        onRemove(tag.tagId!);
+        showErrorToast(err, '태그 추가에 실패했어요.');
+      },
+    });
   };
 
-  const handleRemove = async (tagId: number) => {
+  const handleRemove = (tagId: number) => {
     const removedTag = tags.find((t) => t.tagId === tagId);
     onRemove(tagId);
-    try {
-      await privateApi.tag.removeNodeTag(projectId, nodeId, tagId);
-    } catch (err) {
-      if (removedTag) onAdd(removedTag);
-      showErrorToast(err, '태그 제거에 실패했어요.');
-    }
+    removeTag(tagId, {
+      onError: (err) => {
+        if (removedTag) onAdd(removedTag);
+        showErrorToast(err, '태그 제거에 실패했어요.');
+      },
+    });
   };
 
   const assignedTagIds = new Set(tags.map((t) => t.tagId));
@@ -68,7 +60,7 @@ export function TagField({ projectId, nodeId, tags, onAdd, onRemove }: TagFieldP
     <div ref={containerRef} className="relative w-full">
       <div
         onClick={() => {
-          if (!isPickerOpen) void openPicker();
+          if (!isPickerOpen) setIsPickerOpen(true);
         }}
         className={`flex w-full cursor-text flex-wrap items-center gap-2.5 rounded-t-sm ${isPickerOpen ? 'bg-line-normal-alternative border-line-solid-normal border border-b-0 p-2.5' : ''}`}
       >
