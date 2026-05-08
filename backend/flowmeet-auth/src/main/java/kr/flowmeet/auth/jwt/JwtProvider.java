@@ -4,6 +4,9 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Optional;
 import kr.flowmeet.auth.exception.AuthErrorCode;
 import kr.flowmeet.auth.exception.AuthException;
@@ -26,14 +29,20 @@ public class JwtProvider {
 
     private final JwtProperties jwtProperties;
 
+    private static final String INVITATION_TOKEN_TYPE = "INVITATION";
+    private static final String REFRESH_TOKEN_TYPE = "REFRESH";
+    private static final String TOKEN_TYPE_CLAIM = "type";
+
     private SecretKey createSecretKey() {
         byte[] keyBytes = Base64.getDecoder().decode(jwtProperties.secretKey());
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    private static final String INVITATION_TOKEN_TYPE = "INVITATION";
-
     public String generateToken(final Long userId, final String email, final String name) {
+        return generateAccessToken(userId, email, name);
+    }
+
+    public String generateAccessToken(final Long userId, final String email, final String name) {
         Date now = new Date();
         return makeToken(
                 new Date(now.getTime() + jwtProperties.accessTokenExpiry()),
@@ -45,13 +54,54 @@ public class JwtProvider {
         );
     }
 
+    public String generateRefreshToken(final Long userId) {
+        Date now = new Date();
+        return makeToken(
+                new Date(now.getTime() + jwtProperties.refreshTokenExpiry()),
+                String.valueOf(userId),
+                Map.of(TOKEN_TYPE_CLAIM, REFRESH_TOKEN_TYPE)
+        );
+    }
+
+    public LocalDateTime refreshTokenExpiresAt() {
+        return Instant.ofEpochMilli(System.currentTimeMillis() + jwtProperties.refreshTokenExpiry())
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
+    }
+
+    public Long parseRefreshTokenSubject(final String token) {
+        final Claims claims;
+        try {
+            claims = Jwts.parser()
+                    .verifyWith(createSecretKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+        } catch (ExpiredJwtException e) {
+            throw new AuthException(AuthErrorCode.AUTH_EXPIRED_TOKEN);
+        } catch (Exception e) {
+            log.error("[parseRefreshTokenSubject] Error: ", e);
+            throw new AuthException(AuthErrorCode.AUTH_INVALID_TOKEN);
+        }
+
+        if (!REFRESH_TOKEN_TYPE.equals(claims.get(TOKEN_TYPE_CLAIM, String.class))) {
+            throw new AuthException(AuthErrorCode.AUTH_INVALID_TOKEN);
+        }
+
+        try {
+            return Long.parseLong(claims.getSubject());
+        } catch (NumberFormatException e) {
+            throw new AuthException(AuthErrorCode.AUTH_INVALID_TOKEN);
+        }
+    }
+
     public String generateInvitationToken(final Long projectId, final String inviteeEmail) {
         Date now = new Date();
         return makeToken(
                 new Date(now.getTime() + jwtProperties.invitationTokenExpiry()),
                 inviteeEmail,
                 Map.of(
-                        "type", INVITATION_TOKEN_TYPE,
+                        TOKEN_TYPE_CLAIM, INVITATION_TOKEN_TYPE,
                         "projectId", projectId
                 )
         );
@@ -72,7 +122,7 @@ public class JwtProvider {
             throw new BusinessException(ProjectErrorCode.INVITATION_TOKEN_INVALID);
         }
 
-        if (!INVITATION_TOKEN_TYPE.equals(claims.get("type", String.class))) {
+        if (!INVITATION_TOKEN_TYPE.equals(claims.get(TOKEN_TYPE_CLAIM, String.class))) {
             throw new BusinessException(ProjectErrorCode.INVITATION_TOKEN_INVALID);
         }
 
