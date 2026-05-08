@@ -1,6 +1,6 @@
 package kr.flowmeet.api.ai.listener;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import io.awspring.cloud.sqs.annotation.SqsListener;
 import kr.flowmeet.domain.ai.service.AiTaskService;
 import kr.flowmeet.external.sqs.dto.LlmResponseMessage;
