@@ -14,6 +14,7 @@ import { useEffect } from 'react';
 
 import { AssigneeItem, GetNodeResponse, TagItem } from '@/api/Api';
 import { GoogleMeetIcon } from '@/assets/svgs/GoogleMeetIcon';
+import { Loading } from '@/components/commons/loading/Loading';
 import { EXAMPLE_USERS } from '@/constants/exampleConstant';
 import { NodeStatusType } from '@/constants/nodeStatus';
 import { useErrorToast } from '@/hooks/useErrorToast';
@@ -45,7 +46,7 @@ export function NodeDetailLayout({
   onValueChange,
 }: NodeDetailLayoutProps) {
   const queryClient = useQueryClient();
-  const { data: nodeDetail, error } = useNodeDetailQuery(projectId, nodeId);
+  const { data: nodeDetail, error, isLoading } = useNodeDetailQuery(projectId, nodeId);
   const showErrorToast = useErrorToast();
 
   useEffect(() => {
@@ -96,6 +97,8 @@ export function NodeDetailLayout({
       assignees: prev.assignees?.filter((a) => a.userId !== userId),
     }));
   };
+
+  if (isLoading) return <Loading />;
 
   return (
     <div className="flex h-full flex-col overflow-y-scroll [&::-webkit-scrollbar]:hidden">
