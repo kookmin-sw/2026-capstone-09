@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 
 import NodeMeetingTab from '@/components/node-datail/meeting/NodeMeetingTab';
 import NodeNoteTab from '@/components/node-datail/note/NodeNoteTab';
+import { YjsProvider } from '@/contexts/YjsContext';
 import { NodePageLayoutClient } from './_components/NodePageLayoutClient';
 
 export default function NodePageLayout() {
@@ -18,12 +19,14 @@ export default function NodePageLayout() {
   return (
     <div className="flex h-full w-full justify-center bg-white pt-14">
       <div className="w-1/2">
-        <NodePageLayoutClient
-          nodeId={nodeId}
-          projectId={projectId}
-          noteContent={<NodeNoteTab nodeId={nodeId} projectId={projectId} />}
-          meetingContent={<NodeMeetingTab nodeId={nodeId} projectId={projectId} />}
-        />
+        <YjsProvider nodeId={nodeId}>
+          <NodePageLayoutClient
+            nodeId={nodeId}
+            projectId={projectId}
+            noteContent={<NodeNoteTab nodeId={nodeId} projectId={projectId} />}
+            meetingContent={<NodeMeetingTab nodeId={nodeId} projectId={projectId} />}
+          />
+        </YjsProvider>
       </div>
     </div>
   );

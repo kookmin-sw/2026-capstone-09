@@ -10,6 +10,7 @@ import {
   SESSION_KEY,
   subscribeToSession,
 } from '@/utils/sidebarSnapshot';
+import { YjsProvider } from '@/contexts/YjsContext';
 import NodeMeetingTab from './meeting/NodeMeetingTab';
 import { NodeDetailLayout } from './NodeDetailLayout';
 import NodeNoteTab from './note/NodeNoteTab';
@@ -74,14 +75,16 @@ export function NodeSidebar({ nodeId, projectId, onClose }: NodeSidebarProps) {
         </div>
 
         <div className="flex-1 overflow-hidden px-14 pt-14">
-          <NodeDetailLayout
-            nodeId={nodeId}
-            projectId={projectId}
-            noteContent={<NodeNoteTab nodeId={nodeId} projectId={projectId} />}
-            meetingContent={<NodeMeetingTab nodeId={nodeId} projectId={projectId} />}
-            value={value}
-            onValueChange={setValue}
-          />
+          <YjsProvider nodeId={Number(activeNodeId)}>
+            <NodeDetailLayout
+              nodeId={nodeId}
+              projectId={projectId}
+              noteContent={<NodeNoteTab nodeId={nodeId} projectId={projectId} />}
+              meetingContent={<NodeMeetingTab nodeId={nodeId} projectId={projectId} />}
+              value={value}
+              onValueChange={setValue}
+            />
+          </YjsProvider>
         </div>
       </aside>
     </>
