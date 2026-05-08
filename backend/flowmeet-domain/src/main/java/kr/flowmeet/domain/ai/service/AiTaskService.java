@@ -23,12 +23,12 @@ public class AiTaskService {
     }
 
     @Transactional
-    public AiTask create(final Long userId, final Long nodeId, final AiTaskType taskType) {
+    public AiTask create(final Long userId, final Long referenceId, final AiTaskType taskType) {
         return aiTaskRepository.save(
                 AiTask.builder()
                         .id(UUID.randomUUID().toString())
                         .userId(userId)
-                        .nodeId(nodeId)
+                        .referenceId(referenceId)
                         .taskType(taskType)
                         .build()
         );

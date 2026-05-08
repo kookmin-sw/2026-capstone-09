@@ -10,7 +10,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import kr.flowmeet.domain.common.BaseTimeEntity;
-import kr.flowmeet.domain.node.entity.Node;
 import kr.flowmeet.domain.user.entity.User;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -34,12 +33,8 @@ public class AiTask extends BaseTimeEntity {
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
     private User user;
 
-    @Column(name = "node_id", nullable = false)
-    private Long nodeId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "node_id", insertable = false, updatable = false)
-    private Node node;
+    @Column(name = "reference_id", nullable = false)
+    private Long referenceId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -52,16 +47,17 @@ public class AiTask extends BaseTimeEntity {
     @Column(columnDefinition = "TEXT")
     private String result;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "mermaid_code", columnDefinition = "TEXT")
     private String mermaidCode;
 
+    @Column(name = "error_message")
     private String errorMessage;
 
     @Builder
-    public AiTask(String id, Long userId, Long nodeId, AiTaskType taskType) {
+    public AiTask(String id, Long userId, Long referenceId, AiTaskType taskType) {
         this.id = id;
         this.userId = userId;
-        this.nodeId = nodeId;
+        this.referenceId = referenceId;
         this.taskType = taskType;
         this.status = AiTaskStatus.PENDING;
     }
