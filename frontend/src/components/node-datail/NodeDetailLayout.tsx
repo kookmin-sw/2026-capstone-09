@@ -67,7 +67,7 @@ export function NodeDetailLayout({
       }
     };
     void fetchNodeDetail();
-  }, [nodeId]);
+  }, [projectId, nodeId]);
 
   const handleStatusUpdate = (status: NodeStatusType) => {
     setNodeDetail((prev) => (prev ? { ...prev, status } : prev));
