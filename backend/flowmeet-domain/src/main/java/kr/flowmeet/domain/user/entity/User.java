@@ -2,6 +2,8 @@ package kr.flowmeet.domain.user.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -19,7 +21,7 @@ import kr.flowmeet.domain.common.BaseTimeEntity;
 @Table(
         name = "users",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_users_social_email", columnNames = "social_email"),
+                @UniqueConstraint(name = "uk_users_provider_social_id", columnNames = {"social_provider", "social_id"}),
                 @UniqueConstraint(name = "uk_users_email", columnNames = "email")
         }
 )
@@ -34,14 +36,18 @@ public class User extends BaseTimeEntity {
     @Column(name = "user_id")
     private Long id;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "social_provider", nullable = false, length = 32)
+    private SocialProvider socialProvider;
+
+    @Column(name = "social_id", nullable = false)
+    private String socialId;
+
     @Column(name = "social_email", nullable = false)
     private String socialEmail;
 
     @Column(name = "email", nullable = false)
     private String email;
-
-    @Column(name = "social_id", nullable = false)
-    private String socialId;
 
     @Column(nullable = false)
     private String nickname;
@@ -49,12 +55,16 @@ public class User extends BaseTimeEntity {
     @Column(name = "profile_image_url")
     private String profileImageUrl;
 
+    @Column(name = "google_refresh_token", length = 512)
+    private String googleRefreshToken;
+
     @Builder
-    public User(String socialEmail, String email,
-                String socialId, String nickname, String profileImageUrl) {
+    public User(SocialProvider socialProvider, String socialId, String socialEmail, String email,
+                String nickname, String profileImageUrl) {
+        this.socialProvider = socialProvider;
+        this.socialId = socialId;
         this.socialEmail = socialEmail;
         this.email = email;
-        this.socialId = socialId;
         this.nickname = nickname;
         this.profileImageUrl = profileImageUrl;
     }
@@ -69,5 +79,9 @@ public class User extends BaseTimeEntity {
 
     public void updateProfileImageUrl(final String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
+    }
+
+    public void updateGoogleRefreshToken(final String googleRefreshToken) {
+        this.googleRefreshToken = googleRefreshToken;
     }
 }

@@ -24,6 +24,13 @@ google:
     calendar-id: ${GOOGLE_CALENDAR_ID:primary}
     timezone: ${GOOGLE_MEET_TIMEZONE:Asia/Seoul}
 
+oauth:
+  google:
+    client-id: ${OAUTH2_GOOGLE_CLIENT_ID:}
+    client-secret: ${OAUTH2_GOOGLE_CLIENT_SECRET:}
+    token-uri: ${OAUTH2_GOOGLE_TOKEN_URI:https://oauth2.googleapis.com/token}
+    user-info-uri: ${OAUTH2_GOOGLE_USER_INFO_URI:https://www.googleapis.com/oauth2/v3/userinfo}
+
 discord:
   error-notifier:
     enabled: ${DISCORD_ERROR_NOTIFIER_ENABLED:false}
