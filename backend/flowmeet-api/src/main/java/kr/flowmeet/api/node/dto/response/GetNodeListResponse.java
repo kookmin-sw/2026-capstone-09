@@ -68,7 +68,7 @@ public record GetNodeListResponse(
                     node.getDescription(),
                     node.getStatus().name(),
                     nodeTags.stream().map(nt -> TagItem.from(nt.getTag())).toList(),
-                    nodeAssignees.stream().map(na -> AssigneeItem.from(na.getUser())).toList(),
+                    nodeAssignees.stream().map(AssigneeItem::from).toList(),
                     hasMeeting,
                     node.getUpdatedAt()
             );

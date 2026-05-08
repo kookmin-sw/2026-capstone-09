@@ -82,7 +82,7 @@ public record GetKanbanResponse(
                     node.getTitle(),
                     node.getSortOrder(),
                     nodeTags.stream().map(nt -> TagItem.from(nt.getTag())).toList(),
-                    nodeAssignees.stream().map(na -> AssigneeItem.from(na.getUser())).toList(),
+                    nodeAssignees.stream().map(AssigneeItem::from).toList(),
                     node.getCreatedAt(),
                     node.getUpdatedAt()
             );

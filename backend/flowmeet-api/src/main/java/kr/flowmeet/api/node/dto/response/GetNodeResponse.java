@@ -7,6 +7,7 @@ import java.util.Map;
 import kr.flowmeet.domain.meeting.entity.Meeting;
 import kr.flowmeet.domain.meeting.entity.MeetingParticipant;
 import kr.flowmeet.domain.node.entity.Node;
+import kr.flowmeet.domain.node.entity.NodeAssignee;
 import kr.flowmeet.domain.node.entity.Tag;
 import kr.flowmeet.domain.user.entity.User;
 
@@ -45,7 +46,7 @@ public record GetNodeResponse(
     public static GetNodeResponse of(
             final Node node,
             final List<Tag> tags,
-            final List<User> assignees,
+            final List<NodeAssignee> assignees,
             final Meeting meeting,
             final List<MeetingParticipant> meetingParticipants,
             final Map<Long, User> userMap

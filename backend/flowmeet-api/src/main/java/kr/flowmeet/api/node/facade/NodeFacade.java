@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import kr.flowmeet.domain.common.BaseTimeEntity;
 import kr.flowmeet.domain.node.service.NodeSortType;
 import kr.flowmeet.domain.node.service.NodeValidator;
 import kr.flowmeet.domain.project.entity.ProjectMemberRole;
@@ -76,7 +75,7 @@ public class NodeFacade {
         Node node = nodeService.findByIdAndProjectId(nodeId, projectId);
         List<Tag> tags = nodeTagService.findAllTagsByNodeId(nodeId);
 
-        List<User> assignees = nodeAssigneeService.findAllUsersByNodeId(nodeId);
+        List<NodeAssignee> assignees = nodeAssigneeService.findAllByNodeId(nodeId);
         Meeting meeting = meetingService.findByNodeId(nodeId)
             .orElse(null);
 

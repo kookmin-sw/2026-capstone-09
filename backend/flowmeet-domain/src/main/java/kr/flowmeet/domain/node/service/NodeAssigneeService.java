@@ -27,13 +27,6 @@ public class NodeAssigneeService {
         return nodeAssigneeRepository.findAllWithUserByNodeIdIn(nodeIds);
     }
 
-    public List<User> findAllUsersByNodeId(final Long nodeId) {
-        return findAllByNodeId(nodeId)
-                .stream()
-                .map(NodeAssignee::getUser)
-                .toList();
-    }
-
     public Map<Long, List<NodeAssignee>> findAllByNodeIdsAsMap(final List<Long> nodeIds) {
         return findAllByNodeIds(nodeIds)
                 .stream()
