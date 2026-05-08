@@ -81,7 +81,7 @@ public class MeetingService {
         if (meetingIds.isEmpty()) {
             return;
         }
-        meetingParticipantRepository.softDeleteAllByMeetingIdIn(meetingIds);
+        meetingParticipantRepository.deleteAllByMeetingIdIn(meetingIds);
         meetingRepository.softDeleteAllByIdIn(meetingIds);
     }
 
@@ -154,7 +154,7 @@ public class MeetingService {
                 .toList();
 
         if (!userIdsToRemove.isEmpty()) {
-            meetingParticipantRepository.softDeleteAllByMeetingIdAndUserIdIn(meetingId, userIdsToRemove);
+            meetingParticipantRepository.deleteAllByMeetingIdAndUserIdIn(meetingId, userIdsToRemove);
         }
         saveParticipants(meetingId, userIdsToAdd);
     }
@@ -167,7 +167,7 @@ public class MeetingService {
 
         validateCreatorOrOwner(meeting, projectMember);
 
-        meetingParticipantRepository.softDeleteAllByMeetingId(meeting.getId());
+        meetingParticipantRepository.deleteAllByMeetingId(meeting.getId());
         meetingRepository.delete(meeting);
     }
 

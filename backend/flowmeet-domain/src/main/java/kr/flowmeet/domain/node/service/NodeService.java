@@ -126,10 +126,10 @@ public class NodeService {
         List<Long> nodeIds = findAllIdsByProjectId(projectId);
 
         if (!nodeIds.isEmpty()) {
-            nodeAssigneeRepository.softDeleteAllByNodeIdIn(nodeIds);
+            nodeAssigneeRepository.deleteAllByNodeIdIn(nodeIds);
             nodeTagRepository.deleteAllByNodeIdIn(nodeIds);
         }
-        edgeRepository.softDeleteAllByProjectId(projectId);
+        edgeRepository.deleteAllByProjectId(projectId);
         tagRepository.softDeleteAllByProjectId(projectId);
         nodeRepository.softDeleteAllByProjectId(projectId);
     }

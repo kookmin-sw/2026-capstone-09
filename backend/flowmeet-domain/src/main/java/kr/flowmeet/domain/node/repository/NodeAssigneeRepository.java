@@ -21,6 +21,6 @@ public interface NodeAssigneeRepository extends JpaRepository<NodeAssignee, Long
     Optional<NodeAssignee> findByIdAndNodeId(Long id, Long nodeId);
 
     @Modifying(clearAutomatically = true)
-    @Query("UPDATE NodeAssignee na SET na.deletedAt = CURRENT_TIMESTAMP WHERE na.nodeId IN :nodeIds")
-    int softDeleteAllByNodeIdIn(@Param("nodeIds") List<Long> nodeIds);
+    @Query("DELETE FROM NodeAssignee na WHERE na.nodeId IN :nodeIds")
+    int deleteAllByNodeIdIn(@Param("nodeIds") List<Long> nodeIds);
 }
