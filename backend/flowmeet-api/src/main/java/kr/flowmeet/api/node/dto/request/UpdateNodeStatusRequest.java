@@ -8,7 +8,7 @@ import kr.flowmeet.domain.node.service.vo.UpdateNodeStatusCommand;
 
 @Schema(description = "노드 상태 변경 요청")
 public record UpdateNodeStatusRequest(
-        @Schema(description = "변경할 노드 상태", example = "IN_PROGRESS", allowableValues = {"WAITING", "IN_PROGRESS", "DONE"})
+        @Schema(description = "변경할 노드 상태", example = "IN_PROGRESS", allowableValues = {"WAITING", "IN_PROGRESS", "ON_HOLD", "DONE", "CLOSED"})
         @NotNull(message = ValidationMessage.NODE_STATUS_REQUIRED)
         NodeStatus status
 ) {

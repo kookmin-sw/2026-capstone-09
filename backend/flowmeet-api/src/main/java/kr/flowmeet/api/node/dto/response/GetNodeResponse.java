@@ -26,7 +26,7 @@ public record GetNodeResponse(
         String description,
         @Schema(description = "노트 내용(마크다운)", example = "## 로그인 시나리오\n- Google OAuth ...")
         String noteContent,
-        @Schema(description = "노드 상태", example = "IN_PROGRESS", allowableValues = {"WAITING", "IN_PROGRESS", "DONE"})
+        @Schema(description = "노드 상태", example = "IN_PROGRESS", allowableValues = {"WAITING", "IN_PROGRESS", "ON_HOLD", "DONE", "CLOSED"})
         String status,
         @Schema(description = "같은 상태 내 정렬 순서", example = "1024")
         int sortOrder,

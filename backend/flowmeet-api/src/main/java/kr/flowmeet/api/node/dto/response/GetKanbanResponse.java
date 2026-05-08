@@ -15,8 +15,12 @@ public record GetKanbanResponse(
         List<KanbanItem> waiting,
         @Schema(description = "진행 중 상태의 노드 목록")
         List<KanbanItem> inProgress,
+        @Schema(description = "보류 상태의 노드 목록")
+        List<KanbanItem> onHold,
         @Schema(description = "완료 상태의 노드 목록")
-        List<KanbanItem> done
+        List<KanbanItem> done,
+        @Schema(description = "종료 상태의 노드 목록")
+        List<KanbanItem> closed
 ) {
 
     public static GetKanbanResponse of(
@@ -27,7 +31,9 @@ public record GetKanbanResponse(
         return new GetKanbanResponse(
                 toKanbanItems(statusMap.getOrDefault(NodeStatus.WAITING, List.of()), nodeTagMap, assigneeMap),
                 toKanbanItems(statusMap.getOrDefault(NodeStatus.IN_PROGRESS, List.of()), nodeTagMap, assigneeMap),
-                toKanbanItems(statusMap.getOrDefault(NodeStatus.DONE, List.of()), nodeTagMap, assigneeMap)
+                toKanbanItems(statusMap.getOrDefault(NodeStatus.ON_HOLD, List.of()), nodeTagMap, assigneeMap),
+                toKanbanItems(statusMap.getOrDefault(NodeStatus.DONE, List.of()), nodeTagMap, assigneeMap),
+                toKanbanItems(statusMap.getOrDefault(NodeStatus.CLOSED, List.of()), nodeTagMap, assigneeMap)
         );
     }
 

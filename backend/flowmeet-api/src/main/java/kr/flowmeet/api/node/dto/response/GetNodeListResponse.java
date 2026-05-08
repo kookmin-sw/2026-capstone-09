@@ -43,7 +43,7 @@ public record GetNodeListResponse(
             String title,
             @Schema(description = "노드 설명", example = "OAuth2 로그인 플로우 정리")
             String description,
-            @Schema(description = "노드 상태", example = "IN_PROGRESS", allowableValues = {"WAITING", "IN_PROGRESS", "DONE"})
+            @Schema(description = "노드 상태", example = "IN_PROGRESS", allowableValues = {"WAITING", "IN_PROGRESS", "ON_HOLD", "DONE", "CLOSED"})
             String status,
             @Schema(description = "부여된 태그 목록")
             List<TagItem> tags,
