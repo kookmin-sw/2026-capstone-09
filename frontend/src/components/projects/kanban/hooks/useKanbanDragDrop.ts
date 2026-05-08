@@ -135,7 +135,7 @@ export function useKanbanDragDrop({
         }
       });
     },
-    [findNodeStatus]
+    [findNodeStatus, setGroupedNodes]
   );
 
   // 0ms 디바운스로 무한 루프 방지 (dnd-kit sortable 이슈)
