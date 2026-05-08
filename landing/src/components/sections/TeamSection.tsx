@@ -3,6 +3,7 @@
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { useRef } from 'react';
 import { SectionHeader } from '../ui/SectionHeader';
+import { asset } from '@/lib/asset';
 
 interface Member {
   name: string;
@@ -97,7 +98,7 @@ export function TeamSection() {
         >
           <div className="relative h-[360px] w-full overflow-hidden">
             <img
-              src="/team/group.jpg"
+              src={asset('/team/group.jpg')}
               alt="flowMeet 팀 단체사진"
               className="absolute inset-0 h-full w-full object-cover opacity-90"
               onError={(e) => {

@@ -1,5 +1,6 @@
 import { DownloadButton } from '../ui/DownloadButton';
 import { GoogleLoginButton } from '../ui/GoogleLoginButton';
+import { asset } from '@/lib/asset';
 
 export function Footer() {
   return (
@@ -8,13 +9,13 @@ export function Footer() {
       <div className="mx-auto max-w-[1080px] px-6 py-20 lg:px-10">
         <div className="flex flex-col items-start justify-between gap-10 lg:flex-row lg:items-end">
           <div className="max-w-[520px]">
-            <img src="/flowmeet-logo.svg" alt="flowMeet" className="h-7 w-auto" />
+            <img src={asset('/flowmeet-logo.svg')} alt="flowMeet" className="h-7 w-auto" />
             <p className="mt-6 text-[clamp(22px,2.4vw,32px)] font-semibold leading-[1.25] text-white">
               기획이 흐름을 만나는 순간,
               <br />
               <span className="inline-flex items-baseline">
                 <img
-                  src="/flowMeet.svg"
+                  src={asset('/flowMeet.svg')}
                   alt="flowMeet"
                   className="mr-1.5 inline-block h-[0.75em] w-auto align-[-0.02em]"
                 />

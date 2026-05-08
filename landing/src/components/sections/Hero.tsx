@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { DownloadButton } from '../ui/DownloadButton';
 import { GoogleLoginButton } from '../ui/GoogleLoginButton';
 import { HeroNodeField } from '../visuals/HeroNodeField';
+import { asset } from '@/lib/asset';
 
 export function Hero() {
   const tiltX = useMotionValue(0);
@@ -61,7 +62,7 @@ export function Hero() {
             <span className="block sm:inline"> 순간,</span>
           </span>
           <img
-            src="/flowMeet.svg"
+            src={asset('/flowMeet.svg')}
             alt="flowMeet"
             className="mx-auto mt-4 block h-auto w-[min(82vw,720px)] sm:w-[min(76vw,840px)]"
           />

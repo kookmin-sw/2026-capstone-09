@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { DownloadButton } from './ui/DownloadButton';
 import { GoogleLoginButton } from './ui/GoogleLoginButton';
+import { asset } from '@/lib/asset';
 
 const TABS = [
   { id: 'intro', label: '소개' },
@@ -54,7 +55,7 @@ export function Header() {
           aria-label="flowMeet 홈"
         >
           <img
-            src="/flowmeet-logo.svg"
+            src={asset('/flowmeet-logo.svg')}
             alt="flowMeet"
             className="h-7 w-auto transition-transform duration-300 group-hover:scale-[1.03]"
           />
