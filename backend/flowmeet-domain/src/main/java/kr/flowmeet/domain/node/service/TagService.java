@@ -1,6 +1,7 @@
 package kr.flowmeet.domain.node.service;
 
 import java.util.List;
+import java.util.Optional;
 import kr.flowmeet.domain.node.service.vo.UpdateTagCommand;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,17 @@ public class TagService {
 
     @Transactional
     public Tag create(final Long projectId, final CreateTagCommand command) {
-        validateNameNotDuplicated(projectId, command.name());
+        Optional<Tag> existing = tagRepository.findByProjectIdAndNameIncludingDeleted(projectId, command.name());
+
+        if (existing.isPresent()) {
+            Tag tag = existing.get();
+            if (tag.getDeletedAt() != null) {
+                tag.restore();
+                tag.update(command.name(), command.color());
+                return tag;
+            }
+            throw new BusinessException(TagErrorCode.TAG_NAME_DUPLICATED);
+        }
 
         return tagRepository.save(
                 Tag.builder()
@@ -58,8 +69,12 @@ public class TagService {
     }
 
     private void validateNameNotDuplicated(final Long projectId, final String name) {
-        if (tagRepository.existsByProjectIdAndName(projectId, name)) {
-            throw new BusinessException(TagErrorCode.TAG_NAME_DUPLICATED);
-        }
+        tagRepository.findByProjectIdAndNameIncludingDeleted(projectId, name)
+                .ifPresent(existing -> {
+                    if (existing.getDeletedAt() == null) {
+                        throw new BusinessException(TagErrorCode.TAG_NAME_DUPLICATED);
+                    }
+                    tagRepository.hardDeleteById(existing.getId());
+                });
     }
 }
