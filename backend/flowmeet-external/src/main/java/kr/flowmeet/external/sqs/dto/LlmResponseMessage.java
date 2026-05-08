@@ -1,6 +1,6 @@
 package kr.flowmeet.external.sqs.dto;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 public record LlmResponseMessage(
         String jobId,
