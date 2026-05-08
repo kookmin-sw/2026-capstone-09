@@ -39,6 +39,7 @@
     "yjs": "^13.6.29"
   },
   "devDependencies": {
+    "@svgr/webpack": "^8.1.0",
     "@tailwindcss/postcss": "^4",
     "@tailwindcss/typography": "^0.5.19",
     "@types/js-cookie": "^3.0.6",

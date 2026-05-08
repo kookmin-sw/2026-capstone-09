@@ -24,7 +24,7 @@ export default function Editor({ content }: EditorProps) {
 
       editorProps: {
         attributes: {
-          class: 'prose focus:outline-none m-5',
+          class: 'prose focus:outline-none m-5 pb-40',
         },
       },
 

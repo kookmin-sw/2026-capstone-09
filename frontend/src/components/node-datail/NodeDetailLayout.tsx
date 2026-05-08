@@ -1,16 +1,8 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { EditorContent } from '@tiptap/react';
-import {
-  Avatar,
-  ContentBadge,
-  Tab,
-  TabList,
-  TabListItem,
-  TabPanel,
-  ThemeColorsToken,
-  Typography,
-} from '@wanteddev/wds';
+import { ContentBadge, Tab, TabList, TabListItem, TabPanel, Typography } from '@wanteddev/wds';
 import {
   IconDocumentText,
   IconFire,
@@ -20,14 +12,19 @@ import {
 } from '@wanteddev/wds-icon';
 import { useEffect } from 'react';
 
-import { ColorType } from '@/constants/badgeColor';
+import { privateApi } from '@/api';
+import { AssigneeItem, GetNodeResponse, TagItem } from '@/api/Api';
+import { GoogleMeetIcon } from '@/assets/svgs/GoogleMeetIcon';
 import { EXAMPLE_USERS } from '@/constants/exampleConstant';
 import { NodeStatusType } from '@/constants/nodeStatus';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import { nodeKeys } from '@/queries/keys/nodeKeys';
 import { useNodeDetailQuery } from '@/queries/node';
 import { formatDatetoString } from '@/utils/formatData';
-import { getColorToken } from '@/utils/getBadgeColorInfo';
-import { getNodeStatusColor, getNodeStatusIcon, getNodeStatusLabel } from '@/utils/getNodeStatus';
+import { AssigneeField } from './fields/AssigneeField';
+import { DescriptionField } from './fields/DescriptionField';
+import { StatusField } from './fields/StatusField';
+import { TagField } from './fields/TagField';
 import { useTitleEditor } from './hooks/useTitleEditor';
 import { Users } from '../commons/user/UserAvatarGroup';
 
@@ -48,16 +45,63 @@ export function NodeDetailLayout({
   value,
   onValueChange,
 }: NodeDetailLayoutProps) {
+  const queryClient = useQueryClient();
   const { data: nodeDetail, error } = useNodeDetailQuery(projectId, nodeId);
   const showErrorToast = useErrorToast();
-  const titleEditor = useTitleEditor(nodeDetail?.title);
 
   useEffect(() => {
     if (error) showErrorToast(error, '노드 정보를 불러오는데 실패했어요.');
   }, [error, showErrorToast]);
 
+  const updateCache = (updater: (prev: GetNodeResponse) => GetNodeResponse) => {
+    queryClient.setQueryData(
+      nodeKeys.detail(projectId, nodeId),
+      (old: GetNodeResponse | undefined) => (old ? updater(old) : old),
+    );
+  };
+
+  const handleTitleUpdate = async (title: string) => {
+    if (!nodeId || title === (nodeDetail?.title ?? '')) return;
+    const previous = nodeDetail?.title ?? '';
+    updateCache((prev) => ({ ...prev, title }));
+    try {
+      await privateApi.node.updateNodeTitle(projectId, nodeId, { title });
+    } catch {
+      updateCache((prev) => ({ ...prev, title: previous }));
+    }
+  };
+
+  const titleEditor = useTitleEditor(nodeDetail?.title, handleTitleUpdate);
+
+  const handleStatusUpdate = (status: NodeStatusType) => {
+    updateCache((prev) => ({ ...prev, status }));
+  };
+
+  const handleDescriptionUpdate = (description: string) => {
+    updateCache((prev) => ({ ...prev, description }));
+  };
+
+  const handleTagAdd = (tag: TagItem) => {
+    updateCache((prev) => ({ ...prev, tags: [...(prev.tags ?? []), tag] }));
+  };
+
+  const handleTagRemove = (tagId: number) => {
+    updateCache((prev) => ({ ...prev, tags: prev.tags?.filter((t) => t.tagId !== tagId) }));
+  };
+
+  const handleAssigneeAdd = (assignee: AssigneeItem) => {
+    updateCache((prev) => ({ ...prev, assignees: [...(prev.assignees ?? []), assignee] }));
+  };
+
+  const handleAssigneeRemove = (userId: number) => {
+    updateCache((prev) => ({
+      ...prev,
+      assignees: prev.assignees?.filter((a) => a.userId !== userId),
+    }));
+  };
+
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col overflow-y-scroll [&::-webkit-scrollbar]:hidden">
       <div className="flex items-center justify-between">
         {nodeDetail?.parentId ? (
           <ContentBadge color="neutral" size="xsmall" variant="outlined">
@@ -84,54 +128,49 @@ export function NodeDetailLayout({
 
         <div className="flex flex-col gap-5">
           <MetaRow icon={<IconTag />} label="태그">
-            <div className="flex flex-wrap gap-1.5">
-              {nodeDetail?.tags?.map((tag) => (
-                <ContentBadge
-                  key={tag.tagId}
-                  color="accent"
-                  size="xsmall"
-                  accentColor={getColorToken(tag.color as ColorType) as ThemeColorsToken}
-                >
-                  {tag.name}
-                </ContentBadge>
-              ))}
-            </div>
+            {nodeId && (
+              <TagField
+                projectId={projectId}
+                nodeId={nodeId}
+                tags={nodeDetail?.tags ?? []}
+                onAdd={handleTagAdd}
+                onRemove={handleTagRemove}
+              />
+            )}
           </MetaRow>
 
           <MetaRow icon={<IconPersons />} label="노드 담당자">
-            <div className="flex gap-3">
-              {nodeDetail?.assignees?.map((assignee) => (
-                <div key={assignee.userId} className="flex items-center gap-1">
-                  <div className="scale-75">
-                    <Avatar
-                      variant="person"
-                      size="xsmall"
-                      src={assignee.profileImageUrl || undefined}
-                    />
-                  </div>
-                  <Typography variant="label1">{assignee.nickname}</Typography>
-                </div>
-              ))}
-            </div>
+            {nodeId && (
+              <AssigneeField
+                projectId={projectId}
+                nodeId={nodeId}
+                assignees={nodeDetail?.assignees ?? []}
+                onAdd={handleAssigneeAdd}
+                onRemove={handleAssigneeRemove}
+              />
+            )}
           </MetaRow>
 
           <MetaRow icon={<IconDocumentText />} label="노드 설명">
-            <div className="flex">
-              <Typography variant="label1">{nodeDetail?.description}</Typography>
-            </div>
+            {nodeId && (
+              <DescriptionField
+                projectId={projectId}
+                nodeId={nodeId}
+                description={nodeDetail?.description}
+                onUpdate={handleDescriptionUpdate}
+              />
+            )}
           </MetaRow>
 
           <MetaRow icon={<IconFire />} label="진행 상태">
-            <ContentBadge
-              size="xsmall"
-              color="accent"
-              accentColor={
-                getNodeStatusColor(nodeDetail?.status as NodeStatusType) as ThemeColorsToken
-              }
-              leadingContent={getNodeStatusIcon(nodeDetail?.status as NodeStatusType)}
-            >
-              {getNodeStatusLabel(nodeDetail?.status as NodeStatusType)}
-            </ContentBadge>
+            {nodeId && nodeDetail?.status && (
+              <StatusField
+                projectId={projectId}
+                nodeId={nodeId}
+                status={nodeDetail.status as NodeStatusType}
+                onUpdate={handleStatusUpdate}
+              />
+            )}
           </MetaRow>
         </div>
 
@@ -142,10 +181,7 @@ export function NodeDetailLayout({
             className="text-label-1-normal flex items-center justify-between rounded-lg border border-gray-200 p-3"
           >
             <div>{formatDatetoString(nodeDetail?.meeting?.startedAt)}에 회의 예정</div>
-            <img
-              className="h-5 w-5"
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Google_Meet_icon_%282020%29.svg/250px-Google_Meet_icon_%282020%29.svg.png"
-            />
+            <GoogleMeetIcon />
           </a>
         ) : (
           <></>
@@ -155,7 +191,7 @@ export function NodeDetailLayout({
       <Tab value={value} onValueChange={onValueChange} defaultValue="note">
         <TabList size="medium" resize="fill">
           <TabListItem value="note">노트</TabListItem>
-          <TabListItem value="meeting">회의</TabListItem>
+          {nodeDetail?.parentId && <TabListItem value="meeting">회의</TabListItem>}
         </TabList>
         <TabPanel value="note">{noteContent}</TabPanel>
         <TabPanel value="meeting" sx={{ flex: 1 }}>
@@ -181,7 +217,7 @@ function MetaRow({
         <span>{icon}</span>
         <Typography variant="label1">{label}</Typography>
       </span>
-      <div>{children}</div>
+      <div className="flex-1">{children}</div>
     </div>
   );
 }
