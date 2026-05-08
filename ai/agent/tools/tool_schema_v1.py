@@ -39,20 +39,42 @@ tool_schema = [
         }
     },
     {
-        "name": "update_node",
-        "description": "프로젝트 내 특정 노드의 정보를 수정합니다. 수정할 필드만 포함하면 됩니다.",
+        "name": "update_node_title",
+        "description": "프로젝트 내 특정 노드의 제목을 수정합니다. 수정할 필드만 포함하면 됩니다.",
         "input_schema": {
             "type": "object",
             "properties": {
                 "projectId": {"type": "integer", "description": "수정할 노드가 속한 프로젝트의 ID"},
                 "nodeId": {"type": "integer", "description": "수정할 노드의 ID"},
                 "title": {"type": "string", "description": "변경할 노드 제목"},
-                "description": {"type": "string", "description": "변경할 노드 설명"},
-                "noteContent": {"type": "string", "description": "변경할 노트 내용 (마크다운 형식 지원)"},
-                "status": {"type": "string", "enum": ["WAITING", "IN_PROGRESS", "DONE"], "description": "변경할 노드 진행 상태"},
-                "sortOrder": {"type": "integer", "description": "칸반 보드 내 정렬 순서"}
             },
-            "required": ["projectId", "nodeId"]
+            "required": ["projectId", "nodeId", "title"]
+        }
+    },
+    {
+        "name": "update_node_description",
+        "description": "프로젝트 내 특정 노드의 설명을 수정합니다. 수정할 필드만 포함하면 됩니다.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "projectId": {"type": "integer", "description": "수정할 노드가 속한 프로젝트의 ID"},
+                "nodeId": {"type": "integer", "description": "수정할 노드의 ID"},
+                "description": {"type": "string", "description": "변경할 노드 설명(마크다운 형식 지원)"},
+            },
+            "required": ["projectId", "nodeId", "description"]
+        }
+    },
+    {
+        "name": "update_node_status",
+        "description": "프로젝트 내 특정 노드의 상태를 수정합니다. 수정할 필드만 포함하면 됩니다.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "projectId": {"type": "integer", "description": "수정할 노드가 속한 프로젝트의 ID"},
+                "nodeId": {"type": "integer", "description": "수정할 노드의 ID"},
+                "status": {"type": "string", "enum": ["WAITING", "IN_PROGRESS", "DONE"], "description": "변경할 노드 진행 상태"}
+            },
+            "required": ["projectId", "nodeId", "status"]
         }
     },
     {
