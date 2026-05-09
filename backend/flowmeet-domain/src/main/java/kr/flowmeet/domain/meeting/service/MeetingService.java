@@ -59,7 +59,7 @@ public class MeetingService {
                 .collect(Collectors.toSet());
     }
 
-    public List<Meeting> findScheduledMeetingsToStart(final LocalDateTime now) {
+    public List<Meeting> findScheduledToStart(final LocalDateTime now) {
         return meetingRepository.findAllByStatusAndStartedAtBefore(MeetingStatus.SCHEDULED, now);
     }
 

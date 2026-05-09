@@ -20,7 +20,7 @@ public class MeetingStatusScheduler {
     @Scheduled(cron = "0 * * * * *", zone = "Asia/Seoul")
     @Transactional
     public void startScheduledMeetings() {
-        List<Meeting> meetings = meetingService.findScheduledMeetingsToStart(LocalDateTime.now());
+        List<Meeting> meetings = meetingService.findScheduledToStart(LocalDateTime.now());
         if (meetings.isEmpty()) {
             return;
         }
