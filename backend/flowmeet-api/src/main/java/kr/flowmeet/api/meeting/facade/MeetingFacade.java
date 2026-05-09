@@ -114,14 +114,7 @@ public class MeetingFacade {
             final Long meetingId,
             final String content
     ) {
-        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
-        Meeting meeting = meetingService.findById(meetingId);
-        nodeValidator.validateIsIn(meeting.getNodeId(), projectId);
-
-        if (!meeting.isInProgress()) {
-            throw new BusinessException(MeetingErrorCode.MEETING_NOT_IN_PROGRESS);
-        }
-
+        validateInProgressMeeting(userId, projectId, meetingId);
         meetingTranscriptService.create(meetingId, content);
     }
 
@@ -131,14 +124,7 @@ public class MeetingFacade {
             final Long projectId,
             final Long meetingId
     ) {
-        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
-        Meeting meeting = meetingService.findById(meetingId);
-        nodeValidator.validateIsIn(meeting.getNodeId(), projectId);
-
-        if (!meeting.isInProgress()) {
-            throw new BusinessException(MeetingErrorCode.MEETING_NOT_IN_PROGRESS);
-        }
-
+        Meeting meeting = validateInProgressMeeting(userId, projectId, meetingId);
         meeting.end();
 
         String mergedText = meetingTranscriptService.mergeAllByMeetingId(meetingId);
@@ -150,6 +136,18 @@ public class MeetingFacade {
         eventPublisher.publishEvent(new MeetingEndedEvent(aiTask.getId(), mergedText));
 
         return EndMeetingResponse.from(aiTask.getId());
+    }
+
+    private Meeting validateInProgressMeeting(final Long userId, final Long projectId, final Long meetingId) {
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
+        Meeting meeting = meetingService.findById(meetingId);
+        nodeValidator.validateIsIn(meeting.getNodeId(), projectId);
+
+        if (!meeting.isInProgress()) {
+            throw new BusinessException(MeetingErrorCode.MEETING_NOT_IN_PROGRESS);
+        }
+
+        return meeting;
     }
 
     private CreateMeetingRoomCommand toCreateRoomCommand(
