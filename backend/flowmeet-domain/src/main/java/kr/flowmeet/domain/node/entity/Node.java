@@ -79,6 +79,9 @@ public class Node extends BaseSoftDeleteEntity {
     @Column(name = "sort_order", nullable = false)
     private int sortOrder;
 
+    @Column(columnDefinition = "TEXT")
+    private String summary;
+
     @Builder
     public Node(Long projectId, Long parentId, String number, String title, String description,
                 NodeType type, String noteContent, NodeStatus status, int sortOrder) {
@@ -118,6 +121,10 @@ public class Node extends BaseSoftDeleteEntity {
 
     public void updateStatus(final NodeStatus status) {
         this.status = status;
+    }
+
+    public void saveSummary(final String summary) {
+        this.summary = summary;
     }
 
 }

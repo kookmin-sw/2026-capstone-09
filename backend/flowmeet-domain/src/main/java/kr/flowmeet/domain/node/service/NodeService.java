@@ -33,6 +33,15 @@ public class NodeService {
     private final NodeAssigneeRepository nodeAssigneeRepository;
     private final NodeTagRepository nodeTagRepository;
 
+    public Node findById(final Long nodeId) {
+        return nodeRepository.findById(nodeId)
+                .orElseThrow(() -> new BusinessException(NodeErrorCode.NODE_NOT_FOUND));
+    }
+
+    public List<Node> findAllByParentId(final Long parentId) {
+        return nodeRepository.findAllByParentId(parentId);
+    }
+
     public Node findByIdAndProjectId(final Long nodeId, final Long projectId) {
         return nodeRepository.findByIdAndProjectId(nodeId, projectId)
                 .orElseThrow(() -> new BusinessException(NodeErrorCode.NODE_NOT_FOUND));
@@ -190,5 +199,11 @@ public class NodeService {
         Node node = findByIdAndProjectId(nodeId, projectId);
 
         node.updateStatus(command.status());
+    }
+
+    @Transactional
+    public void saveSummary(final Long nodeId, final String summary) {
+        Node node = findById(nodeId);
+        node.saveSummary(summary);
     }
 }
