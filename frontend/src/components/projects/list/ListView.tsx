@@ -2,13 +2,11 @@
 
 import { Option, Select, TextField, Typography } from '@wanteddev/wds';
 import { IconSearch } from '@wanteddev/wds-icon';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
-import { privateApi } from '@/api';
-import { NodeListItem } from '@/api/Api';
 import { Loading } from '@/components/commons/loading/Loading';
 import { NodeSidebar } from '@/components/node-datail/NodeSidebar';
-import { useErrorToast } from '@/hooks/useErrorToast';
+import { useNodeListQuery } from '@/queries/node';
 import { formatDate } from '@/utils/nodeUtils';
 
 import { ListCard } from './ListCard';
@@ -20,33 +18,13 @@ interface ListViewProps {
 type SortOption = 'latest' | 'alphabetical';
 
 export function ListView({ projectId }: ListViewProps) {
-  const showError = useErrorToast();
-  const [loading, setLoading] = useState(true);
-  const [nodes, setNodes] = useState<NodeListItem[]>([]);
   const [sidebarNodeId, setSidebarNodeId] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>('latest');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSelectOpen, setIsSelectOpen] = useState(false);
 
-  const loadListData = useCallback(async () => {
-    try {
-      setLoading(true);
-      const sortParam = sortBy === 'latest' ? 'LATEST' : 'NAME';
-      const data = await privateApi.node.getNodeList(projectId, { sort: sortParam });
-      const listData = data.data.data ?? null;
-
-      setNodes(listData?.nodes ?? []);
-    } catch (error) {
-      console.error('Failed to load list:', error);
-      showError(error, '리스트 데이터를 불러오는데 실패했습니다.');
-    } finally {
-      setLoading(false);
-    }
-  }, [projectId, sortBy, showError]);
-
-  useEffect(() => {
-    void loadListData();
-  }, [loadListData]);
+  const sortParam = sortBy === 'latest' ? 'LATEST' : 'NAME';
+  const { data, isLoading } = useNodeListQuery(projectId, sortParam);
 
   const handleNodeDoubleClick = useCallback((nodeId: number) => {
     setSidebarNodeId(nodeId);
@@ -59,11 +37,12 @@ export function ListView({ projectId }: ListViewProps) {
     });
   }, []);
 
+  const nodes = data?.nodes ?? [];
   const filteredNodes = nodes.filter((node) =>
     node.title?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (loading) {
+  if (isLoading) {
     return <Loading />;
   }
 
