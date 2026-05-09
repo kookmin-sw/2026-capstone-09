@@ -114,7 +114,11 @@ public class MeetingFacade {
             final Long meetingId,
             final String content
     ) {
-        validateInProgressMeeting(userId, projectId, meetingId);
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
+        Meeting meeting = meetingService.findById(meetingId);
+        nodeValidator.validateIsIn(meeting.getNodeId(), projectId);
+        validateMeetingInProgress(meeting);
+
         meetingTranscriptService.create(meetingId, content);
     }
 
@@ -124,7 +128,11 @@ public class MeetingFacade {
             final Long projectId,
             final Long meetingId
     ) {
-        Meeting meeting = validateInProgressMeeting(userId, projectId, meetingId);
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
+        Meeting meeting = meetingService.findById(meetingId);
+        nodeValidator.validateIsIn(meeting.getNodeId(), projectId);
+        validateMeetingInProgress(meeting);
+
         meeting.end();
 
         String mergedText = meetingTranscriptService.mergeAllByMeetingId(meetingId);
@@ -138,16 +146,10 @@ public class MeetingFacade {
         return EndMeetingResponse.from(aiTask.getId());
     }
 
-    private Meeting validateInProgressMeeting(final Long userId, final Long projectId, final Long meetingId) {
-        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
-        Meeting meeting = meetingService.findById(meetingId);
-        nodeValidator.validateIsIn(meeting.getNodeId(), projectId);
-
+    private void validateMeetingInProgress(final Meeting meeting) {
         if (!meeting.isInProgress()) {
             throw new BusinessException(MeetingErrorCode.MEETING_NOT_IN_PROGRESS);
         }
-
-        return meeting;
     }
 
     private CreateMeetingRoomCommand toCreateRoomCommand(
