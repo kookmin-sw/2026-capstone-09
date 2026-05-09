@@ -7,6 +7,7 @@ import java.util.Map;
 import kr.flowmeet.domain.meeting.entity.Meeting;
 import kr.flowmeet.domain.meeting.entity.MeetingParticipant;
 import kr.flowmeet.domain.node.entity.Node;
+import kr.flowmeet.domain.node.entity.NodeAssignee;
 import kr.flowmeet.domain.node.entity.Tag;
 import kr.flowmeet.domain.user.entity.User;
 
@@ -26,7 +27,7 @@ public record GetNodeResponse(
         String description,
         @Schema(description = "노트 내용(마크다운)", example = "## 로그인 시나리오\n- Google OAuth ...")
         String noteContent,
-        @Schema(description = "노드 상태", example = "IN_PROGRESS", allowableValues = {"WAITING", "IN_PROGRESS", "DONE"})
+        @Schema(description = "노드 상태", example = "IN_PROGRESS", allowableValues = {"WAITING", "IN_PROGRESS", "ON_HOLD", "DONE", "CLOSED"})
         String status,
         @Schema(description = "같은 상태 내 정렬 순서", example = "1024")
         int sortOrder,
@@ -45,7 +46,7 @@ public record GetNodeResponse(
     public static GetNodeResponse of(
             final Node node,
             final List<Tag> tags,
-            final List<User> assignees,
+            final List<NodeAssignee> assignees,
             final Meeting meeting,
             final List<MeetingParticipant> meetingParticipants,
             final Map<Long, User> userMap

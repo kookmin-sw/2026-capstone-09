@@ -8,7 +8,7 @@ import kr.flowmeet.domain.node.service.vo.UpdateNodeKanbanCommand;
 
 @Schema(description = "칸반 카드 이동(드래그 앤 드롭) 요청")
 public record UpdateNodeKanbanRequest(
-        @Schema(description = "변경할 노드 상태", example = "IN_PROGRESS", allowableValues = {"WAITING", "IN_PROGRESS", "DONE"})
+        @Schema(description = "변경할 노드 상태", example = "IN_PROGRESS", allowableValues = {"WAITING", "IN_PROGRESS", "ON_HOLD", "DONE", "CLOSED"})
         @NotNull(message = ValidationMessage.NODE_STATUS_REQUIRED)
         NodeStatus status,
         @Schema(description = "칸반 내 정렬 순서", example = "1024")
