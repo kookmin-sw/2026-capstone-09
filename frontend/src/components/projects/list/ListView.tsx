@@ -6,9 +6,9 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { privateApi } from '@/api';
 import { NodeListItem } from '@/api/Api';
-import { usePositionedToast } from '@/components/commons/custom-toast/usePositionedToast';
 import { Loading } from '@/components/commons/loading/Loading';
 import { NodeSidebar } from '@/components/node-datail/NodeSidebar';
+import { useErrorToast } from '@/hooks/useErrorToast';
 import { formatDate } from '@/utils/nodeUtils';
 
 import { ListCard } from './ListCard';
@@ -20,7 +20,7 @@ interface ListViewProps {
 type SortOption = 'latest' | 'alphabetical';
 
 export function ListView({ projectId }: ListViewProps) {
-  const toast = usePositionedToast();
+  const showError = useErrorToast();
   const [loading, setLoading] = useState(true);
   const [nodes, setNodes] = useState<NodeListItem[]>([]);
   const [sidebarNodeId, setSidebarNodeId] = useState<number | null>(null);
@@ -38,17 +38,11 @@ export function ListView({ projectId }: ListViewProps) {
       setNodes(listData?.nodes ?? []);
     } catch (error) {
       console.error('Failed to load list:', error);
-      const errorMessage =
-        error instanceof Error ? error.message : '리스트 데이터를 불러오는데 실패했습니다.';
-      toast({
-        content: errorMessage,
-        variant: 'negative',
-        placement: 'top-center',
-      });
+      showError(error, '리스트 데이터를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
-  }, [projectId, sortBy, toast]);
+  }, [projectId, sortBy, showError]);
 
   useEffect(() => {
     void loadListData();
