@@ -3,12 +3,15 @@ package kr.flowmeet.api.meeting.controller;
 import jakarta.validation.Valid;
 import kr.flowmeet.api.common.dto.CommonResponse;
 import kr.flowmeet.api.meeting.dto.request.CreateMeetingRequest;
+import kr.flowmeet.api.meeting.dto.request.AppendTranscriptRequest;
 import kr.flowmeet.api.meeting.dto.request.UpdateMeetingRequest;
+import kr.flowmeet.api.meeting.dto.response.EndMeetingResponse;
 import kr.flowmeet.api.meeting.facade.MeetingFacade;
 import kr.flowmeet.api.meeting.success.MeetingSuccessCode;
 import kr.flowmeet.auth.annotation.UserId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -58,5 +61,30 @@ public class MeetingController implements MeetingApi {
     ) {
         meetingFacade.deleteMeeting(userId, projectId, meetingId);
         return CommonResponse.ok(MeetingSuccessCode.DELETE_MEETING);
+    }
+
+    @Override
+    @PostMapping("/nodes/{nodeId}/meetings/{meetingId}/transcripts")
+    public CommonResponse<?> appendTranscript(
+            @UserId Long userId,
+            @PathVariable Long projectId,
+            @PathVariable Long nodeId,
+            @PathVariable Long meetingId,
+            @Valid @RequestBody AppendTranscriptRequest request
+    ) {
+        meetingFacade.appendTranscript(userId, projectId, meetingId, request.content());
+        return CommonResponse.ok(MeetingSuccessCode.APPEND_TRANSCRIPT);
+    }
+
+    @Override
+    @PatchMapping("/nodes/{nodeId}/meetings/{meetingId}/end")
+    public CommonResponse<EndMeetingResponse> endMeeting(
+            @UserId Long userId,
+            @PathVariable Long projectId,
+            @PathVariable Long nodeId,
+            @PathVariable Long meetingId
+    ) {
+        EndMeetingResponse response = meetingFacade.endMeeting(userId, projectId, meetingId);
+        return CommonResponse.ok(MeetingSuccessCode.END_MEETING, response);
     }
 }

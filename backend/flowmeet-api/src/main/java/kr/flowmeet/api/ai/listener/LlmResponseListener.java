@@ -32,7 +32,7 @@ public class LlmResponseListener {
 
             if (response.isSubSummary()) {
                 String summary = response.result().get("summary").asText();
-                String mermaidCode = response.result().get("mermaidCode").asText();
+                String mermaidCode = response.result().get("mermaid_code").asText();
                 aiTaskService.complete(response.jobId(), summary, mermaidCode);
             } else {
                 String result = response.result().asText();
@@ -42,6 +42,18 @@ public class LlmResponseListener {
             log.info("LLM 처리 완료 - jobId: {}, taskType: {}", response.jobId(), response.taskType());
         } catch (Exception e) {
             log.error("LLM 응답 처리 실패 - payload: {}", payload, e);
+            tryMarkFailed(payload, e);
+        }
+    }
+
+    private void tryMarkFailed(final String payload, final Exception cause) {
+        try {
+            String jobId = objectMapper.readTree(payload).path("job_id").asText(null);
+            if (jobId != null && !jobId.isBlank()) {
+                aiTaskService.fail(jobId, cause.getMessage());
+            }
+        } catch (Exception e) {
+            log.error("AiTask FAILED 처리 실패 - payload: {}", payload, e);
         }
     }
 }

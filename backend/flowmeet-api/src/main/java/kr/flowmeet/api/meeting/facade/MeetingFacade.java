@@ -3,7 +3,13 @@ package kr.flowmeet.api.meeting.facade;
 import java.time.LocalDateTime;
 import kr.flowmeet.api.meeting.dto.request.CreateMeetingRequest;
 import kr.flowmeet.api.meeting.dto.request.UpdateMeetingRequest;
+import kr.flowmeet.api.meeting.dto.response.EndMeetingResponse;
+import kr.flowmeet.domain.ai.entity.AiTask;
+import kr.flowmeet.domain.ai.entity.AiTaskType;
+import kr.flowmeet.domain.ai.service.AiTaskService;
+import kr.flowmeet.domain.common.exception.BusinessException;
 import kr.flowmeet.domain.meeting.entity.Meeting;
+import kr.flowmeet.domain.meeting.exception.MeetingErrorCode;
 import kr.flowmeet.domain.meeting.service.MeetingService;
 import kr.flowmeet.domain.node.entity.Node;
 import kr.flowmeet.domain.node.service.NodeService;
@@ -12,10 +18,13 @@ import kr.flowmeet.domain.project.entity.ProjectMember;
 import kr.flowmeet.domain.project.entity.ProjectMemberRole;
 import kr.flowmeet.domain.project.service.ProjectMemberService;
 import kr.flowmeet.domain.project.service.ProjectPermissionValidator;
+import kr.flowmeet.api.meeting.event.MeetingEndedEvent;
+import kr.flowmeet.domain.transcript.service.MeetingTranscriptService;
 import kr.flowmeet.external.meeting.MeetingRoomProvider;
 import kr.flowmeet.external.meeting.dto.CreateMeetingRoomCommand;
 import kr.flowmeet.external.meeting.dto.MeetingRoom;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +40,9 @@ public class MeetingFacade {
     private final ProjectPermissionValidator projectPermissionValidator;
     private final ProjectMemberService projectMemberService;
     private final MeetingRoomProvider meetingRoomProvider;
+    private final MeetingTranscriptService meetingTranscriptService;
+    private final AiTaskService aiTaskService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public void createMeeting(
             final Long userId,
@@ -92,6 +104,51 @@ public class MeetingFacade {
 
         if (externalEventId != null && !externalEventId.isBlank()) {
             meetingRoomProvider.delete(externalEventId, null);
+        }
+    }
+
+    @Transactional
+    public void appendTranscript(
+            final Long userId,
+            final Long projectId,
+            final Long meetingId,
+            final String content
+    ) {
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
+        Meeting meeting = meetingService.findById(meetingId);
+        nodeValidator.validateIsIn(meeting.getNodeId(), projectId);
+        validateMeetingInProgress(meeting);
+
+        meetingTranscriptService.create(meetingId, content);
+    }
+
+    @Transactional
+    public EndMeetingResponse endMeeting(
+            final Long userId,
+            final Long projectId,
+            final Long meetingId
+    ) {
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
+        Meeting meeting = meetingService.findById(meetingId);
+        nodeValidator.validateIsIn(meeting.getNodeId(), projectId);
+        validateMeetingInProgress(meeting);
+
+        meeting.end();
+
+        String mergedText = meetingTranscriptService.mergeAllByMeetingId(meetingId);
+        if (mergedText.isBlank()) {
+            throw new BusinessException(MeetingErrorCode.MEETING_NO_TRANSCRIPT);
+        }
+
+        AiTask aiTask = aiTaskService.create(userId, meetingId, AiTaskType.SUB_SUMMARY);
+        eventPublisher.publishEvent(new MeetingEndedEvent(aiTask.getId(), mergedText));
+
+        return EndMeetingResponse.from(aiTask.getId());
+    }
+
+    private void validateMeetingInProgress(final Meeting meeting) {
+        if (!meeting.isInProgress()) {
+            throw new BusinessException(MeetingErrorCode.MEETING_NOT_IN_PROGRESS);
         }
     }
 

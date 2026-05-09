@@ -123,4 +123,12 @@ public class Meeting extends BaseSoftDeleteEntity {
     public void updatePushEnabled(boolean isPushEnabled) {
         this.isPushEnabled = isPushEnabled;
     }
+
+    public void start() {
+        this.status = MeetingStatus.IN_PROGRESS;
+    }
+
+    public void end() {
+        this.status = MeetingStatus.ENDED;
+    }
 }

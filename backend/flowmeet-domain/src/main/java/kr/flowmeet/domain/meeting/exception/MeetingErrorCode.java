@@ -15,7 +15,9 @@ public enum MeetingErrorCode implements ErrorCode {
     MEETING_UPDATE_FORBIDDEN(HttpStatus.FORBIDDEN, "회의 생성자나 OWNER만 회의를 수정할 수 있어요."),
     MEETING_IN_PROGRESS(HttpStatus.CONFLICT, "진행 중인 회의는 삭제할 수 없어요."),
     MEETING_NOT_SCHEDULED(HttpStatus.CONFLICT, "예정된 회의만 수정할 수 있어요."),
-    MEETING_PARTICIPANT_NOT_MEMBER(HttpStatus.BAD_REQUEST, "프로젝트에 소속되지 않은 참여자가 있어요.");
+    MEETING_PARTICIPANT_NOT_MEMBER(HttpStatus.BAD_REQUEST, "프로젝트에 소속되지 않은 참여자가 있어요."),
+    MEETING_NOT_IN_PROGRESS(HttpStatus.CONFLICT, "진행 중인 회의만 종료할 수 있어요."),
+    MEETING_NO_TRANSCRIPT(HttpStatus.BAD_REQUEST, "저장된 자막이 없어요.");
 
     private final HttpStatus httpStatus;
     private final String message;
