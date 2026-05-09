@@ -7,7 +7,6 @@ import { SectionHeader } from '../ui/SectionHeader';
 import { AnimatedBar } from '../visuals/AnimatedBar';
 import { CompetitorTable } from '../visuals/CompetitorTable';
 import { PainPointCloud } from '../visuals/PainPointCloud';
-import { PersonaJourney } from '../visuals/PersonaJourney';
 import { ProblemSolutionFlow } from '../visuals/ProblemSolutionFlow';
 import { RespondentChart } from '../visuals/RespondentChart';
 import { StatDonut } from '../visuals/StatDonut';
@@ -86,18 +85,8 @@ export function IntroSection() {
           }
         />
 
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-24"
-        >
-          <PersonaJourney />
-        </motion.div>
-
         {/* PAIN POINT — title left + (cloud + numbered list) right */}
-        <div className="mt-40 grid gap-12 lg:grid-cols-[0.85fr_1.5fr] lg:gap-20">
+        <div className="mt-32 grid gap-12 lg:grid-cols-[0.85fr_1.5fr] lg:gap-20">
           <div className="lg:sticky lg:top-32 lg:self-start">
             <SubHeader
               eyebrow="Pain Point"
@@ -123,7 +112,7 @@ export function IntroSection() {
         </div>
 
         <div className="mt-40">
-          <SubHeader eyebrow="Survey" title="실제 사용자에게 직접 물어봤어요" />
+          <SubHeader eyebrow="Survey" title="실제 경험자에게 직접 물어봤어요" />
 
           <div className="mt-16">
             <RespondentChart />

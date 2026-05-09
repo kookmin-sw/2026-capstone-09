@@ -22,7 +22,7 @@ export function Footer() {
                 <span>으로 시작해요.</span>
               </span>
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
+            <div className="mt-8 hidden flex-wrap items-center gap-3 md:flex">
               <GoogleLoginButton size="lg" />
               <DownloadButton size="lg" />
             </div>

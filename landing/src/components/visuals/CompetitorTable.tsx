@@ -21,8 +21,8 @@ const ROWS: Row[] = [
 
 export function CompetitorTable() {
   return (
-    <div className="overflow-x-auto overflow-y-hidden">
-      <div className="grid min-w-[720px] grid-cols-[1.4fr_0.7fr_0.9fr_0.7fr_2fr] gap-4 border-b border-white/[0.10] px-6 py-5 text-[13px] uppercase tracking-[0.16em] text-[var(--color-text-dim)]">
+    <div className="overflow-hidden lg:overflow-x-auto lg:overflow-y-hidden">
+      <div className="grid min-w-0 grid-cols-[1.05fr_42px_52px_42px_1.15fr] gap-2 border-b border-white/[0.10] px-3 py-4 text-[10px] uppercase tracking-[0.08em] text-[var(--color-text-dim)] sm:text-[11px] lg:min-w-[720px] lg:grid-cols-[1.4fr_0.7fr_0.9fr_0.7fr_2fr] lg:gap-4 lg:px-6 lg:py-5 lg:text-[13px] lg:tracking-[0.16em]">
         <span>도구</span>
         <span className="text-center">시각화</span>
         <span className="text-center">회의 정리</span>
@@ -38,7 +38,7 @@ export function CompetitorTable() {
             viewport={{ once: true, margin: '-60px' }}
             transition={{ duration: 0.5, delay: idx * 0.06 }}
             className={[
-              'group relative grid min-w-[720px] grid-cols-[1.4fr_0.7fr_0.9fr_0.7fr_2fr] items-center gap-4 px-6 py-5 transition-colors',
+              'group relative grid min-w-0 grid-cols-[1.05fr_42px_52px_42px_1.15fr] items-center gap-2 px-3 py-4 transition-colors lg:min-w-[720px] lg:grid-cols-[1.4fr_0.7fr_0.9fr_0.7fr_2fr] lg:gap-4 lg:px-6 lg:py-5',
               row.highlight ? 'bg-[var(--color-primary-50)]/[0.06]' : 'hover:bg-white/[0.025]',
             ].join(' ')}
           >
@@ -47,7 +47,7 @@ export function CompetitorTable() {
             )}
             <span
               className={[
-                'text-[15px] font-semibold',
+                'break-keep text-[12.5px] font-semibold sm:text-[14px] lg:text-[15px]',
                 row.highlight ? 'text-[var(--color-primary-50)]' : 'text-white',
               ].join(' ')}
             >
@@ -56,7 +56,9 @@ export function CompetitorTable() {
             <Mark v={row.visualization} />
             <Mark v={row.meeting} />
             <Mark v={row.ai} />
-            <span className="text-[13.5px] text-[var(--color-text-muted)]">{row.limitation}</span>
+            <span className="break-keep text-[10.5px] leading-[1.35] text-[var(--color-text-muted)] sm:text-[12px] lg:text-[13.5px]">
+              {row.limitation}
+            </span>
           </motion.div>
         ))}
       </div>

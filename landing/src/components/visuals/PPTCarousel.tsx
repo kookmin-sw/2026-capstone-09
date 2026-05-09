@@ -194,7 +194,7 @@ function SlideSurvey() {
   return (
     <div className="relative flex h-full w-full flex-col gap-3 overflow-hidden p-6">
       <SlideHeader index="03" label="Survey" />
-      <p className="text-[13px] font-semibold leading-[1.3] text-white">실제 사용자에게 직접 물어봤어요</p>
+      <p className="text-[13px] font-semibold leading-[1.3] text-white">실제 경험자에게 직접 물어봤어요</p>
       <div className="mt-1 grid flex-1 grid-cols-2 gap-2">
         <SurveyStat percent="75.2%" label="시각적 다이어그램" />
         <SurveyStat percent="91.5%" label="시각화 도구 도입 의향" />

@@ -32,7 +32,29 @@ export function ProblemSolutionFlow() {
       <div className="pointer-events-none absolute -left-20 top-1/2 h-[460px] w-[460px] -translate-y-1/2 rounded-full bg-rose-500/[0.10] blur-[130px]" />
       <div className="pointer-events-none absolute -right-20 top-1/2 h-[500px] w-[500px] -translate-y-1/2 rounded-full bg-[var(--color-primary-50)]/[0.16] blur-[140px]" />
 
-      <div className="relative grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-3 gap-y-7 sm:gap-x-6 lg:gap-x-10 lg:gap-y-9">
+      <div className="relative flex flex-col gap-5 lg:hidden">
+        {PAIRS.map((pair, index) => (
+          <MobileCard
+            key={pair.problem}
+            variant="problem"
+            pair={pair}
+            index={index}
+          />
+        ))}
+        <div className="flex justify-center py-2 text-[var(--color-primary-50)]">
+          <DownArrow />
+        </div>
+        {PAIRS.map((pair, index) => (
+          <MobileCard
+            key={pair.solution}
+            variant="solution"
+            pair={pair}
+            index={index}
+          />
+        ))}
+      </div>
+
+      <div className="relative hidden grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-10 gap-y-9 lg:grid">
         {/* Header row */}
         <div className="flex items-center gap-2">
           <span className="block h-1.5 w-1.5 rounded-full bg-rose-400/70" />
@@ -106,6 +128,64 @@ function PairRow({ pair, index }: { pair: (typeof PAIRS)[number]; index: number 
         </div>
       </motion.div>
     </>
+  );
+}
+
+function MobileCard({
+  variant,
+  pair,
+  index,
+}: {
+  variant: 'problem' | 'solution';
+  pair: (typeof PAIRS)[number];
+  index: number;
+}) {
+  const isSolution = variant === 'solution';
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-60px' }}
+      transition={{ duration: 0.55, delay: index * 0.08 }}
+      className={[
+        'flex items-center gap-4 rounded-3xl border p-5',
+        isSolution
+          ? 'border-[var(--color-primary-50)]/20 bg-[var(--color-primary-50)]/[0.06]'
+          : 'border-white/[0.08] bg-white/[0.03]',
+      ].join(' ')}
+    >
+      <Orb variant={variant} index={index} icon={pair.icon} />
+      <div className="min-w-0 flex-1">
+        <p
+          className={[
+            'font-medium text-[10px] tracking-[0.18em]',
+            isSolution ? 'text-[var(--color-primary-50)]' : 'text-rose-300/70',
+          ].join(' ')}
+        >
+          {isSolution ? 'FLOWMEET' : 'PROBLEM'} · {String(index + 1).padStart(2, '0')}
+        </p>
+        <h5 className="mt-1.5 text-[18px] font-semibold leading-[1.3] text-white">
+          {isSolution ? pair.solution : pair.problem}
+        </h5>
+        <p className="mt-1 text-[13px] text-[var(--color-text-muted)]">
+          {isSolution ? pair.solutionSub : pair.problemSub}
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
+function DownArrow() {
+  return (
+    <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M12 4v14m0 0 5-5m-5 5-5-5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 

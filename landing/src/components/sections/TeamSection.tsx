@@ -3,7 +3,6 @@
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { useRef } from 'react';
 import { SectionHeader } from '../ui/SectionHeader';
-import { asset } from '@/lib/asset';
 
 interface Member {
   name: string;
@@ -89,38 +88,7 @@ export function TeamSection() {
           description="국민대학교 2026 캡스톤디자인 Team 09"
         />
 
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
-          transition={{ duration: 0.8 }}
-          className="relative mt-16 overflow-hidden rounded-3xl border border-white/[0.08] bg-gradient-to-br from-white/[0.04] to-transparent"
-        >
-          <div className="relative h-[360px] w-full overflow-hidden">
-            <img
-              src={asset('/team/group.jpg')}
-              alt="flowMeet 팀 단체사진"
-              className="absolute inset-0 h-full w-full object-cover opacity-90"
-              onError={(e) => {
-                (e.currentTarget as HTMLImageElement).style.display = 'none';
-              }}
-            />
-            <TeamBackdropFallback />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/40" />
-            <div className="absolute inset-0 flex items-end justify-between gap-6 p-8 lg:p-10">
-              <div>
-                <p className="text-[11px] uppercase tracking-[0.25em] text-[var(--color-primary-50)]">
-                  Team Photo
-                </p>
-                <p className="mt-2 max-w-[460px] text-[15px] leading-[1.7] text-white">
-                  6명이 모여 노드라는 단위로 팀 협업의 흐름을 새로 짜고 있어요.
-                </p>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-16 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {TEAM.map((m, i) => (
             <MemberCard key={m.name} member={m} index={i} />
           ))}
@@ -199,33 +167,6 @@ function MemberCard({ member, index }: { member: Member; index: number }) {
         </a>
       </div>
     </motion.article>
-  );
-}
-
-function TeamBackdropFallback() {
-  return (
-    <div className="absolute inset-0">
-      <div className="bg-grid-fine absolute inset-0 opacity-30" />
-      <svg
-        className="absolute inset-0 h-full w-full"
-        viewBox="0 0 1100 360"
-        preserveAspectRatio="xMidYMid slice"
-        aria-hidden
-      >
-        <defs>
-          <radialGradient id="team-orb-1" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#04e6a2" stopOpacity="0.50" />
-            <stop offset="100%" stopColor="#04e6a2" stopOpacity="0" />
-          </radialGradient>
-          <radialGradient id="team-orb-2" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#7BD3FF" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="#7BD3FF" stopOpacity="0" />
-          </radialGradient>
-        </defs>
-        <circle cx="200" cy="180" r="280" fill="url(#team-orb-1)" />
-        <circle cx="900" cy="140" r="320" fill="url(#team-orb-2)" />
-      </svg>
-    </div>
   );
 }
 

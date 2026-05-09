@@ -89,31 +89,20 @@ function DocBlock({ item, index }: { item: (typeof ITEMS)[number]; index: number
           : 'lg:grid-cols-[minmax(280px,1fr)_minmax(0,900px)]',
       ].join(' ')}
     >
-      {reverse ? (
-        <>
-          <div className="w-full max-w-[900px]">
-            <DocSkeleton />
-          </div>
-          <div className="flex flex-col items-end gap-4 text-right">
-            <Eyebrow>{item.eyebrow}</Eyebrow>
-            <h3 className="text-[clamp(48px,7vw,104px)] font-semibold leading-[1] tracking-[-0.03em] text-white">
-              {item.title}
-            </h3>
-          </div>
-        </>
-      ) : (
-        <>
-          <div className="flex flex-col gap-4">
-            <Eyebrow>{item.eyebrow}</Eyebrow>
-            <h3 className="text-[clamp(48px,7vw,104px)] font-semibold leading-[1] tracking-[-0.03em] text-white">
-              {item.title}
-            </h3>
-          </div>
-          <div className="w-full max-w-[900px]">
-            <DocSkeleton />
-          </div>
-        </>
-      )}
+      <div
+        className={[
+          'flex flex-col gap-4',
+          reverse ? 'lg:order-2 lg:items-end lg:text-right' : '',
+        ].join(' ')}
+      >
+        <Eyebrow>{item.eyebrow}</Eyebrow>
+        <h3 className="text-[clamp(48px,7vw,104px)] font-semibold leading-[1] tracking-[-0.03em] text-white">
+          {item.title}
+        </h3>
+      </div>
+      <div className={['w-full max-w-[900px]', reverse ? 'lg:order-1' : ''].join(' ')}>
+        <DocSkeleton />
+      </div>
     </motion.div>
   );
 }

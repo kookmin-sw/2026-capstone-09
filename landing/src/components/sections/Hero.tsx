@@ -57,14 +57,14 @@ export function Hero() {
           transition={{ duration: 0.9, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
           className="max-w-[calc(100vw-32px)] text-balance font-bold leading-[1.02] tracking-[-0.04em]"
         >
-          <span className="block break-keep text-gradient-soft text-[28px] sm:text-[clamp(24px,6vw,88px)] lg:whitespace-nowrap">
-            <span className="block sm:inline">기획이 흐름을 만나는</span>
-            <span className="block sm:inline"> 순간,</span>
+          <span className="block whitespace-nowrap text-gradient-soft text-[24px] sm:text-[clamp(24px,6vw,88px)]">
+            기획이 흐름을 만나는 순간,
           </span>
           <img
             src={asset('/flowMeet.svg')}
             alt="flowMeet"
-            className="mx-auto mt-4 block h-auto w-[min(82vw,720px)] sm:w-[min(76vw,840px)]"
+            style={{ width: 'min(82vw, 840px)' }}
+            className="mx-auto mt-4 block h-auto"
           />
         </motion.h1>
 
@@ -72,7 +72,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap"
+          className="mt-12 hidden flex-col items-center justify-center gap-3 md:flex sm:flex-row sm:flex-wrap"
         >
           <GoogleLoginButton size="lg" />
           <DownloadButton size="lg" />
@@ -81,7 +81,7 @@ export function Hero() {
 
       {/* Centered bottom — keywords above, scroll below (static) */}
       <div className="absolute bottom-8 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-7">
-        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 px-4 text-[12px] sm:gap-x-10">
+        <div className="flex flex-row flex-nowrap items-center justify-center gap-x-6 px-4 text-[12px] sm:gap-x-10">
           <KeyMarker label="Node Flow" sub="기획 분기" />
           <span className="hidden h-7 w-px bg-white/[0.08] sm:block" />
           <KeyMarker label="Meeting" sub="자동 정리" />
@@ -107,11 +107,11 @@ export function Hero() {
 
 function KeyMarker({ label, sub }: { label: string; sub: string }) {
   return (
-    <div className="flex flex-col items-center gap-0.5">
-      <span className="text-[12.5px] font-medium tracking-tight text-[var(--color-primary-50)]">
+    <div className="flex flex-col items-center gap-0.5 whitespace-nowrap">
+      <span className="text-[12px] font-medium tracking-tight text-[var(--color-primary-50)] sm:text-[12.5px]">
         {label}
       </span>
-      <span className="text-[10px] uppercase tracking-[0.2em] text-[var(--color-text-dim)]">
+      <span className="text-[9.5px] uppercase tracking-[0.16em] text-[var(--color-text-dim)] sm:text-[10px] sm:tracking-[0.2em]">
         {sub}
       </span>
     </div>
