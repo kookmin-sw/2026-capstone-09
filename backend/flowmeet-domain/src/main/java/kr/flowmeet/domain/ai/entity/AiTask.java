@@ -44,12 +44,6 @@ public class AiTask extends BaseTimeEntity {
     @Column(nullable = false)
     private AiTaskStatus status;
 
-    @Column(columnDefinition = "TEXT")
-    private String result;
-
-    @Column(name = "mermaid_code", columnDefinition = "TEXT")
-    private String mermaidCode;
-
     @Column(name = "error_message")
     private String errorMessage;
 
@@ -66,10 +60,8 @@ public class AiTask extends BaseTimeEntity {
         this.status = AiTaskStatus.PROCESSING;
     }
 
-    public void complete(final String result, final String mermaidCode) {
+    public void complete() {
         this.status = AiTaskStatus.COMPLETED;
-        this.result = result;
-        this.mermaidCode = mermaidCode;
     }
 
     public void fail(final String errorMessage) {
