@@ -22,6 +22,11 @@ public class AiTaskService {
                 .orElseThrow(() -> new BusinessException(AiTaskErrorCode.AI_TASK_NOT_FOUND));
     }
 
+    public AiTask findByIdAndUserId(final String id, final Long userId) {
+        return aiTaskRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new BusinessException(AiTaskErrorCode.AI_TASK_NOT_FOUND));
+    }
+
     @Transactional
     public AiTask create(final Long userId, final Long referenceId, final AiTaskType taskType) {
         return aiTaskRepository.save(
@@ -35,14 +40,16 @@ public class AiTaskService {
     }
 
     @Transactional
-    public void complete(final String jobId, final String result, final String mermaidCode) {
+    public AiTask complete(final String jobId, final String result, final String mermaidCode) {
         AiTask task = findById(jobId);
         task.complete(result, mermaidCode);
+        return task;
     }
 
     @Transactional
-    public void fail(final String jobId, final String errorMessage) {
+    public AiTask fail(final String jobId, final String errorMessage) {
         AiTask task = findById(jobId);
         task.fail(errorMessage);
+        return task;
     }
 }
