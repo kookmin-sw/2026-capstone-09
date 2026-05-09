@@ -37,6 +37,8 @@ public record GetNodeResponse(
         List<AssigneeItem> assignees,
         @Schema(description = "연결된 회의 정보 (없으면 null)")
         MeetingItem meeting,
+        @Schema(description = "하위 노드 회의록을 종합한 AI 요약 (하위 노드가 없거나 생성 전이라면 null)")
+        String summary,
         @Schema(description = "생성 시각", example = "2026-03-01T09:00:00")
         LocalDateTime createdAt,
         @Schema(description = "마지막 수정 시각", example = "2026-04-19T10:15:30")
@@ -64,6 +66,7 @@ public record GetNodeResponse(
                 tags.stream().map(TagItem::from).toList(),
                 assignees.stream().map(AssigneeItem::from).toList(),
                 meeting != null ? MeetingItem.of(meeting, meetingParticipants, userMap) : null,
+                node.getSummary(),
                 node.getCreatedAt(),
                 node.getUpdatedAt()
         );
@@ -83,8 +86,10 @@ public record GetNodeResponse(
             LocalDateTime pushNotifyAt,
             @Schema(description = "화상 회의 링크", example = "https://meet.google.com/abc-defg-hij")
             String meetingUrl,
-            @Schema(description = "AI 요약 (생성 전이라면 null)")
+            @Schema(description = "회의록 AI 요약 (생성 전이라면 null)")
             String summary,
+            @Schema(description = "Mermaid 다이어그램 코드 (생성 전이라면 null)")
+            String mermaidCode,
             @Schema(description = "참여자 목록")
             List<ParticipantItem> participants,
             @Schema(description = "회의 생성자")
@@ -106,6 +111,7 @@ public record GetNodeResponse(
                     meeting.getPushNotifyAt(),
                     meeting.getMeetingUrl(),
                     meeting.getSummary(),
+                    meeting.getMermaidCode(),
                     participants.stream()
                             .map(p -> ParticipantItem.of(p, userMap.get(p.getUserId())))
                             .toList(),
