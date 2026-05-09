@@ -1,8 +1,6 @@
 "use client";
 
-import { motion, useMotionValueEvent, useScroll, useSpring, useTransform } from "framer-motion";
 import type { ReactNode } from "react";
-import { useRef, useState } from "react";
 import { Eyebrow } from "../ui/Eyebrow";
 import { SectionHeader } from "../ui/SectionHeader";
 import { FeatureSkeleton } from "../visuals/FeatureSkeleton";
@@ -134,59 +132,35 @@ function FeatureText({
   feature: Feature;
   isLast: boolean;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [hasEntered, setHasEntered] = useState(false);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start 128px", "end center"],
-  });
-  const smoothed = useSpring(scrollYProgress, {
-    stiffness: 70,
-    damping: 28,
-    mass: 0.9,
-  });
-  const exitOpacity = useTransform(smoothed, [0.58, 1], [1, 0]);
-
-  useMotionValueEvent(scrollYProgress, "change", (latest) => {
-    setHasEntered(latest > 0.01);
-  });
-
   return (
     <div
-      ref={ref}
       className={[
-        "relative",
-        isLast ? "min-h-[210vh]" : "min-h-[210vh] pb-28",
+        "relative flex min-h-screen items-center",
+        isLast ? "" : "pb-28",
       ].join(" ")}
     >
-      <motion.div
-        animate={{ opacity: hasEntered ? 1 : 0 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="sticky top-[30vh] flex flex-col gap-6"
-      >
-        <motion.div style={{ opacity: exitOpacity }} className="flex flex-col gap-6">
-          <Eyebrow>{feature.eyebrow}</Eyebrow>
-          <h3 className="text-balance text-[clamp(32px,3.6vw,48px)] font-semibold leading-[1.12] tracking-[-0.02em] text-white">
-            {feature.title}
-          </h3>
-          <p className="text-[16px] leading-[1.75] text-[var(--color-text-muted)]">
-            {feature.description}
-          </p>
-          <ul className="mt-2 flex flex-col gap-3">
-            {feature.bullets.map((b) => (
-              <li
-                key={b}
-                className="flex items-start gap-3 text-[14.5px] text-[var(--color-text)]"
-              >
-                <span className="mt-1.5 inline-flex h-3.5 w-3.5 flex-none items-center justify-center rounded-full bg-[var(--color-primary-50)]/15 text-[var(--color-primary-50)]">
-                  <CheckSmall />
-                </span>
-                {b}
-              </li>
-            ))}
-          </ul>
-        </motion.div>
-      </motion.div>
+      <div className="flex flex-col gap-6">
+        <Eyebrow>{feature.eyebrow}</Eyebrow>
+        <h3 className="text-balance text-[clamp(32px,3.6vw,48px)] font-semibold leading-[1.12] tracking-[-0.02em] text-white">
+          {feature.title}
+        </h3>
+        <p className="text-[16px] leading-[1.75] text-[var(--color-text-muted)]">
+          {feature.description}
+        </p>
+        <ul className="mt-2 flex flex-col gap-3">
+          {feature.bullets.map((b) => (
+            <li
+              key={b}
+              className="flex items-start gap-3 text-[14.5px] text-[var(--color-text)]"
+            >
+              <span className="mt-1.5 inline-flex h-3.5 w-3.5 flex-none items-center justify-center rounded-full bg-[var(--color-primary-50)]/15 text-[var(--color-primary-50)]">
+                <CheckSmall />
+              </span>
+              {b}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
