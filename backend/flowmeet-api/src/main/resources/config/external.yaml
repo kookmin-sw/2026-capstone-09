@@ -18,6 +18,8 @@ cloud:
       request-queue-url: ${SQS_REQUEST_QUEUE_URL:}
       response-queue-url: ${SQS_RESPONSE_QUEUE_URL:}
       region: ${SQS_REGION:ap-northeast-2}
+    ai:
+      endpoint-url: ${AI_NODE_ANALYSIS_ENDPOINT_URL:}
 
 google:
   meet:
