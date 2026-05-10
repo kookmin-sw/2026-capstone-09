@@ -1,5 +1,5 @@
 -- ---------------------------------------------------------
--- ai_tasks
+-- V16__add_ai.tasks.sql
 -- ---------------------------------------------------------
 CREATE TABLE ai_tasks (
     ai_task_id   VARCHAR(36)  PRIMARY KEY,
@@ -7,6 +7,8 @@ CREATE TABLE ai_tasks (
     reference_id BIGINT       NOT NULL,
     task_type    VARCHAR(50)  NOT NULL,
     status       VARCHAR(50)  NOT NULL,
+    result       TEXT,
+    mermaid_code TEXT,
     error_message VARCHAR(500),
     created_at   TIMESTAMP    NOT NULL,
     updated_at   TIMESTAMP    NOT NULL,
