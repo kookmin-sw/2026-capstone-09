@@ -28,10 +28,10 @@ public class AuthController implements AuthApi {
     @Override
     @PostMapping("/login/{provider}")
     public CommonResponse<?> login(
-            @PathVariable("provider") SocialProvider provider,
+            @PathVariable String provider,
             @Valid @RequestBody SocialLoginRequest request
     ) {
-        LoginResult result = authFacade.login(provider, request);
+        LoginResult result = authFacade.login(SocialProvider.from(provider), request);
         return switch (result) {
             case LoginResult.LoggedIn loggedIn -> CommonResponse.ok(AuthSuccessCode.LOGIN, loggedIn.tokens());
             case LoginResult.SignupRequired signupRequired ->

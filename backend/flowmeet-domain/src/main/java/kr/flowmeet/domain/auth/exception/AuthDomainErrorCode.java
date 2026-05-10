@@ -9,7 +9,8 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum AuthDomainErrorCode implements ErrorCode {
     AUTH_INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "로그인 정보가 유효하지 않아요. 다시 로그인해 주세요."),
-    AUTH_EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "로그인 유효기간이 만료됐어요. 다시 로그인해 주세요.");
+    AUTH_EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "로그인 유효기간이 만료됐어요. 다시 로그인해 주세요."),
+    AUTH_INVALID_PROVIDER(HttpStatus.BAD_REQUEST, "유효하지 않은 소셜 로그인 제공자입니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

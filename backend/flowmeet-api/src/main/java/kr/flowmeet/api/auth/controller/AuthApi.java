@@ -14,6 +14,7 @@ import kr.flowmeet.api.common.swagger.ApiSuccessCode;
 import kr.flowmeet.auth.exception.AuthErrorCode;
 import kr.flowmeet.domain.user.entity.SocialProvider;
 import kr.flowmeet.domain.user.exception.UserErrorCode;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @Tag(name = "Auth", description = "인증")
@@ -32,7 +33,7 @@ public interface AuthApi {
     @ApiErrorCode(code = AuthErrorCode.class, names = {
             "AUTH_INVALID_CODE", "AUTH_PROVIDER_ERROR", "AUTH_PROVIDER_UNSUPPORTED"
     })
-    CommonResponse<?> login(SocialProvider provider, @Valid @RequestBody SocialLoginRequest request);
+    CommonResponse<?> login(@PathVariable String provider, @Valid @RequestBody SocialLoginRequest request);
 
     @Operation(summary = "회원가입", description = "소셜 로그인 후 미가입 유저의 추가 정보 입력 및 회원가입 완료")
     @ApiSuccessCode(code = AuthSuccessCode.class, name = "SIGNUP")
