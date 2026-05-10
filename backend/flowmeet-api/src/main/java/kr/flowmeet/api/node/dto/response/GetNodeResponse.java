@@ -1,5 +1,6 @@
 package kr.flowmeet.api.node.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,8 +38,9 @@ public record GetNodeResponse(
         List<AssigneeItem> assignees,
         @Schema(description = "연결된 회의 정보 (없으면 null)")
         MeetingItem meeting,
-        @Schema(description = "하위 노드 회의록을 종합한 AI 요약 (하위 노드가 없거나 생성 전이라면 null)")
-        String summary,
+        @Schema(description = "하위 노드 회의록을 종합한 AI 요약 (메인 노드 전용, 서브 노드에서는 필드 자체가 생략됨)")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        String mainSummary,
         @Schema(description = "생성 시각", example = "2026-03-01T09:00:00")
         LocalDateTime createdAt,
         @Schema(description = "마지막 수정 시각", example = "2026-04-19T10:15:30")
