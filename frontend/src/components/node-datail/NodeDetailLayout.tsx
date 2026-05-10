@@ -1,5 +1,6 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { EditorContent } from '@tiptap/react';
 import { ContentBadge, Tab, TabList, TabListItem, TabPanel, Typography } from '@wanteddev/wds';
 import {
@@ -9,13 +10,16 @@ import {
   IconPersons,
   IconTag,
 } from '@wanteddev/wds-icon';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
-import { privateApi } from '@/api';
 import { AssigneeItem, GetNodeResponse, TagItem } from '@/api/Api';
-import GoogleMeetIcon from '@/assets/svgs/google-meet.svg';
+import { GoogleMeetIcon } from '@/assets/svgs/GoogleMeetIcon';
+import { Loading } from '@/components/commons/loading/Loading';
 import { EXAMPLE_USERS } from '@/constants/exampleConstant';
 import { NodeStatusType } from '@/constants/nodeStatus';
+import { useErrorToast } from '@/hooks/useErrorToast';
+import { nodeKeys } from '@/queries/keys/nodeKeys';
+import { useNodeDetailQuery, useUpdateNodeTitleMutation } from '@/queries/node';
 import { formatDatetoString } from '@/utils/formatData';
 import { AssigneeField } from './fields/AssigneeField';
 import { DescriptionField } from './fields/DescriptionField';
@@ -41,63 +45,60 @@ export function NodeDetailLayout({
   value,
   onValueChange,
 }: NodeDetailLayoutProps) {
-  const [nodeDetail, setNodeDetail] = useState<GetNodeResponse | undefined>(undefined);
+  const queryClient = useQueryClient();
+  const { data: nodeDetail, error, isLoading } = useNodeDetailQuery(projectId, nodeId);
+  const showErrorToast = useErrorToast();
 
-  const handleTitleUpdate = async (title: string) => {
+  useEffect(() => {
+    if (error) showErrorToast(error, '노드 정보를 불러오는데 실패했어요.');
+  }, [error, showErrorToast]);
+
+  const updateCache = (updater: (prev: GetNodeResponse) => GetNodeResponse) => {
+    queryClient.setQueryData(
+      nodeKeys.detail(projectId, nodeId),
+      (old: GetNodeResponse | undefined) => (old ? updater(old) : old),
+    );
+  };
+
+  const { mutate: updateTitle } = useUpdateNodeTitleMutation(projectId, nodeId);
+
+  const handleTitleUpdate = (title: string) => {
     if (!nodeId || title === (nodeDetail?.title ?? '')) return;
-    const previous = nodeDetail?.title ?? '';
-    setNodeDetail((prev) => (prev ? { ...prev, title } : prev));
-    try {
-      await privateApi.node.updateNodeTitle(projectId, nodeId, { title });
-    } catch {
-      setNodeDetail((prev) => (prev ? { ...prev, title: previous } : prev));
-    }
+    updateTitle(title, {
+      onError: (err) => showErrorToast(err, '제목 수정에 실패했어요.'),
+    });
   };
 
   const titleEditor = useTitleEditor(nodeDetail?.title, handleTitleUpdate);
 
-  useEffect(() => {
-    const fetchNodeDetail = async () => {
-      try {
-        if (!projectId || !nodeId) return;
-        const data = await privateApi.node.getNode(projectId, nodeId ?? 0);
-        setNodeDetail(data.data.data);
-      } catch (error) {
-        console.error('Failed to load node detail:', error);
-      }
-    };
-    void fetchNodeDetail();
-  }, [projectId, nodeId]);
-
   const handleStatusUpdate = (status: NodeStatusType) => {
-    setNodeDetail((prev) => (prev ? { ...prev, status } : prev));
+    updateCache((prev) => ({ ...prev, status }));
   };
 
   const handleDescriptionUpdate = (description: string) => {
-    setNodeDetail((prev) => (prev ? { ...prev, description } : prev));
+    updateCache((prev) => ({ ...prev, description }));
   };
 
   const handleTagAdd = (tag: TagItem) => {
-    setNodeDetail((prev) => (prev ? { ...prev, tags: [...(prev.tags ?? []), tag] } : prev));
+    updateCache((prev) => ({ ...prev, tags: [...(prev.tags ?? []), tag] }));
   };
 
   const handleTagRemove = (tagId: number) => {
-    setNodeDetail((prev) =>
-      prev ? { ...prev, tags: prev.tags?.filter((t) => t.tagId !== tagId) } : prev,
-    );
+    updateCache((prev) => ({ ...prev, tags: prev.tags?.filter((t) => t.tagId !== tagId) }));
   };
 
   const handleAssigneeAdd = (assignee: AssigneeItem) => {
-    setNodeDetail((prev) =>
-      prev ? { ...prev, assignees: [...(prev.assignees ?? []), assignee] } : prev,
-    );
+    updateCache((prev) => ({ ...prev, assignees: [...(prev.assignees ?? []), assignee] }));
   };
 
   const handleAssigneeRemove = (userId: number) => {
-    setNodeDetail((prev) =>
-      prev ? { ...prev, assignees: prev.assignees?.filter((a) => a.userId !== userId) } : prev,
-    );
+    updateCache((prev) => ({
+      ...prev,
+      assignees: prev.assignees?.filter((a) => a.userId !== userId),
+    }));
   };
+
+  if (isLoading) return <Loading />;
 
   return (
     <div className="flex h-full flex-col overflow-y-scroll [&::-webkit-scrollbar]:hidden">
@@ -180,10 +181,6 @@ export function NodeDetailLayout({
             className="text-label-1-normal flex items-center justify-between rounded-lg border border-gray-200 p-3"
           >
             <div>{formatDatetoString(nodeDetail?.meeting?.startedAt)}에 회의 예정</div>
-            {/* <img
-              className="h-5 w-5"
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Google_Meet_icon_%282020%29.svg/250px-Google_Meet_icon_%282020%29.svg.png"
-            /> */}
             <GoogleMeetIcon />
           </a>
         ) : (
@@ -197,12 +194,7 @@ export function NodeDetailLayout({
           {nodeDetail?.parentId && <TabListItem value="meeting">회의</TabListItem>}
         </TabList>
         <TabPanel value="note">{noteContent}</TabPanel>
-        <TabPanel
-          value="meeting"
-          sx={{
-            flex: 1,
-          }}
-        >
+        <TabPanel value="meeting" sx={{ flex: 1 }}>
           {meetingContent}
         </TabPanel>
       </Tab>

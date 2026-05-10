@@ -1,7 +1,9 @@
 'use client';
 
 import { EditorContent } from '@tiptap/react';
-import { privateApi } from '@/api';
+
+import { useErrorToast } from '@/hooks/useErrorToast';
+import { useUpdateNodeDescriptionMutation } from '@/queries/node';
 import { useDescriptionEditor } from '../hooks/useDescriptionEditor';
 
 interface DescriptionFieldProps {
@@ -17,15 +19,19 @@ export function DescriptionField({
   description,
   onUpdate,
 }: DescriptionFieldProps) {
-  const handleSave = async (text: string) => {
+  const showErrorToast = useErrorToast();
+  const { mutate: updateDescription } = useUpdateNodeDescriptionMutation(projectId, nodeId);
+
+  const handleSave = (text: string) => {
     if (text === (description ?? '')) return;
     const previous = description ?? '';
     onUpdate(text);
-    try {
-      await privateApi.node.updateNodeDescription(projectId, nodeId, { description: text });
-    } catch {
-      onUpdate(previous);
-    }
+    updateDescription(text, {
+      onError: (err) => {
+        onUpdate(previous);
+        showErrorToast(err, '설명 수정에 실패했어요.');
+      },
+    });
   };
 
   const editor = useDescriptionEditor(description, handleSave);
