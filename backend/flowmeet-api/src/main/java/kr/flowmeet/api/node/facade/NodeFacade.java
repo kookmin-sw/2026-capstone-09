@@ -5,11 +5,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import kr.flowmeet.api.ai.handler.NodeSummaryTextMerger;
+import kr.flowmeet.api.node.dto.response.RequestNodeSummaryResponse;
+import kr.flowmeet.api.node.event.NodeSummaryRequestEvent;
+import kr.flowmeet.domain.ai.entity.AiTask;
+import kr.flowmeet.domain.ai.entity.AiTaskType;
+import kr.flowmeet.domain.ai.service.AiTaskService;
 import kr.flowmeet.domain.node.service.NodeSortType;
 import kr.flowmeet.domain.node.service.NodeValidator;
 import kr.flowmeet.domain.project.entity.ProjectMemberRole;
 import kr.flowmeet.domain.project.service.ProjectPermissionValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import kr.flowmeet.api.node.dto.request.CreateNodeRequest;
@@ -21,6 +28,7 @@ import kr.flowmeet.api.node.dto.response.GetLinkedNodesResponse;
 import kr.flowmeet.api.node.dto.response.GetNodeListResponse;
 import kr.flowmeet.api.node.dto.response.GetNodeResponse;
 import kr.flowmeet.api.node.dto.response.SearchNodeResponse;
+import kr.flowmeet.domain.common.exception.BusinessException;
 import kr.flowmeet.domain.meeting.entity.Meeting;
 import kr.flowmeet.domain.meeting.entity.MeetingParticipant;
 import kr.flowmeet.domain.meeting.service.MeetingService;
@@ -30,6 +38,7 @@ import kr.flowmeet.domain.node.entity.NodeAssignee;
 import kr.flowmeet.domain.node.entity.NodeStatus;
 import kr.flowmeet.domain.node.entity.NodeTag;
 import kr.flowmeet.domain.node.entity.Tag;
+import kr.flowmeet.domain.node.exception.NodeErrorCode;
 import kr.flowmeet.domain.node.service.EdgeService;
 import kr.flowmeet.domain.node.service.NodeAssigneeService;
 import kr.flowmeet.domain.node.service.NodeService;
@@ -52,6 +61,8 @@ public class NodeFacade {
     private final ProjectPermissionValidator projectPermissionValidator;
     private final NodeValidator nodeValidator;
     private final UserService userService;
+    private final AiTaskService aiTaskService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public GetFlowchartResponse getFlowchart(final Long userId, final Long projectId) {
         projectPermissionValidator.validate(projectId, userId);
@@ -230,6 +241,35 @@ public class NodeFacade {
         List<Edge> edges = edgeService.findAllLinkedByNodeId(projectId, nodeId);
 
         return GetLinkedNodesResponse.of(nodeId, edges);
+    }
+
+    // TODO: 추후 노트(noteContent) 포함 여부 검토
+    @Transactional
+    public RequestNodeSummaryResponse requestNodeSummary(
+            final Long userId,
+            final Long projectId,
+            final Long nodeId
+    ) {
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
+
+        nodeValidator.validateIsIn(nodeId, projectId);
+        List<Node> childNodes = nodeService.findAllByParentId(nodeId);
+
+        List<Long> childNodeIds = childNodes.stream().map(Node::getId).toList();
+        List<Meeting> meetings = meetingService.findAllByNodeIds(childNodeIds);
+
+        Map<Long, Meeting> meetingByNodeId = meetings.stream()
+                .collect(Collectors.toMap(Meeting::getNodeId, m -> m, (a, b) -> a));
+
+        String mergedText = NodeSummaryTextMerger.merge(childNodes, meetingByNodeId);
+        if (mergedText.isEmpty()) {
+            throw new BusinessException(NodeErrorCode.NO_CHILD_SUMMARY);
+        }
+
+        AiTask aiTask = aiTaskService.create(userId, nodeId, AiTaskType.MAIN_SUMMARY);
+        eventPublisher.publishEvent(new NodeSummaryRequestEvent(aiTask.getId(), mergedText));
+
+        return RequestNodeSummaryResponse.from(aiTask.getId());
     }
 
     public SearchNodeResponse search(final Long userId, final Long projectId, final String query) {

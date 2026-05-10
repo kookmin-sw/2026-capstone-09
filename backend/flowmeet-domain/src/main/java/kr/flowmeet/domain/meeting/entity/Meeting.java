@@ -72,6 +72,9 @@ public class Meeting extends BaseSoftDeleteEntity {
     @Column(columnDefinition = "TEXT")
     private String summary;
 
+    @Column(name = "mermaid_code", columnDefinition = "TEXT")
+    private String mermaidCode;
+
     @Column(name = "reminder_sent", nullable = false)
     private boolean reminderSent;
 
@@ -130,5 +133,10 @@ public class Meeting extends BaseSoftDeleteEntity {
 
     public void end() {
         this.status = MeetingStatus.ENDED;
+    }
+
+    public void saveSummary(final String summary, final String mermaidCode) {
+        this.summary = summary;
+        this.mermaidCode = mermaidCode;
     }
 }

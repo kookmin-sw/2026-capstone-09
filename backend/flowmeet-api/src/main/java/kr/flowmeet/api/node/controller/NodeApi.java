@@ -20,6 +20,7 @@ import kr.flowmeet.api.node.dto.response.GetKanbanResponse;
 import kr.flowmeet.api.node.dto.response.GetLinkedNodesResponse;
 import kr.flowmeet.api.node.dto.response.GetNodeListResponse;
 import kr.flowmeet.api.node.dto.response.GetNodeResponse;
+import kr.flowmeet.api.node.dto.response.RequestNodeSummaryResponse;
 import kr.flowmeet.api.node.dto.response.SearchNodeResponse;
 import kr.flowmeet.api.node.success.NodeSuccessCode;
 import kr.flowmeet.auth.annotation.UserId;
@@ -128,6 +129,15 @@ public interface NodeApi {
     @ApiSuccessCode(code = NodeSuccessCode.class, name = "GET_LINKED_NODES")
     @ApiErrorCode(code = NodeErrorCode.class, names = {"NODE_NOT_FOUND"})
     CommonResponse<GetLinkedNodesResponse> getLinkedNodes(
+            @UserId Long userId,
+            @PathVariable Long projectId,
+            @PathVariable Long nodeId
+    );
+
+    @Operation(summary = "메인 노드 요약 요청", description = "하위 노드의 회의록 요약을 종합하여 메인 노드 요약을 요청합니다.")
+    @ApiSuccessCode(code = NodeSuccessCode.class, name = "REQUEST_NODE_SUMMARY")
+    @ApiErrorCode(code = NodeErrorCode.class, names = {"NODE_NOT_FOUND", "NO_CHILD_SUMMARY"})
+    CommonResponse<RequestNodeSummaryResponse> requestNodeSummary(
             @UserId Long userId,
             @PathVariable Long projectId,
             @PathVariable Long nodeId

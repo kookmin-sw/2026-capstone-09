@@ -23,6 +23,7 @@ import kr.flowmeet.api.node.dto.response.GetKanbanResponse;
 import kr.flowmeet.api.node.dto.response.GetLinkedNodesResponse;
 import kr.flowmeet.api.node.dto.response.GetNodeListResponse;
 import kr.flowmeet.api.node.dto.response.GetNodeResponse;
+import kr.flowmeet.api.node.dto.response.RequestNodeSummaryResponse;
 import kr.flowmeet.api.node.dto.response.SearchNodeResponse;
 import kr.flowmeet.api.node.facade.NodeFacade;
 import kr.flowmeet.api.node.success.NodeSuccessCode;
@@ -164,6 +165,17 @@ public class NodeController implements NodeApi {
                 NodeSuccessCode.GET_LINKED_NODES,
                 nodeFacade.getLinkedNodes(userId, projectId, nodeId)
         );
+    }
+
+    @Override
+    @PostMapping("/nodes/{nodeId}/summary")
+    public CommonResponse<RequestNodeSummaryResponse> requestNodeSummary(
+            @UserId Long userId,
+            @PathVariable Long projectId,
+            @PathVariable Long nodeId
+    ) {
+        RequestNodeSummaryResponse response = nodeFacade.requestNodeSummary(userId, projectId, nodeId);
+        return CommonResponse.ok(NodeSuccessCode.REQUEST_NODE_SUMMARY, response);
     }
 
     @Override

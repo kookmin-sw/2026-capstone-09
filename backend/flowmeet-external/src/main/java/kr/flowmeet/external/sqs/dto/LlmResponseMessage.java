@@ -20,4 +20,8 @@ public record LlmResponseMessage(
     public boolean isSubSummary() {
         return "sub-summary".equals(taskType);
     }
+
+    public boolean isMainSummary() {
+        return "main-summary".equals(taskType);
+    }
 }

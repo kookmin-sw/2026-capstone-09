@@ -35,14 +35,16 @@ public class AiTaskService {
     }
 
     @Transactional
-    public void complete(final String jobId, final String result, final String mermaidCode) {
+    public AiTask complete(final String jobId) {
         AiTask task = findById(jobId);
-        task.complete(result, mermaidCode);
+        task.complete();
+        return task;
     }
 
     @Transactional
-    public void fail(final String jobId, final String errorMessage) {
+    public AiTask fail(final String jobId, final String errorMessage) {
         AiTask task = findById(jobId);
         task.fail(errorMessage);
+        return task;
     }
 }
