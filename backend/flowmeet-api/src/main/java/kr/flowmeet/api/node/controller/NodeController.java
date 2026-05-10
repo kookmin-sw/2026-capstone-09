@@ -12,12 +12,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import kr.flowmeet.api.common.dto.CommonResponse;
+import kr.flowmeet.api.node.dto.request.AnalyzeDraggedNodesRequest;
 import kr.flowmeet.api.node.dto.request.CreateNodeRequest;
 import kr.flowmeet.api.node.dto.request.UpdateNodeDescriptionRequest;
 import kr.flowmeet.api.node.dto.request.UpdateNodeKanbanRequest;
 import kr.flowmeet.api.node.dto.request.UpdateNodeNoteRequest;
 import kr.flowmeet.api.node.dto.request.UpdateNodeStatusRequest;
 import kr.flowmeet.api.node.dto.request.UpdateNodeTitleRequest;
+import kr.flowmeet.api.node.dto.response.AnalyzeDraggedNodesResponse;
 import kr.flowmeet.api.node.dto.response.GetFlowchartResponse;
 import kr.flowmeet.api.node.dto.response.GetKanbanResponse;
 import kr.flowmeet.api.node.dto.response.GetLinkedNodesResponse;
@@ -176,6 +178,19 @@ public class NodeController implements NodeApi {
     ) {
         RequestNodeSummaryResponse response = nodeFacade.requestNodeSummary(userId, projectId, nodeId);
         return CommonResponse.ok(NodeSuccessCode.REQUEST_NODE_SUMMARY, response);
+    }
+
+    @Override
+    @PostMapping("/nodes/analysis")
+    public CommonResponse<AnalyzeDraggedNodesResponse> analyzeDraggedNodes(
+            @UserId Long userId,
+            @PathVariable Long projectId,
+            @Valid @RequestBody AnalyzeDraggedNodesRequest request
+    ) {
+        return CommonResponse.ok(
+                NodeSuccessCode.ANALYZE_DRAGGED_NODES,
+                nodeFacade.analyzeDraggedNodes(userId, projectId, request.nodeIds())
+        );
     }
 
     @Override

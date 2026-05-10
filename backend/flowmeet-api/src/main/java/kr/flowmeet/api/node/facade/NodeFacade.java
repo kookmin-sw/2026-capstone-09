@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import kr.flowmeet.api.ai.handler.NodeSummaryTextMerger;
+import kr.flowmeet.api.node.dto.response.AnalyzeDraggedNodesResponse;
 import kr.flowmeet.api.node.dto.response.RequestNodeSummaryResponse;
 import kr.flowmeet.api.node.event.NodeSummaryRequestEvent;
 import kr.flowmeet.domain.ai.entity.AiTask;
@@ -39,6 +40,8 @@ import kr.flowmeet.domain.node.entity.NodeStatus;
 import kr.flowmeet.domain.node.entity.NodeTag;
 import kr.flowmeet.domain.node.entity.Tag;
 import kr.flowmeet.domain.node.exception.NodeErrorCode;
+import kr.flowmeet.external.ai.NodeAnalysisClient;
+import kr.flowmeet.external.ai.dto.NodeAnalysisResult;
 import kr.flowmeet.domain.node.service.EdgeService;
 import kr.flowmeet.domain.node.service.NodeAssigneeService;
 import kr.flowmeet.domain.node.service.NodeService;
@@ -63,6 +66,7 @@ public class NodeFacade {
     private final UserService userService;
     private final AiTaskService aiTaskService;
     private final ApplicationEventPublisher eventPublisher;
+    private final NodeAnalysisClient nodeAnalysisClient;
 
     public GetFlowchartResponse getFlowchart(final Long userId, final Long projectId) {
         projectPermissionValidator.validate(projectId, userId);
@@ -270,6 +274,46 @@ public class NodeFacade {
         eventPublisher.publishEvent(new NodeSummaryRequestEvent(aiTask.getId(), mergedText));
 
         return RequestNodeSummaryResponse.from(aiTask.getId());
+    }
+
+    // TODO: 추후 노트(noteContent) 포함 여부 검토
+    public AnalyzeDraggedNodesResponse analyzeDraggedNodes(
+            final Long userId,
+            final Long projectId,
+            final List<Long> nodeIds
+    ) {
+        projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
+
+        List<Node> nodes = nodeService.findAllByIdsAndProjectId(nodeIds, projectId);
+        List<Meeting> meetings = meetingService.findAllByNodeIds(nodeIds);
+
+        String analysisText = buildAnalysisText(nodes, meetings);
+
+        NodeAnalysisResult result = nodeAnalysisClient.analyze(analysisText);
+        return AnalyzeDraggedNodesResponse.from(result);
+    }
+
+    private String buildAnalysisText(final List<Node> nodes, final List<Meeting> meetings) {
+        Map<Long, Meeting> meetingByNodeId = meetings.stream()
+                .filter(m -> m.getSummary() != null)
+                .collect(Collectors.toMap(Meeting::getNodeId, m -> m, (a, b) -> a));
+
+        StringBuilder sb = new StringBuilder();
+        int count = 0;
+        for (Node node : nodes) {
+            Meeting meeting = meetingByNodeId.get(node.getId());
+            if (meeting == null) {
+                continue;
+            }
+            sb.append("name: ").append(node.getTitle()).append("\n")
+                    .append("\"").append(meeting.getSummary()).append("\"\n\n");
+            count++;
+        }
+
+        if (count < 2) {
+            throw new BusinessException(NodeErrorCode.NOT_ENOUGH_SUMMARIES_FOR_ANALYSIS);
+        }
+        return sb.toString().trim();
     }
 
     public SearchNodeResponse search(final Long userId, final Long projectId, final String query) {
