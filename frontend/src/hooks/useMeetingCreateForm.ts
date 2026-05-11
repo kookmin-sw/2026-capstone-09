@@ -4,6 +4,7 @@ import type { DateType } from '@wanteddev/wds';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
+import type { CreateMeetingRequest } from '@/api/Api';
 import type { ParticipantOption } from '@/components/projects/node-flow/ParticipantsSelect';
 
 export interface MeetingCreateFormValues {
@@ -11,13 +12,6 @@ export interface MeetingCreateFormValues {
   time: DateType;
   isPushEnabled: boolean;
   participants: ParticipantOption[];
-}
-
-export interface MeetingCreateRequest {
-  startedAt: string;
-  isPushEnabled: boolean;
-  pushNotifyAt: string | null;
-  participantIds: number[];
 }
 
 const toDate = (value: DateType): Date | null => {
@@ -58,20 +52,15 @@ export const useMeetingCreateForm = () => {
     mode: 'onChange',
   });
 
-  const buildPayload = (values: MeetingCreateFormValues): MeetingCreateRequest => {
+  const buildPayload = (values: MeetingCreateFormValues): CreateMeetingRequest => {
     const date = toDate(values.date);
     const time = toDate(values.time);
     const startedAtDate = date && time ? createStartedAt(date, time) : null;
-    const pushNotifyAtDate = startedAtDate
-      ? new Date(startedAtDate.getTime() - 30 * 60 * 1000)
-      : null;
 
     return {
       startedAt: startedAtDate ? formatDateTime(startedAtDate) : '',
       isPushEnabled: values.isPushEnabled,
-      pushNotifyAt:
-        values.isPushEnabled && pushNotifyAtDate ? formatDateTime(pushNotifyAtDate) : null,
-      participantIds: values.participants.map((participant) => participant.id),
+      participantUserIds: values.participants.map((participant) => participant.id),
     };
   };
 

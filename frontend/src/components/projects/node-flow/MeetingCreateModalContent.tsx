@@ -2,6 +2,7 @@
 
 import {
   Button,
+  Checkbox,
   ContentBadge,
   DatePicker,
   TextField,
@@ -11,22 +12,19 @@ import {
 import { IconClose } from '@wanteddev/wds-icon';
 import { Controller } from 'react-hook-form';
 
+import type { CreateMeetingRequest } from '@/api/Api';
 import { EXAMPLE_MEETING_PARTICIPANTS } from '@/constants/exampleConstant';
-import { type MeetingCreateRequest, useMeetingCreateForm } from '@/hooks/useMeetingCreateForm';
+import { useMeetingCreateForm } from '@/hooks/useMeetingCreateForm';
 
 import { ParticipantsSelect } from './ParticipantsSelect';
 
-export interface MeetingCreateResponse {
-  code: 'SUCCESS';
-  message: string;
-  data: null;
-}
+export type MeetingCreatePayload = CreateMeetingRequest;
 
 interface MeetingCreateModalContentProps {
   nodeBadge: string;
   nodeTitle: string;
   onClose: () => void;
-  onCreate?: (payload: MeetingCreateRequest) => void;
+  onCreate?: (payload: MeetingCreatePayload) => void;
 }
 
 export const MeetingCreateModalContent = ({
@@ -153,6 +151,19 @@ export const MeetingCreateModalContent = ({
               )}
             />
           </div>
+
+          <Controller
+            control={control}
+            name="isPushEnabled"
+            render={({ field }) => (
+              <label className="flex w-fit cursor-pointer items-start gap-2">
+                <Checkbox checked={field.value} onCheckedChange={field.onChange} size="medium" />
+                <span className="text-label-1 text-label-neutral pt-px font-medium">
+                  참여자에게 회의 알림 보내기
+                </span>
+              </label>
+            )}
+          />
         </div>
 
         <div className="flex w-full items-center gap-3">
