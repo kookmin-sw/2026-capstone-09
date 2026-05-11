@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 
+import { privateApi } from '@/api';
 import { useDialog } from '@/components/commons/custom-dialog/DialogContext';
 import { NodeDeleteConfirmContent } from '@/components/projects/project-detail/node-delete';
 import type { NodeDeleteConfirmPayload } from '@/components/projects/project-detail/node-delete';
 import { EXAMPLE_NODE_DELETE_TEST } from '@/constants/exampleConstant';
+import { useErrorToast } from '@/hooks/useErrorToast';
 import { cn } from '@/utils/cn';
 
 /**
@@ -18,6 +20,7 @@ import { cn } from '@/utils/cn';
  */
 const NodeDeleteModalTestPage = () => {
   const { openDialog, closeDialog } = useDialog();
+  const showErrorToast = useErrorToast();
   const [lastPayload, setLastPayload] = useState<{
     projectId: number;
     nodeId: number;
@@ -31,19 +34,18 @@ const NodeDeleteModalTestPage = () => {
       content: (
         <NodeDeleteConfirmContent
           nodeName={node.name}
-          onConfirm={(payload) => {
-            // 실제 연결 시 호출 예 (이미 생성된 메서드):
-            //   privateApi.node.deleteNode(EXAMPLE_NODE_DELETE_TEST.projectId, node.id)
-            //   - DELETE /v1/projects/{projectId}/nodes/{nodeId}
-            //   - 성공: { status: 200, code: 'OK', message: '...', data: null }
-            //   - 실패 code 'NODE_NOT_FOUND' 일 때 토스트 처리
-            // 본 테스트 페이지에서는 호출 없이 입력만 화면에 표시한다.
-            setLastPayload({
-              projectId: EXAMPLE_NODE_DELETE_TEST.projectId,
-              nodeId: node.id,
-              payload,
-            });
-            closeDialog();
+          onConfirm={async (payload) => {
+            try {
+              await privateApi.node.deleteNode(EXAMPLE_NODE_DELETE_TEST.projectId, node.id);
+              setLastPayload({
+                projectId: EXAMPLE_NODE_DELETE_TEST.projectId,
+                nodeId: node.id,
+                payload,
+              });
+              closeDialog();
+            } catch (err) {
+              showErrorToast(err, '노드 삭제에 실패했어요.');
+            }
           }}
           onClose={closeDialog}
         />
