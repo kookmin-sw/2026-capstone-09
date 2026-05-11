@@ -13,7 +13,7 @@ import { useParams, usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { privateApi } from '@/api';
-import { EXAMPLE_SIDEBAR_ALARM_ITEMS } from '@/constants/exampleConstant';
+import { useErrorToast } from '@/hooks/useErrorToast';
 import { cn } from '@/utils/cn';
 
 import { SidebarAlarmModal } from './SidebarAlarmModal';
@@ -50,13 +50,14 @@ export const ProjectSidebar = ({
   const projectId = projectIdRaw ? Number(projectIdRaw) : undefined;
   const isProjectIdValid = projectId !== undefined && !Number.isNaN(projectId);
 
+  const showErrorToast = useErrorToast();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isCollapsedInternal, setIsCollapsedInternal] = useState(false);
   const [isAlarmModalOpen, setIsAlarmModalOpen] = useState(false);
   // 사이드바가 직접 fetch 한 결과 — props 로 명시 전달된 값이 있으면 그 값을, 없으면 fetch 결과를 사용한다.
   const [fetchedProjectName, setFetchedProjectName] = useState<string | undefined>(undefined);
   const [me, setMe] = useState<{ nickname?: string; email?: string } | null>(null);
-  const { unreadCount } = EXAMPLE_SIDEBAR_ALARM_ITEMS.data;
+  const [unreadCount, setUnreadCount] = useState(0);
   const isProjectSelectionPage = pathname === '/projects';
 
   // 프로젝트 이름 fetch — 라우트에 projectId 가 있을 때만.
@@ -74,14 +75,14 @@ export const ProjectSidebar = ({
         setFetchedProjectName(response.data.data?.name);
       } catch (caught) {
         if (cancelled) return;
-        console.error('프로젝트 이름 조회에 실패했어요.', caught);
+        showErrorToast(caught, '프로젝트 이름 조회에 실패했어요.');
       }
     };
     void fetchProjectName();
     return () => {
       cancelled = true;
     };
-  }, [isProjectIdValid, projectId]);
+  }, [isProjectIdValid, projectId, showErrorToast]);
 
   // 내 계정 fetch — 사이드바 마운트 시 한 번.
   useEffect(() => {
@@ -94,14 +95,33 @@ export const ProjectSidebar = ({
         setMe({ nickname: data?.nickname, email: data?.email });
       } catch (caught) {
         if (cancelled) return;
-        console.error('내 정보 조회에 실패했어요.', caught);
+        showErrorToast(caught, '내 정보 조회에 실패했어요.');
       }
     };
     void fetchMe();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [showErrorToast]);
+
+  // 읽지 않은 알림 개수 fetch — 알림 모달 열고 닫을 때마다 재조회해 배지 동기화.
+  useEffect(() => {
+    let cancelled = false;
+    const fetchUnreadCount = async () => {
+      try {
+        const response = await privateApi.notification.getUnreadCount();
+        if (cancelled) return;
+        setUnreadCount(response.data.data?.unreadCount ?? 0);
+      } catch (caught) {
+        if (cancelled) return;
+        showErrorToast(caught, '알림 개수를 불러오지 못했어요.');
+      }
+    };
+    void fetchUnreadCount();
+    return () => {
+      cancelled = true;
+    };
+  }, [isAlarmModalOpen, showErrorToast]);
 
   // prop > fetch > 빈 문자열 우선순위로 합성.
   const projectName = projectNameProp ?? fetchedProjectName ?? '';
