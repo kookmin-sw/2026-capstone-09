@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 
 import { privateApi } from '@/api';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 interface UseSearchModalFormParams {
   /** 검색 대상 프로젝트 ID. /projects/{projectId} URL의 파라미터를 그대로 넘긴다. */
@@ -19,7 +20,9 @@ export interface SearchResultItem {
   nodeId: number;
   number: string;
   title: string;
-  status?: 'WAITING' | 'IN_PROGRESS' | 'DONE';
+  description?: string;
+  updatedAt?: string;
+  status?: 'WAITING' | 'IN_PROGRESS' | 'ON_HOLD' | 'DONE' | 'CLOSED';
 }
 
 const DEFAULT_DEBOUNCE_MS = 300;
@@ -40,10 +43,11 @@ export const useSearchModalForm = ({
   projectId,
   debounceMs = DEFAULT_DEBOUNCE_MS,
 }: UseSearchModalFormParams) => {
+  const showErrorToast = useErrorToast();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResultItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [hasError, setHasError] = useState(false);
 
   const trimmed = query.trim();
   const hasQuery = trimmed.length > 0;
@@ -51,14 +55,14 @@ export const useSearchModalForm = ({
   useEffect(() => {
     if (!hasQuery) {
       setResults([]);
-      setError(null);
+      setHasError(false);
       setIsLoading(false);
       return;
     }
 
     let cancelled = false;
     setIsLoading(true);
-    setError(null);
+    setHasError(false);
 
     const timer = setTimeout(async () => {
       try {
@@ -71,14 +75,16 @@ export const useSearchModalForm = ({
             nodeId: node.nodeId,
             number: node.number ?? '',
             title: node.title ?? '',
+            description: node.description,
+            updatedAt: node.updatedAt,
             status: node.status,
           }));
         setResults(normalized);
-        setError(null);
+        setHasError(false);
       } catch (caught) {
         if (cancelled) return;
-        const message = caught instanceof Error ? caught.message : '검색에 실패했어요.';
-        setError(message);
+        showErrorToast(caught, '검색에 실패했어요.');
+        setHasError(true);
         setResults([]);
       } finally {
         if (!cancelled) setIsLoading(false);
@@ -89,12 +95,12 @@ export const useSearchModalForm = ({
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [trimmed, projectId, debounceMs, hasQuery]);
+  }, [trimmed, projectId, debounceMs, hasQuery, showErrorToast]);
 
   const reset = () => {
     setQuery('');
     setResults([]);
-    setError(null);
+    setHasError(false);
     setIsLoading(false);
   };
 
@@ -103,7 +109,7 @@ export const useSearchModalForm = ({
     setQuery,
     results,
     isLoading,
-    error,
+    hasError,
     hasQuery,
     reset,
   };
