@@ -10,9 +10,9 @@ import {
   SESSION_KEY,
   subscribeToSession,
 } from '@/utils/sidebarSnapshot';
+import NodeMeetingTab from './meeting/NodeMeetingTab';
 import { NodeDetailLayout } from './NodeDetailLayout';
-import NodeMeetingTab from './NodeMeetingTab';
-import NodeNoteTab from './NodeNoteTab';
+import NodeNoteTab from './note/NodeNoteTab';
 
 interface NodeSidebarProps {
   nodeId: number | null;
@@ -78,7 +78,7 @@ export function NodeSidebar({ nodeId, projectId, onClose }: NodeSidebarProps) {
             nodeId={nodeId}
             projectId={projectId}
             noteContent={<NodeNoteTab nodeId={nodeId} projectId={projectId} />}
-            meetingContent={<NodeMeetingTab />}
+            meetingContent={<NodeMeetingTab nodeId={nodeId} projectId={projectId} />}
             value={value}
             onValueChange={setValue}
           />

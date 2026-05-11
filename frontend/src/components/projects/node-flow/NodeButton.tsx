@@ -1,12 +1,14 @@
 import { Button, Switch } from '@wanteddev/wds';
-import { IconAiReview, IconPlus, IconSparkle } from '@wanteddev/wds-icon';
-import React, { useState } from 'react';
+import { IconAiReview, IconPlus, IconPresentation } from '@wanteddev/wds-icon';
+import React from 'react';
 
 interface NodeButtonProps {
   onAddMainNode: () => void;
   onAddSubNode?: () => void;
   onAddMeeting?: () => void;
   onAISummary?: () => void;
+  showDashedLines?: boolean;
+  onToggleDashedLines?: (value: boolean) => void;
 }
 
 const NodeButton: React.FC<NodeButtonProps> = ({
@@ -14,8 +16,9 @@ const NodeButton: React.FC<NodeButtonProps> = ({
   onAddSubNode,
   onAddMeeting,
   onAISummary,
+  showDashedLines = false,
+  onToggleDashedLines,
 }) => {
-  const [showDashedLines, setShowDashedLines] = useState(false);
 
   return (
     <div className="px-3 py-2 bg-white rounded-xl inline-flex justify-start items-center gap-3">
@@ -24,7 +27,7 @@ const NodeButton: React.FC<NodeButtonProps> = ({
         <Switch
           size="small"
           checked={showDashedLines}
-          onCheckedChange={setShowDashedLines}
+          onCheckedChange={onToggleDashedLines}
         />
       </div>
 
@@ -55,7 +58,7 @@ const NodeButton: React.FC<NodeButtonProps> = ({
         size="small"
         onClick={onAddMeeting}
         disabled={!onAddMeeting}
-        leadingContent={<IconSparkle />}
+        leadingContent={<IconPresentation />}
       >
         회의 추가
       </Button>

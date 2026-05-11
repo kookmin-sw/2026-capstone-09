@@ -14,6 +14,7 @@ import {
   IconPlus,
   IconTrash,
 } from '@wanteddev/wds-icon';
+import { useState } from 'react';
 import { CustomMenuItem } from '@/components/commons/custom-menu/CustomMemuItem';
 
 interface NodeMenuProps {
@@ -37,6 +38,8 @@ export function NodeMenu({
   onDelete,
   onMenuClick,
 }: NodeMenuProps) {
+  const [open, setOpen] = useState(false);
+
   const handleMenuButtonClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setTimeout(() => {
@@ -44,8 +47,44 @@ export function NodeMenu({
     }, 0);
   };
 
+  const handleCreateSubNode = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onCreateSubNode();
+    setOpen(false);
+  };
+
+  const handleCreateMeeting = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onCreateMeeting?.();
+    setOpen(false);
+  };
+
+  const handleEditMeeting = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEditMeeting?.();
+    setOpen(false);
+  };
+
+  const handleDeleteMeeting = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDeleteMeeting?.();
+    setOpen(false);
+  };
+
+  const handleCreateReference = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onCreateReference();
+    setOpen(false);
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete();
+    setOpen(false);
+  };
+
   return (
-    <Menu>
+    <Menu open={open} onOpenChange={setOpen}>
       <MenuTrigger>
         <IconButton size={18} onClick={handleMenuButtonClick}>
           <IconMoreVertical className="shrink-0 text-neutral-60" width={18} height={18} />
@@ -56,7 +95,7 @@ export function NodeMenu({
           <CustomMenuItem
             value="create-sub-node"
             icon={<IconPlus />}
-            onClick={onCreateSubNode}
+            onClick={handleCreateSubNode}
           >
             서브 노드 생성
           </CustomMenuItem>
@@ -65,7 +104,7 @@ export function NodeMenu({
             <CustomMenuItem
               value="create-meeting"
               icon={<IconBubblePlus />}
-              onClick={onCreateMeeting}
+              onClick={handleCreateMeeting}
             >
               회의 생성
             </CustomMenuItem>
@@ -75,7 +114,7 @@ export function NodeMenu({
             <CustomMenuItem
               value="edit-meeting"
               icon={<IconPencil />}
-              onClick={onEditMeeting}
+              onClick={handleEditMeeting}
             >
               회의 수정
             </CustomMenuItem>
@@ -84,7 +123,7 @@ export function NodeMenu({
           <CustomMenuItem
             value="create-reference"
             icon={<IconPin />}
-            onClick={onCreateReference}
+            onClick={handleCreateReference}
           >
             참조 노드
           </CustomMenuItem>
@@ -93,7 +132,7 @@ export function NodeMenu({
             <CustomMenuItem
               value="delete-meeting"
               icon={<IconCircleClose className="text-status-negative" />}
-              onClick={onDeleteMeeting}
+              onClick={handleDeleteMeeting}
               textProps={{
                 variant: 'label2',
                 sx: (theme) => ({ color: theme.semantic.status.negative }),
@@ -106,7 +145,7 @@ export function NodeMenu({
           <CustomMenuItem
             value="delete"
             icon={<IconTrash className="text-status-negative" />}
-            onClick={onDelete}
+            onClick={handleDelete}
             textProps={{
               variant: 'label2',
               sx: (theme) => ({ color: theme.semantic.status.negative }),

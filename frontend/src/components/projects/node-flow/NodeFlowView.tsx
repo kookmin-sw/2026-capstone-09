@@ -1,347 +1,301 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
+import ReactFlow, {
+  Node,
+  Controls,
+  Background,
+  useNodesState,
+  useEdgesState,
+  NodeTypes,
+  EdgeTypes,
+  BackgroundVariant,
+  Panel,
+  useReactFlow,
+  ReactFlowProvider,
+} from 'reactflow';
+import 'reactflow/dist/style.css';
+
 import { privateApi } from '@/api';
 import { GetFlowchartResponse } from '@/api/Api';
+import { usePositionedToast } from '@/components/commons/custom-toast/usePositionedToast';
 import { Loading } from '@/components/commons/loading/Loading';
-import { MainNodeConnector } from './MainNodeConnector';
-import { NodeBranch } from './NodeBranch';
-import NodeButton from './NodeButton';
-import useSingleAndDoubleClick from '@/hooks/useSingleAndDoubleClick';
 import { NodeSidebar } from '@/components/node-datail/NodeSidebar';
+import { convertToReactFlow } from '@/utils/flowchartToReactFlow';
+import { CustomNode } from './CustomNode';
+import NodeButton from './NodeButton';
+import { ReferenceEdge } from './ReferenceEdge';
 
 interface NodeFlowViewProps {
   projectId: number;
 }
 
-export function NodeFlowView({ projectId }: NodeFlowViewProps) {
+const nodeTypes: NodeTypes = {
+  mainNode: CustomNode,
+  subNode: CustomNode,
+};
+
+const edgeTypes: EdgeTypes = {
+  reference: ReferenceEdge,
+};
+
+function NodeFlowContent({ projectId }: NodeFlowViewProps) {
+  const { setViewport, getViewport } = useReactFlow();
+  const toast = usePositionedToast();
   const [flowChart, setFlowChart] = useState<GetFlowchartResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [focusedNodeId, setFocusedNodeId] = useState<number | null>(null);
-  // const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
+  const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
+  const [sidebarNodeId, setSidebarNodeId] = useState<number | null>(null);
+  const [showDashedLines, setShowDashedLines] = useState(false);
+
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+
+  // localStorage에서 점선 표시 상태 불러오기
+  useEffect(() => {
+    const saved = localStorage.getItem('showDashedLines');
+    if (saved !== null) {
+      queueMicrotask(() => {
+        setShowDashedLines(JSON.parse(saved));
+      });
+    }
+  }, []);
+
+  // 점선 토글 상태를 localStorage에 저장
+  useEffect(() => {
+    localStorage.setItem('showDashedLines', JSON.stringify(showDashedLines));
+  }, [showDashedLines]);
 
   useEffect(() => {
     const loadFlowChart = async () => {
       try {
         setLoading(true);
-        setError(null);
 
         const data = await privateApi.node.getFlowchart(projectId);
-        setFlowChart(data.data.data ?? null);
+        const chartData = data.data.data ?? null;
+        setFlowChart(chartData);
+
+        if (chartData) {
+          const { nodes: convertedNodes, edges: convertedEdges } = convertToReactFlow(chartData);
+          setNodes(convertedNodes);
+          setEdges(convertedEdges);
+        }
       } catch (error) {
         console.error('Failed to load flowchart:', error);
-        setError(error instanceof Error ? error.message : '플로우차트를 불러오는데 실패했습니다.');
+        const errorMessage = error instanceof Error ? error.message : '플로우차트를 불러오는데 실패했습니다.';
+        toast({
+          content: errorMessage,
+          variant: 'negative',
+          placement: 'top-center',
+        });
       } finally {
         setLoading(false);
       }
     };
     void loadFlowChart();
-  }, [projectId]);
+  }, [projectId, setNodes, setEdges, toast]);
 
-  useEffect(() => {
-    if (!loading && containerRef.current) {
-      const container = containerRef.current;
-      container.scrollLeft = 0;
-      container.scrollTop = 0;
-    }
-  }, [loading]);
+  // 노드 단일 클릭 - 선택/해제만
+  const onNodeClick = useCallback(
+    (_event: React.MouseEvent, node: Node) => {
+      const nodeId = parseInt(node.id, 10);
+      const newSelectedId = selectedNodeId === nodeId ? null : nodeId;
+      setSelectedNodeId(newSelectedId);
 
-  const [clickTargetId, setClickTargetId] = useState<number | null>(null);
-
-  const handleClick = useSingleAndDoubleClick({
-    actionSimpleClick: () => {
-      if (clickTargetId !== null) {
-        setFocusedNodeId((prev) => (prev === clickTargetId ? null : clickTargetId));
-      }
+      setNodes((nds) =>
+        nds.map((n) => ({
+          ...n,
+          selected: n.id === String(newSelectedId),
+        }))
+      );
     },
-    actionDoubleClick: () => {
-      if (clickTargetId !== null) {
-        setFocusedNodeId(clickTargetId);
-      }
-    },
-  });
-
-  const handleNodeClick = useCallback(
-    (nodeId: number, e?: React.MouseEvent) => {
-      e?.stopPropagation();
-      setClickTargetId(nodeId);
-      handleClick();
-    },
-    [handleClick],
+    [selectedNodeId, setNodes]
   );
 
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    setIsDragging(true);
-    setDragStart({
-      x: e.clientX + (containerRef.current?.scrollLeft || 0),
-      y: e.clientY + (containerRef.current?.scrollTop || 0),
-    });
-  };
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isDragging || !containerRef.current) return;
-
-    const dx = dragStart.x - e.clientX;
-    const dy = dragStart.y - e.clientY;
-
-    containerRef.current.scrollLeft = dx;
-    containerRef.current.scrollTop = dy;
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  const handleMouseLeave = () => {
-    setIsDragging(false);
-  };
-
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    if (e.ctrlKey || e.metaKey) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const delta = -e.deltaY;
-      const zoomIntensity = 0.01;
-      setZoom((prevZoom) => {
-        const newZoom = prevZoom + delta * zoomIntensity;
-        return Math.min(Math.max(0.1, newZoom), 3);
-      });
-    }
+  // 노드 더블 클릭 - 사이드바 열기
+  const onNodeDoubleClick = useCallback((_event: React.MouseEvent, node: Node) => {
+    const nodeId = parseInt(node.id, 10);
+    setSidebarNodeId(nodeId);
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest('[class*="bg-white"]')) {
-        setFocusedNodeId(null);
+  // 노드 선택 핸들러 (메뉴에서 사용)
+  const handleSelectNode = useCallback((nodeId: number) => {
+    setSelectedNodeId(nodeId);
+  }, []);
+
+  // 플로우 업데이트 및 새 노드로 뷰 이동
+  const updateFlowAndMoveToNode = useCallback(
+    (chartData: GetFlowchartResponse, newNodeId: number) => {
+      const { nodes: convertedNodes, edges: convertedEdges } = convertToReactFlow(chartData);
+      setNodes(convertedNodes);
+      setEdges(convertedEdges);
+      setSelectedNodeId(newNodeId);
+
+      // 새 노드로 뷰 이동 (왼쪽 위에 배치, 현재 zoom 유지)
+      setTimeout(() => {
+        const newFlowNode = convertedNodes.find((n) => n.id === String(newNodeId));
+        if (newFlowNode) {
+          const currentViewport = getViewport();
+          const leftPadding = 320;
+          const topPadding = 300;
+
+          setViewport(
+            {
+              x: leftPadding - newFlowNode.position.x * currentViewport.zoom,
+              y: topPadding - newFlowNode.position.y * currentViewport.zoom,
+              zoom: currentViewport.zoom,
+            },
+            { duration: 800 }
+          );
+        }
+      }, 100);
+    },
+    [setNodes, setEdges, setSelectedNodeId, getViewport, setViewport]
+  );
+
+  // 서브 노드 생성
+  const handleCreateSubNode = useCallback(
+    async (parentNodeId: number) => {
+      if (!flowChart?.nodes) return;
+
+      const parentNode = flowChart.nodes.find((n) => n.nodeId === parentNodeId);
+      if (!parentNode) return;
+
+      try {
+        await privateApi.node.createNode(projectId, {
+          title: '새 서브 노드',
+          type: 'SUB',
+          parentId: parentNodeId,
+        });
+        const data = await privateApi.node.getFlowchart(projectId);
+        const chartData = data.data.data ?? null;
+
+        setFlowChart(chartData);
+
+        if (chartData) {
+          const newNodes = chartData.nodes?.filter((n) => n.parentId === parentNodeId) ?? [];
+          const newNode = newNodes[newNodes.length - 1];
+          if (newNode?.nodeId) {
+            updateFlowAndMoveToNode(chartData, newNode.nodeId);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to create sub node:', error);
       }
-    };
+    },
+    [flowChart, updateFlowAndMoveToNode, projectId]
+  );
 
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, []);
+  // 메인 노드 생성
+  const handleCreateMainNode = useCallback(async () => {
+    if (!flowChart?.nodes) return;
+
+    try {
+      await privateApi.node.createNode(projectId, {
+        title: '새 메인 노드',
+        type: 'MAIN',
+      });
+      const data = await privateApi.node.getFlowchart(projectId);
+      const chartData = data.data.data ?? null;
+
+      setFlowChart(chartData);
+
+      if (chartData) {
+        const mainNodes = chartData.nodes?.filter((n) => !n.parentId) ?? [];
+        const newNode = mainNodes[mainNodes.length - 1];
+        if (newNode?.nodeId) {
+          updateFlowAndMoveToNode(chartData, newNode.nodeId);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to create main node:', error);
+    }
+  }, [flowChart, updateFlowAndMoveToNode, projectId]);
+
+  const nodesWithHandlers = useMemo(() => {
+    return nodes.map((node) => ({
+      ...node,
+      selected: selectedNodeId !== null && node.id === String(selectedNodeId),
+      data: {
+        ...node.data,
+        onCreateSubNode: handleCreateSubNode,
+        onSelectNode: handleSelectNode,
+      },
+    }));
+  }, [nodes, selectedNodeId, handleCreateSubNode, handleSelectNode]);
+
+  const visibleEdges = useMemo(() => {
+    if (showDashedLines) {
+      return edges;
+    }
+    return edges.filter((edge) => edge.type !== 'reference');
+  }, [edges, showDashedLines]);
 
   if (loading) {
     return <Loading />;
   }
 
-  if (error) {
-    return (
-      <div className="flex flex-1 items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <p className="text-body-1 text-label-neutral font-medium">
-            플로우차트를 불러오는데 실패했습니다
-          </p>
-          <p className="text-caption-1 text-label-assistive">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="bg-primary-40 hover:bg-primary-50 rounded-lg px-4 py-2 text-white transition-colors"
-          >
-            다시 시도
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!flowChart) {
-    return (
-      <div className="flex flex-1 items-center justify-center">
-        <p className="text-body-1 text-label-neutral">플로우차트 데이터를 불러올 수 없습니다.</p>
-      </div>
-    );
-  }
-
-  const mainNodes = flowChart?.nodes?.filter((node) => !node.parentId) ?? [];
-  const subNodes = flowChart?.nodes?.filter((node) => !!node.parentId) ?? [];
-
-  const handleCreateSubNode = async (parentNodeId: number) => {
-    if (!flowChart?.nodes) return;
-
-    const parentNode = flowChart.nodes.find((n) => n.nodeId === parentNodeId);
-    if (!parentNode) return;
-
-    try {
-      const childCount = parentNode.childNodeIds?.length ?? 0;
-
-      await privateApi.node.createNode(projectId, {
-        title: `새 서브 노드`,
-        type: 'SUB',
-        parentId: parentNodeId,
-      });
-
-      const data = await privateApi.node.getFlowchart(projectId);
-      setFlowChart(data.data.data ?? null);
-
-      if (data.data.data?.nodes) {
-        const updatedParent = data.data.data.nodes.find((n) => n.nodeId === parentNodeId);
-        const newChildIds = updatedParent?.childNodeIds ?? [];
-        if (newChildIds.length > childCount) {
-          const newNodeId = newChildIds[newChildIds.length - 1];
-          setFocusedNodeId(newNodeId);
-
-          setTimeout(() => {
-            const newNodeElement = document.querySelector(`[data-node-id="${newNodeId}"]`);
-            if (newNodeElement) {
-              newNodeElement.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center',
-                inline: 'center',
-              });
-            }
-          }, 100);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to create sub node:', error);
-      alert('서브 노드 생성에 실패했습니다.');
-    }
-  };
-
-  const handleCreateReference = (_startNodeId: number) => {
-    // TODO: 참조 노드 선택 모달 열기 또는 API 호출
-  };
-
-  const handleDeleteNode = (_nodeId: number) => {
-    // TODO: 삭제 확인 모달 열기 → API 호출 → 상태 업데이트
-  };
-
-  const handleCreateMainNode = async () => {
-    if (!flowChart?.nodes) return;
-
-    try {
-      const mainNodesCount = flowChart.nodes.filter((n) => !n.parentId).length;
-
-      await privateApi.node.createNode(projectId, {
-        title: `새 메인 노드`,
-        type: 'MAIN',
-      });
-
-      const data = await privateApi.node.getFlowchart(projectId);
-      setFlowChart(data.data.data ?? null);
-
-      if (data.data.data?.nodes) {
-        const mainNodes = data.data.data.nodes.filter((n) => !n.parentId);
-        if (mainNodes.length > mainNodesCount) {
-          const newNode = mainNodes[mainNodes.length - 1];
-          if (newNode.nodeId !== undefined) {
-            setFocusedNodeId(newNode.nodeId);
-
-            setTimeout(() => {
-              const newNodeElement = document.querySelector(`[data-node-id="${newNode.nodeId}"]`);
-              if (newNodeElement) {
-                newNodeElement.scrollIntoView({
-                  behavior: 'smooth',
-                  block: 'center',
-                  inline: 'center',
-                });
-              }
-            }, 100);
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Failed to create main node:', error);
-      alert('메인 노드 생성에 실패했습니다.');
-    }
-  };
-
   return (
-    <div className="relative h-full w-full">
-      <div className="fixed top-[120px] right-6 z-[60]" onMouseDown={(e) => e.stopPropagation()}>
-        <NodeButton
-          onAddMainNode={handleCreateMainNode}
-          onAddSubNode={
-            focusedNodeId !== null ? () => handleCreateSubNode(focusedNodeId) : undefined
-          }
-          onAddMeeting={
-            focusedNodeId
-              ? () => {
-                  /* TODO: 모달 열기 */
-                }
-              : undefined
-          }
-        />
-      </div>
-
-      <div
-        ref={containerRef}
-        className="bg-surface-canvas h-full w-full overflow-auto [&::-webkit-scrollbar]:hidden"
-        style={{
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-          cursor: isDragging ? 'grabbing' : 'grab',
-        }}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
-        onWheel={handleWheel}
+    <div className="relative h-full w-full" style={{ width: '100%', height: '100%' }}>
+      <ReactFlow
+        nodes={nodesWithHandlers}
+        edges={visibleEdges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onNodeClick={onNodeClick}
+        onNodeDoubleClick={onNodeDoubleClick}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        nodesDraggable={false}
+        nodesConnectable={false}
+        elementsSelectable={true}
+        panOnScroll={true}
+        panOnScrollSpeed={1}
+        zoomOnScroll={false}
+        zoomOnPinch={true}
+        zoomOnDoubleClick={false}
+        translateExtent={[
+          [-2000, -2000],
+          [5000, 3000],
+        ]}
+        fitView={false}
+        minZoom={0.1}
+        maxZoom={3}
+        defaultViewport={{ x: 80, y: 100, zoom: 1 }}
+        className="bg-surface-canvas"
       >
-        <div
-          ref={contentRef}
-          className="relative inline-block min-h-[200vh] min-w-[200vw] px-20 pt-30 pb-20"
-          style={{
-            transform: `scale(${zoom})`,
-            transformOrigin: '0 0',
-          }}
-        >
-          {/* 메인 노드 연결선 */}
-          {mainNodes?.map((mainNode, index) => {
-            if (index === mainNodes.length - 1) return null;
-            const nextNode = mainNodes[index + 1];
-            if (!mainNode.nodeId || !nextNode.nodeId) return null;
-            return (
-              <MainNodeConnector
-                key={`connector-${mainNode.nodeId}-${nextNode.nodeId}`}
-                startNodeId={mainNode.nodeId}
-                endNodeId={nextNode.nodeId}
-                containerRef={contentRef}
-                zoom={zoom}
-              />
-            );
-          })}
+        <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#E5E7EB" />
+        <Controls showInteractive={false} />
 
-          <div className="flex flex-col gap-8">
-            {/* 노드 트리 */}
-            <div className="flex gap-12">
-              {mainNodes?.map((mainNode, idx) => {
-                const subNodesForMain = subNodes?.filter(
-                  (sub) => sub.nodeId !== undefined && mainNode?.childNodeIds?.includes(sub.nodeId),
-                );
+        {/* 노드 생성 버튼 */}
+        <Panel position="top-right">
+          <NodeButton
+            onAddMainNode={() => void handleCreateMainNode()}
+            onAddSubNode={
+              selectedNodeId !== null ? () => void handleCreateSubNode(selectedNodeId) : undefined
+            }
+            onAddMeeting={
+              selectedNodeId
+                ? () => {
+                    /* TODO: 모달 열기 */
+                  }
+                : undefined
+            }
+            showDashedLines={showDashedLines}
+            onToggleDashedLines={setShowDashedLines}
+          />
+        </Panel>
+      </ReactFlow>
 
-                return (
-                  <NodeBranch
-                    key={mainNode.nodeId ?? `main-${idx}`}
-                    mainNode={mainNode}
-                    subNodes={subNodesForMain ?? []}
-                    allNodes={flowChart.nodes ?? []}
-                    allEdges={flowChart.edges ?? []}
-                    focusedNodeId={focusedNodeId}
-                    onNodeClick={handleNodeClick}
-                    onCreateSubNode={handleCreateSubNode}
-                    onCreateReference={handleCreateReference}
-                    onDeleteNode={handleDeleteNode}
-                    zoom={zoom}
-                  />
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-      <NodeSidebar
-        projectId={projectId}
-        nodeId={focusedNodeId}
-        onClose={() => setFocusedNodeId(null)}
-      />
+      <NodeSidebar projectId={projectId} nodeId={sidebarNodeId} onClose={() => setSidebarNodeId(null)} />
     </div>
+  );
+}
+
+export function NodeFlowView({ projectId }: NodeFlowViewProps) {
+  return (
+    <ReactFlowProvider>
+      <NodeFlowContent projectId={projectId} />
+    </ReactFlowProvider>
   );
 }

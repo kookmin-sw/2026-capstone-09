@@ -1,5 +1,8 @@
 'use client';
 
+import { useState } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { ThemeProvider } from '@wanteddev/wds';
 import { AppRouterCacheProvider } from '@wanteddev/wds-nextjs';
 
@@ -10,20 +13,35 @@ import { DialogProvider } from './commons/custom-dialog/DialogContext';
 import { ToastProvider } from './commons/custom-toast/ToastProvider';
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 1000 * 60,
+            retry: 1,
+          },
+        },
+      }),
+  );
+
   return (
-    <ThemeProvider>
-      <AppRouterCacheProvider>
-        <ToastProvider>
-          <ModalProvider>
-            <DialogProvider>
-              {children}
-              <Modal />
-              <Dialog />
-            </DialogProvider>
-          </ModalProvider>
-        </ToastProvider>
-      </AppRouterCacheProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <AppRouterCacheProvider>
+          <ToastProvider>
+            <ModalProvider>
+              <DialogProvider>
+                {children}
+                <Modal />
+                <Dialog />
+              </DialogProvider>
+            </ModalProvider>
+          </ToastProvider>
+        </AppRouterCacheProvider>
+      </ThemeProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   );
 }
 

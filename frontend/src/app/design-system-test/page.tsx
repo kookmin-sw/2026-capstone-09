@@ -4,12 +4,12 @@ import { useState } from 'react';
 import { NodeSidebar } from '@/components/node-datail/NodeSidebar';
 
 const Demo = () => {
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
 
   const demoNodes = [
-    { id: '1-1', title: '메인 노드 제목입니다.' },
-    { id: '1-2', title: '디자인 회의일걸요?' },
-    { id: '1-3', title: '디자인 회의일걸요?' },
+    { id: 1, title: '메인 노드 제목입니다.' },
+    { id: 2, title: '디자인 회의일걸요?' },
+    { id: 3, title: '디자인 회의일걸요?' },
   ];
 
   return (
@@ -34,7 +34,8 @@ const Demo = () => {
         </button>
       ))}
 
-      <NodeSidebar nodeId={selectedNodeId} onClose={() => setSelectedNodeId(null)} />
+      {/* 사이드바 임시용 테스트 프로젝트 아이디 */}
+      <NodeSidebar nodeId={selectedNodeId} projectId={1} onClose={() => setSelectedNodeId(null)} />
     </>
   );
 };
