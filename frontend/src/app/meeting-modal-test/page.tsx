@@ -3,16 +3,35 @@
 import { Button } from '@wanteddev/wds';
 import { useState } from 'react';
 
+import { privateApi } from '@/api';
 import { useModal } from '@/components/commons/modal/ModalContext';
 import {
   MeetingCreateModalContent,
   type MeetingCreatePayload,
 } from '@/components/projects/node-flow/MeetingCreateModalContent';
 import { EXAMPLE_MEETING_CREATE_NODE } from '@/constants/exampleConstant';
+import { useErrorToast } from '@/hooks/useErrorToast';
+
+const TEST_PROJECT_ID = 1;
 
 export default function MeetingModalTestPage() {
   const { openModal, closeModal } = useModal();
+  const showErrorToast = useErrorToast();
   const [lastPayload, setLastPayload] = useState<MeetingCreatePayload | null>(null);
+
+  const handleCreate = async (payload: MeetingCreatePayload) => {
+    try {
+      await privateApi.meeting.createMeeting(
+        TEST_PROJECT_ID,
+        EXAMPLE_MEETING_CREATE_NODE.id,
+        payload,
+      );
+      setLastPayload(payload);
+      closeModal();
+    } catch (err) {
+      showErrorToast(err, '회의 생성에 실패했어요.');
+    }
+  };
 
   const handleOpenClick = () => {
     openModal({
@@ -24,10 +43,7 @@ export default function MeetingModalTestPage() {
           nodeBadge={EXAMPLE_MEETING_CREATE_NODE.badge}
           nodeTitle={EXAMPLE_MEETING_CREATE_NODE.title}
           onClose={closeModal}
-          onCreate={(payload) => {
-            setLastPayload(payload);
-            closeModal();
-          }}
+          onCreate={handleCreate}
         />
       ),
     });
