@@ -8,6 +8,7 @@ import { privateApi } from '@/api';
 import { authStorage } from '@/api/authStorage';
 import { useDialog } from '@/components/commons/custom-dialog/DialogContext';
 import { usePositionedToast } from '@/components/commons/custom-toast/usePositionedToast';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 import { AccountLogoutConfirmContent } from './AccountLogoutConfirmContent';
 import { AccountWithdrawConfirmContent } from './AccountWithdrawConfirmContent';
@@ -38,6 +39,7 @@ export const AccountSettingsModalContent = ({ onClose }: AccountSettingsModalCon
   const router = useRouter();
   const { openDialog, closeDialog } = useDialog();
   const toast = usePositionedToast();
+  const showErrorToast = useErrorToast();
 
   const {
     info,
@@ -56,26 +58,10 @@ export const AccountSettingsModalContent = ({ onClose }: AccountSettingsModalCon
         duration: 'short',
       });
     },
-    onNicknameError: (message) => {
-      toast({
-        content: message,
-        variant: 'negative',
-        placement: 'bottom-left',
-        duration: 'short',
-      });
-    },
     onProfileImageUploaded: () => {
       toast({
         content: '프로필 이미지를 변경했어요',
         variant: 'normal',
-        placement: 'bottom-left',
-        duration: 'short',
-      });
-    },
-    onProfileImageError: (message) => {
-      toast({
-        content: message,
-        variant: 'negative',
         placement: 'bottom-left',
         duration: 'short',
       });
@@ -96,6 +82,14 @@ export const AccountSettingsModalContent = ({ onClose }: AccountSettingsModalCon
       setInfoEmail(nextEmail);
       toast({
         content: '이메일을 변경했어요',
+        variant: 'normal',
+        placement: 'bottom-left',
+        duration: 'short',
+      });
+    },
+    onCodeSent: () => {
+      toast({
+        content: '인증 코드를 보냈어요. 메일함을 확인해 주세요',
         variant: 'normal',
         placement: 'bottom-left',
         duration: 'short',
@@ -149,7 +143,7 @@ export const AccountSettingsModalContent = ({ onClose }: AccountSettingsModalCon
                 duration: 'short',
               });
             } catch (caught) {
-              console.error('회원 탈퇴에 실패했어요.', caught);
+              showErrorToast(caught, '회원 탈퇴에 실패했어요.');
             }
           }}
           onClose={closeDialog}

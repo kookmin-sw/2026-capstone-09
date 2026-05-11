@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { privateApi } from '@/api';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 interface AccountInfo {
   nickname: string;
@@ -17,56 +18,11 @@ const AUTO_SAVE_DEBOUNCE_MS = 1000;
 const PROFILE_IMAGE_MAX_BYTES = 5 * 1024 * 1024; // 5MB
 const PROFILE_IMAGE_ACCEPT = ['image/png', 'image/jpeg', 'image/webp'] as const;
 
-/**
- * 백엔드 envelope 형태에서 에러 코드를 안전하게 꺼낸다.
- *
- * http-client 가 `!response.ok` 일 때 fetch `Response` 자체를 throw 하는데,
- * 그 객체에 `error` / `data` / `status` enumerable 속성을 덧붙인 형태라
- * `console.error(caught)` 에는 prototype 속성이 빠져 `{}` 처럼 보일 수 있다.
- * 이 함수는 envelope 의 `code`, 혹은 본문이 root 에 있는 `code` 둘 다 본다.
- */
-const extractErrorCode = (caught: unknown): string | undefined => {
-  if (typeof caught !== 'object' || caught === null) return undefined;
-  const obj = caught as {
-    error?: { code?: string; message?: string };
-    code?: string;
-  };
-  return obj.error?.code ?? obj.code;
-};
-
-/** 디버깅용 — Response 로 throw 된 객체에서 status·body 까지 평탄화해 console 에 찍는다. */
-const formatErrorForLog = (caught: unknown): Record<string, unknown> => {
-  if (typeof caught !== 'object' || caught === null) return { caught };
-  const obj = caught as {
-    status?: number;
-    statusText?: string;
-    url?: string;
-    error?: unknown;
-    data?: unknown;
-    code?: string;
-    message?: string;
-  };
-  return {
-    status: obj.status,
-    statusText: obj.statusText,
-    url: obj.url,
-    error: obj.error,
-    data: obj.data,
-    code: obj.code,
-    message: caught instanceof Error ? caught.message : obj.message,
-    name: caught instanceof Error ? caught.name : undefined,
-  };
-};
-
 interface UseAccountSettingsFormParams {
   /** 닉네임 자동 저장 성공 시 호출. */
   onNicknameSaved?: () => void;
-  /** 닉네임 자동 저장 실패 시 사용자에게 보여줄 메시지를 받는다. */
-  onNicknameError?: (message: string) => void;
   /** 프로필 이미지 업로드 성공 시 호출. */
   onProfileImageUploaded?: () => void;
-  /** 프로필 이미지 업로드 실패 시 사용자에게 보여줄 메시지를 받는다. */
-  onProfileImageError?: (message: string) => void;
 }
 
 /**
@@ -74,22 +30,18 @@ interface UseAccountSettingsFormParams {
  *
  * - 마운트/`reloadCounter` 변경 시 `privateApi.user.getMe` 로 계정 정보 로드.
  * - 닉네임 1초 debounce 자동 저장(`updateMe({ nickname })`).
- *   - 백엔드 에러 `USER_NICKNAME_DUPLICATED` 는 `onNicknameError` 로 한국어 메시지 위임.
  * - 프로필 이미지 업로드(`uploadProfileImage(file)`):
- *   - 클라이언트 사전 검증 — 5MB 이내, png/jpeg/webp.
- *   - `privateApi.user.updateProfileImage(formData)` 호출. generated 시그니처가
- *     `data: number` 로 추출돼 있어 한 번만 `as unknown as number` 로 우회한다.
- *     (Swagger 의 multipart file 정의가 추가되면 cast 제거.)
- *   - 성공 시 응답 `data: null` 이라 URL 을 못 받아, `getMe` 를 재호출해 화면을 갱신한다.
- *   - 백엔드 에러 `FILE_SIZE_EXCEEDED` / `FILE_INVALID_TYPE` 도 `onProfileImageError` 로 위임.
+ *   - 클라이언트 사전 검증 — 5MB 이내, png/jpeg/webp (서버 거부 전에 사용자에게 토스트).
+ *   - `privateApi.user.updateProfileImage({ profileImage: file })` 호출.
+ *   - 응답 `data: null` 이라 URL 을 못 받아, `getMe` 를 재호출해 화면을 갱신한다.
+ * - API 실패는 모두 `useErrorToast` 로 백엔드 `err.error.message` 우선 표시.
  * - 이메일은 별도 훅(`useEmailEditForm`)에서 처리. `setInfoEmail` 만 외부에서 동기화 가능하게 노출.
  */
 export const useAccountSettingsForm = ({
   onNicknameSaved,
-  onNicknameError,
   onProfileImageUploaded,
-  onProfileImageError,
 }: UseAccountSettingsFormParams = {}) => {
+  const showErrorToast = useErrorToast();
   const [info, setInfo] = useState<AccountInfo | null>(null);
   const [nickname, setNickname] = useState('');
   const [reloadCounter, setReloadCounter] = useState(0);
@@ -111,14 +63,14 @@ export const useAccountSettingsForm = ({
         setNickname(next.nickname);
       } catch (caught) {
         if (cancelled) return;
-        console.error('내 정보 조회에 실패했어요.', caught);
+        showErrorToast(caught, '내 정보 조회에 실패했어요.');
       }
     };
     void fetchMe();
     return () => {
       cancelled = true;
     };
-  }, [reloadCounter]);
+  }, [reloadCounter, showErrorToast]);
 
   const trimmed = nickname.trim();
   const isValidNickname = trimmed.length > 0 && trimmed.length <= NICKNAME_MAX_LENGTH;
@@ -139,13 +91,7 @@ export const useAccountSettingsForm = ({
           onNicknameSaved?.();
         } catch (caught) {
           if (cancelled) return;
-          const code = extractErrorCode(caught);
-          if (code === 'USER_NICKNAME_DUPLICATED') {
-            onNicknameError?.('이미 사용 중인 닉네임이에요');
-          } else {
-            onNicknameError?.('닉네임 저장에 실패했어요');
-            console.error('닉네임 저장에 실패했어요.', caught);
-          }
+          showErrorToast(caught, '닉네임 저장에 실패했어요.');
         }
       };
       void saveNickname();
@@ -155,7 +101,7 @@ export const useAccountSettingsForm = ({
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [trimmed, canSave, onNicknameSaved, onNicknameError]);
+  }, [trimmed, canSave, onNicknameSaved, showErrorToast]);
 
   const reset = useCallback(() => {
     setNickname(info?.nickname ?? '');
@@ -174,45 +120,24 @@ export const useAccountSettingsForm = ({
         file.type as (typeof PROFILE_IMAGE_ACCEPT)[number],
       );
       if (!isAllowedType) {
-        onProfileImageError?.('PNG·JPEG·WEBP 파일만 업로드할 수 있어요');
+        showErrorToast(null, 'PNG·JPEG·WEBP 파일만 업로드할 수 있어요.');
         return;
       }
       // 2) 크기 사전 검증
       if (file.size > PROFILE_IMAGE_MAX_BYTES) {
-        onProfileImageError?.('파일 크기는 5MB 이하여야 해요');
+        showErrorToast(null, '파일 크기는 5MB 이하여야 해요.');
         return;
       }
 
-      const formData = new FormData();
-      // 백엔드 multipart part name 은 `profileImage` (Spring `@RequestPart("profileImage")`).
-      // 명세에는 `file` 로 적혀 있지만 실제 구현은 `profileImage` 라 후자에 맞춘다.
-      formData.append('profileImage', file);
-
       try {
-        // generated 타입이 `data: number` 로 잘못 추출돼 있어 한 번만 우회.
-        // Swagger 가 multipart file 정의를 잡아주면 cast 제거 가능.
-        await privateApi.user.updateProfileImage(formData as unknown as number);
+        await privateApi.user.updateProfileImage({ profileImage: file });
         setReloadCounter((c) => c + 1);
         onProfileImageUploaded?.();
       } catch (caught) {
-        const code = extractErrorCode(caught);
-        const status = (caught as { status?: number } | null | undefined)?.status;
-        if (code === 'FILE_SIZE_EXCEEDED') {
-          onProfileImageError?.('파일 크기가 제한을 초과했어요');
-        } else if (code === 'FILE_INVALID_TYPE') {
-          onProfileImageError?.('지원하지 않는 파일 형식이에요');
-        } else if (status === 500) {
-          // 서버 내부 오류는 클라이언트가 더 좁힐 수 없다. 사용자에겐 일반 메시지만 보이고
-          // 백엔드 로그 추적은 console.error 의 디버깅 정보로 위임.
-          onProfileImageError?.('서버에서 처리하지 못했어요. 잠시 후 다시 시도해 주세요');
-          console.error('프로필 이미지 업로드 - 서버 500', formatErrorForLog(caught));
-        } else {
-          onProfileImageError?.('프로필 이미지 업로드에 실패했어요');
-          console.error('프로필 이미지 업로드 실패', formatErrorForLog(caught));
-        }
+        showErrorToast(caught, '프로필 이미지 업로드에 실패했어요.');
       }
     },
-    [onProfileImageUploaded, onProfileImageError],
+    [onProfileImageUploaded, showErrorToast],
   );
 
   return {
