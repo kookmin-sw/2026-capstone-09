@@ -4,6 +4,7 @@ import { Button } from '@wanteddev/wds';
 import { IconLink } from '@wanteddev/wds-icon';
 import { useState } from 'react';
 
+import { privateApi } from '@/api';
 import { useModal } from '@/components/commons/modal/ModalContext';
 import {
   ReferenceNodeModalContent,
@@ -11,6 +12,7 @@ import {
   type ReferenceNodeCreatePayload,
 } from '@/components/projects/project-detail/reference-node';
 import { EXAMPLE_REFERENCE_NODE_MODAL } from '@/constants/exampleConstant';
+import { useErrorToast } from '@/hooks/useErrorToast';
 
 interface SubmittedReferenceNodeRequest {
   pathParams: CreateReferenceNodePathParams;
@@ -19,14 +21,19 @@ interface SubmittedReferenceNodeRequest {
 
 export default function ReferenceNodeModalTestPage() {
   const { openModal, closeModal } = useModal();
+  const showErrorToast = useErrorToast();
   const [submittedRequest, setSubmittedRequest] = useState<SubmittedReferenceNodeRequest | null>(
     null,
   );
   const pathParams = { projectId: EXAMPLE_REFERENCE_NODE_MODAL.projectId };
 
-  const handleCreate = (payload: ReferenceNodeCreatePayload) => {
-    // TODO: privateApi.edge.createEdge(pathParams.projectId, payload)로 참조 노드 연결선 생성 API 연동
-    setSubmittedRequest({ pathParams, body: payload });
+  const handleCreate = async (payload: ReferenceNodeCreatePayload) => {
+    try {
+      await privateApi.edge.createEdge(pathParams.projectId, payload);
+      setSubmittedRequest({ pathParams, body: payload });
+    } catch (err) {
+      showErrorToast(err, '참조 노드 연결에 실패했어요.');
+    }
   };
 
   const handleOpenModal = () => {
