@@ -20,6 +20,10 @@ import kr.flowmeet.api.node.dto.response.GetKanbanResponse;
 import kr.flowmeet.api.node.dto.response.GetLinkedNodesResponse;
 import kr.flowmeet.api.node.dto.response.GetNodeListResponse;
 import kr.flowmeet.api.node.dto.response.GetNodeResponse;
+import kr.flowmeet.api.node.dto.request.AnalyzeDraggedNodesRequest;
+import kr.flowmeet.api.node.dto.response.AnalyzeDraggedNodesResponse;
+import kr.flowmeet.api.node.dto.request.AnalyzeDraggedNodesRequest;
+import kr.flowmeet.api.node.dto.response.AnalyzeDraggedNodesResponse;
 import kr.flowmeet.api.node.dto.response.RequestNodeSummaryResponse;
 import kr.flowmeet.api.node.dto.response.SearchNodeResponse;
 import kr.flowmeet.api.node.success.NodeSuccessCode;
@@ -141,6 +145,15 @@ public interface NodeApi {
             @UserId Long userId,
             @PathVariable Long projectId,
             @PathVariable Long nodeId
+    );
+
+    @Operation(summary = "드래그 노드 분석", description = "드래그로 선택한 노드들의 회의록을 기반으로 AI 분석을 수행합니다.")
+    @ApiSuccessCode(code = NodeSuccessCode.class, name = "ANALYZE_DRAGGED_NODES")
+    @ApiErrorCode(code = NodeErrorCode.class, names = {"NODE_NOT_FOUND", "NOT_ENOUGH_SUMMARIES_FOR_ANALYSIS"})
+    CommonResponse<AnalyzeDraggedNodesResponse> analyzeDraggedNodes(
+            @UserId Long userId,
+            @PathVariable Long projectId,
+            @Valid @RequestBody AnalyzeDraggedNodesRequest request
     );
 
     @Operation(summary = "프로젝트 내 검색", description = "노드 제목, 키워드로 검색합니다.")
