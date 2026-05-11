@@ -10,8 +10,8 @@ import {
   SESSION_KEY,
   subscribeToSession,
 } from '@/utils/sidebarSnapshot';
-import { NodeDetailLayout } from './NodeDetailLayout';
 import NodeMeetingTab from './meeting/NodeMeetingTab';
+import { NodeDetailLayout } from './NodeDetailLayout';
 import NodeNoteTab from './note/NodeNoteTab';
 
 interface NodeSidebarProps {
