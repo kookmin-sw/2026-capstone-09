@@ -2,7 +2,11 @@
 
 import { ProjectSidebar } from '@/components/commons/project-sidebar/ProjectSidebar';
 
-export default function ProjectLayout({ children }: { children: React.ReactNode }) {
+interface ProjectDetailLayoutProps {
+  children: React.ReactNode;
+}
+
+export default function ProjectDetailLayout({ children }: ProjectDetailLayoutProps) {
   return (
     <div className="flex h-screen overflow-hidden">
       <ProjectSidebar />

@@ -18,7 +18,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   return (
     <section className="bg-surface-canvas flex flex-1 flex-col overflow-hidden">
       {activeView === 'node-flow' && (
-        <div className="flex-1 w-full h-full">
+        <div className="h-full w-full flex-1">
           <NodeFlowView projectId={projectIdNum} />
         </div>
       )}
