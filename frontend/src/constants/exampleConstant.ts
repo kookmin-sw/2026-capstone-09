@@ -70,68 +70,84 @@ export const EXAMPLE_REFERENCE_NODE_MODAL = {
   startNodeId: 101,
   referencedNodes: [
     {
-      nodeId: 1,
-      nodeNumber: '1',
-      nodeTitle: '메인 노드 제목입니다.',
-      connectedBy: '윤신지',
-      summary:
+      edgeId: 9001,
+      linkType: 'END',
+      linkedNodeId: 1,
+      number: '1',
+      title: '메인 노드 제목입니다.',
+      description:
         '노드 노트 요약 내용입니다. 대충 이런 느낌의 내용이 들어가있을 거에요. 몇 자까지 할까요? 맞춰보세요ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ',
+      createdBy: { userId: 91, nickname: '윤신지' },
     },
     {
-      nodeId: 2,
-      nodeNumber: '2',
-      nodeTitle: '메인 노드 제목입니다.',
-      connectedBy: '윤신지',
-      summary:
+      edgeId: 9002,
+      linkType: 'END',
+      linkedNodeId: 2,
+      number: '2',
+      title: '메인 노드 제목입니다.',
+      description:
         '노드 노트 요약 내용입니다. 대충 이런 느낌의 내용이 들어가있을 거에요. 몇 자까지 할까요? 맞춰보세요...',
+      createdBy: { userId: 91, nickname: '윤신지' },
     },
     {
-      nodeId: 3,
-      nodeNumber: '3',
-      nodeTitle: '메인 노드 제목입니다.',
-      connectedBy: '윤신지',
-      summary:
+      edgeId: 9003,
+      linkType: 'END',
+      linkedNodeId: 3,
+      number: '3',
+      title: '메인 노드 제목입니다.',
+      description:
         '노드 노트 요약 내용입니다. 대충 이런 느낌의 내용이 들어가있을 거에요. 몇 자까지 할까요? 맞춰보세요...',
+      createdBy: { userId: 91, nickname: '윤신지' },
     },
     {
-      nodeId: 4,
-      nodeNumber: '4',
-      nodeTitle: '메인 노드 제목입니다.',
-      connectedBy: '윤신지',
-      summary:
+      edgeId: 9004,
+      linkType: 'END',
+      linkedNodeId: 4,
+      number: '4',
+      title: '메인 노드 제목입니다.',
+      description:
         '노드 노트 요약 내용입니다. 대충 이런 느낌의 내용이 들어가있을 거에요. 몇 자까지 할까요? 맞춰보세요...',
+      createdBy: { userId: 91, nickname: '윤신지' },
     },
     {
-      nodeId: 5,
-      nodeNumber: '5',
-      nodeTitle: '대시보드 진입 화면',
-      connectedBy: '황수민',
-      summary:
+      edgeId: 9005,
+      linkType: 'END',
+      linkedNodeId: 5,
+      number: '5',
+      title: '대시보드 진입 화면',
+      description:
         '대시보드 첫 진입 시 보여줄 위젯 구성과 기본 필터 상태를 정리한 노드입니다. 권한별 노출 규칙도 함께 다룹니다.',
+      createdBy: { userId: 92, nickname: '황수민' },
     },
     {
-      nodeId: 6,
-      nodeNumber: '6',
-      nodeTitle: '사용자 세션 저장',
-      connectedBy: '박건민',
-      summary:
+      edgeId: 9006,
+      linkType: 'END',
+      linkedNodeId: 6,
+      number: '6',
+      title: '사용자 세션 저장',
+      description:
         '리프레시 토큰 만료 처리와 세션 무효화 시 라우트 가드 동작을 어떻게 묶을지에 대한 결정 노드.',
+      createdBy: { userId: 93, nickname: '박건민' },
     },
     {
-      nodeId: 7,
-      nodeNumber: '7',
-      nodeTitle: '권한별 접근 제어',
-      connectedBy: '백채린',
-      summary:
+      edgeId: 9007,
+      linkType: 'END',
+      linkedNodeId: 7,
+      number: '7',
+      title: '권한별 접근 제어',
+      description:
         '워크스페이스 멤버 권한별로 노출되는 메뉴와 가능한 액션을 표 형태로 정리해 둔 노드입니다.',
+      createdBy: { userId: 94, nickname: '백채린' },
     },
     {
-      nodeId: 8,
-      nodeNumber: '8',
-      nodeTitle: '온보딩 체크리스트',
-      connectedBy: '윤성욱',
-      summary:
+      edgeId: 9008,
+      linkType: 'END',
+      linkedNodeId: 8,
+      number: '8',
+      title: '온보딩 체크리스트',
+      description:
         '신규 사용자가 처음 30분 안에 도달해야 하는 핵심 액션을 단계별로 정리한 온보딩 노드.',
+      createdBy: { userId: 95, nickname: '윤성욱' },
     },
   ],
   nodeOptions: [

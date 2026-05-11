@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 
-import type { CreateEdgeRequest } from '@/api/data-contracts';
+import type { CreateEdgeRequest, LinkedNodeItem } from '@/api/Api';
 
 export type ReferenceNodeKind = 'main' | 'sub';
 
@@ -15,13 +15,8 @@ export interface ReferenceNodeOption {
   kind?: ReferenceNodeKind;
 }
 
-export interface ReferencedNodeItem {
-  nodeId: number;
-  nodeNumber: string;
-  nodeTitle: string;
-  connectedBy: string;
-  summary: string;
-}
+/** 참조 중인 노드 목록 항목. Swagger `LinkedNodeItem` 스키마를 그대로 사용한다. */
+export type ReferencedNodeItem = LinkedNodeItem;
 
 export interface CreateReferenceNodePathParams {
   projectId: number;

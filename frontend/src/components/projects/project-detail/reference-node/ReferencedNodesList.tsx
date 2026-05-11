@@ -23,7 +23,7 @@ export const ReferencedNodesList = ({ items, variant = 'list' }: ReferencedNodes
     >
       {items.map((item) => (
         <li
-          key={item.nodeId}
+          key={item.edgeId}
           className="bg-fill-alternative/50 flex items-start gap-2 rounded-lg px-4 py-2"
         >
           <ContentBadge
@@ -32,19 +32,19 @@ export const ReferencedNodesList = ({ items, variant = 'list' }: ReferencedNodes
             color="accent"
             className="!bg-primary-40/10 !text-primary-40 shrink-0"
           >
-            #{item.nodeNumber}
+            #{item.number}
           </ContentBadge>
           <div className="flex min-w-0 flex-1 flex-col">
             <div className="flex items-center justify-between gap-4">
               <span className="text-body-2 text-label-normal truncate font-medium">
-                {item.nodeTitle}
+                {item.title}
               </span>
               <span className="text-caption-1 text-label-assistive shrink-0 font-normal">
-                연결한 사람: {item.connectedBy}
+                연결한 사람: {item.createdBy?.nickname}
               </span>
             </div>
             <p className="text-caption-1 text-label-alternative w-full truncate font-normal">
-              {item.summary}
+              {item.description}
             </p>
           </div>
         </li>
