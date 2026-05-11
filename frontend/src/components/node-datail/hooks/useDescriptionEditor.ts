@@ -1,18 +1,21 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Placeholder } from '@tiptap/extensions';
 import { Extension } from '@tiptap/core';
+import { useEditor } from '@tiptap/react';
 
-export function useTitleEditor(title: string | undefined, onSave: (value: string) => void) {
-  const titleRef = useRef(title);
+export function useDescriptionEditor(
+  description: string | undefined,
+  onSave: (value: string) => void,
+) {
+  const descriptionRef = useRef(description);
   const onSaveRef = useRef(onSave);
 
   useEffect(() => {
-    titleRef.current = title;
-  }, [title]);
+    descriptionRef.current = description;
+  }, [description]);
 
   useEffect(() => {
     onSaveRef.current = onSave;
@@ -23,7 +26,7 @@ export function useTitleEditor(title: string | undefined, onSave: (value: string
       extensions: [
         StarterKit,
         Placeholder.configure({
-          placeholder: '제목을 입력하세요.',
+          placeholder: '설명을 추가해 주세요',
         }),
         Extension.create({
           name: 'preventEnterRevertOnEscape',
@@ -34,15 +37,15 @@ export function useTitleEditor(title: string | undefined, onSave: (value: string
                 return true;
               },
               Escape: ({ editor }) => {
-                editor.commands.setContent(titleRef.current ?? '');
-                editor.view.dom.blur();
+                editor.commands.setContent(descriptionRef.current ?? '');
+                editor.commands.blur();
                 return true;
               },
             };
           },
         }),
       ],
-      content: title ?? '새 노드',
+      content: description ?? '',
       onBlur({ editor }) {
         onSaveRef.current(editor.getText());
       },
@@ -57,11 +60,11 @@ export function useTitleEditor(title: string | undefined, onSave: (value: string
           return false;
         },
         attributes: {
-          class: 'prose focus:outline-none text-2xl font-medium',
+          class: 'prose focus:outline-none text-sm',
         },
       },
       immediatelyRender: false,
     },
-    [title],
+    [description],
   );
 }

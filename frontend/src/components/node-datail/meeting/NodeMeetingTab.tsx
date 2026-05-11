@@ -1,8 +1,6 @@
 'use client';
 
-import { privateApi } from '@/api';
-import { MeetingItem } from '@/api/Api';
-import { useEffect, useState } from 'react';
+import { useNodeDetailQuery } from '@/queries/node';
 import CreateMeeting from './CreateMeeting';
 import HasMeeting from './HasMeeting';
 
@@ -12,35 +10,9 @@ interface NodeMeetingTabProps {
 }
 
 export const NodeMeetingTab = ({ nodeId, projectId }: NodeMeetingTabProps) => {
-  const [hasMeeting, setHasMeeting] = useState<MeetingItem | undefined>(undefined);
+  const { data: nodeDetail } = useNodeDetailQuery(projectId, nodeId);
 
-  useEffect(() => {
-    const fetchNodeDetail = async () => {
-      try {
-        if (!projectId || !nodeId) return;
-
-        const data = await privateApi.node.getNode(projectId, nodeId);
-        setHasMeeting(data.data.data?.meeting);
-      } catch (error) {
-        console.error('Failed to load flowchart:', error);
-      }
-    };
-    void fetchNodeDetail();
-  }, [nodeId]);
-
-  return (
-    <>
-      {hasMeeting ? (
-        <>
-          <HasMeeting />
-        </>
-      ) : (
-        <>
-          <CreateMeeting />
-        </>
-      )}
-    </>
-  );
+  return <>{nodeDetail?.meeting ? <HasMeeting /> : <CreateMeeting />}</>;
 };
 
 export default NodeMeetingTab;
