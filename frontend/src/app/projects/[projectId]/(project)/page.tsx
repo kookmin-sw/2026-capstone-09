@@ -1,6 +1,7 @@
 'use client';
 
 import { use } from 'react';
+import { ListView } from '@/components/projects/list/ListView';
 import { NodeFlowView } from '@/components/projects/node-flow/NodeFlowView';
 import { useProjectDetailLayout } from '@/contexts/ProjectDetailLayoutContext';
 
@@ -18,13 +19,13 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   return (
     <section className="bg-surface-canvas flex flex-1 flex-col overflow-hidden">
       {activeView === 'node-flow' && (
-        <div className="flex-1 w-full h-full">
+        <div className="h-full w-full flex-1">
           <NodeFlowView projectId={projectIdNum} />
         </div>
       )}
       {activeView === 'list' && (
-        <div className="flex flex-1 items-center justify-center">
-          <p className="text-body-1 text-label-neutral font-medium">리스트 뷰</p>
+        <div className="flex-1 w-full h-full">
+          <ListView projectId={projectIdNum} />
         </div>
       )}
       {activeView === 'kanban' && (

@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useNodeDetailQuery } from '@/queries/node';
 import Editor from '../../commons/editor/editor';
-import { privateApi } from '@/api';
 
 interface NodeNoteTabProps {
   nodeId: number | null;
@@ -10,25 +9,11 @@ interface NodeNoteTabProps {
 }
 
 export default function NodeNoteTab({ nodeId, projectId }: NodeNoteTabProps) {
-  const [content, setContent] = useState<string | undefined>('테스트');
-
-  useEffect(() => {
-    const fetchNodeDetail = async () => {
-      try {
-        if (!projectId || !nodeId) return;
-
-        const data = await privateApi.node.getNode(projectId, nodeId);
-        setContent(data.data.data?.noteContent);
-      } catch (error) {
-        console.error('Failed to load flowchart:', error);
-      }
-    };
-    void fetchNodeDetail();
-  }, [nodeId]);
+  const { data: nodeDetail } = useNodeDetailQuery(projectId, nodeId);
 
   return (
     <main className="flex">
-      <Editor content={content} />
+      <Editor content={nodeDetail?.noteContent} />
     </main>
   );
 }

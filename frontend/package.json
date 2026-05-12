@@ -13,6 +13,8 @@
     "api:gen": "dotenv -- sh -c 'npx swagger-typescript-api generate -p $SWAGGER_URL -o ./src/api --httpClientType fetch --module-name-first-tag'"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.100.9",
+    "@tanstack/react-query-devtools": "^5.100.9",
     "@tiptap/core": "^3.22.4",
     "@tiptap/extension-collaboration": "^3.20.1",
     "@tiptap/extensions": "^3.20.4",
@@ -37,6 +39,7 @@
     "yjs": "^13.6.29"
   },
   "devDependencies": {
+    "@svgr/webpack": "^8.1.0",
     "@tailwindcss/postcss": "^4",
     "@tailwindcss/typography": "^0.5.19",
     "@types/js-cookie": "^3.0.6",

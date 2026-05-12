@@ -26,6 +26,7 @@ interface NodeMenuProps {
   onCreateReference: () => void;
   onDelete: () => void;
   onMenuClick?: (e: React.MouseEvent) => void;
+  position?: 'bottom-start' | 'bottom-end' | 'bottom-center';
 }
 
 export function NodeMenu({
@@ -37,6 +38,7 @@ export function NodeMenu({
   onCreateReference,
   onDelete,
   onMenuClick,
+  position = 'bottom-start',
 }: NodeMenuProps) {
   const [open, setOpen] = useState(false);
 
@@ -90,7 +92,7 @@ export function NodeMenu({
           <IconMoreVertical className="shrink-0 text-neutral-60" width={18} height={18} />
         </IconButton>
       </MenuTrigger>
-      <MenuContent position="bottom-start" sx={{ width: 154 }}>
+      <MenuContent position={position} sx={{ width: 154 }}>
         <MenuList>
           <CustomMenuItem
             value="create-sub-node"
