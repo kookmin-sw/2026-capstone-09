@@ -103,7 +103,11 @@ export function ListView({ projectId }: ListViewProps) {
               <ListCard
                 key={node.nodeId}
                 nodeNumber={node.number || ''}
-                status={node.status || 'WAITING'}
+                status={
+                  node.status === 'IN_PROGRESS' || node.status === 'DONE'
+                    ? node.status
+                    : 'WAITING'
+                }
                 date={node.updatedAt ? formatDate(node.updatedAt) : ''}
                 title={node.title || '제목 없음'}
                 tags={node.tags?.map((tag) => ({
