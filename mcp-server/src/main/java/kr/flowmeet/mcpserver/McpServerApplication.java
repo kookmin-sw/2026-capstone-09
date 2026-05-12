@@ -1,5 +1,6 @@
 package kr.flowmeet.mcpserver;
 
+import kr.flowmeet.mcpserver.config.GeminiCompatibleToolCallbackProvider;
 import kr.flowmeet.mcpserver.tool.PingTool;
 import org.springframework.ai.tool.method.MethodToolCallbackProvider;
 import org.springframework.ai.tool.ToolCallbackProvider;
@@ -16,8 +17,9 @@ public class McpServerApplication {
 
     @Bean
     public ToolCallbackProvider toolCallbackProvider(PingTool pingTool) {
-        return MethodToolCallbackProvider.builder()
+        ToolCallbackProvider original = MethodToolCallbackProvider.builder()
                 .toolObjects(pingTool)
                 .build();
+        return new GeminiCompatibleToolCallbackProvider(original);
     }
 }

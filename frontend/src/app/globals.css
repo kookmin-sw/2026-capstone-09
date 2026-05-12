@@ -24,3 +24,22 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* 데스크탑 환경 세팅 - UA 우회 케이스 대비 CSS 보조 차단 */
+@media (max-width: 1023px) {
+  body > *:not(.desktop-only-page) {
+    display: none !important;
+  }
+
+  body::before {
+    content: '데스크탑 환경(1024px 이상)에서 사용해 주세요.';
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    font-size: 14px;
+    color: #888;
+    text-align: center;
+    padding: 2rem;
+  }
+}
