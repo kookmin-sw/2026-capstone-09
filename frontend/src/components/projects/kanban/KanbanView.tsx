@@ -8,7 +8,6 @@ import { KanbanItem } from '@/api/Api';
 import { usePositionedToast } from '@/components/commons/custom-toast/usePositionedToast';
 import { Loading } from '@/components/commons/loading/Loading';
 import { NodeSidebar } from '@/components/node-datail/NodeSidebar';
-import { NodeStatusType } from '@/constants/nodeStatus';
 
 import { useKanbanDragDrop } from './hooks/useKanbanDragDrop';
 import { KanbanColumn } from './KanbanColumn';
@@ -17,13 +16,14 @@ interface KanbanViewProps {
   projectId: number;
 }
 
-const KANBAN_STATUSES: NodeStatusType[] = ['WAITING', 'IN_PROGRESS', 'DONE'];
+const KANBAN_STATUSES = ['WAITING', 'IN_PROGRESS', 'DONE'] as const;
+type KanbanStatusType = (typeof KANBAN_STATUSES)[number];
 
 export function KanbanView({ projectId }: KanbanViewProps) {
   const toast = usePositionedToast();
   const [sidebarNodeId, setSidebarNodeId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [groupedNodes, setGroupedNodes] = useState<Record<NodeStatusType, KanbanItem[]>>({
+  const [groupedNodes, setGroupedNodes] = useState<Record<KanbanStatusType, KanbanItem[]>>({
     WAITING: [],
     IN_PROGRESS: [],
     DONE: [],

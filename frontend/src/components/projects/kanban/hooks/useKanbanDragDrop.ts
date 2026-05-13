@@ -6,14 +6,15 @@ import { useDebouncedCallback } from 'use-debounce';
 import { privateApi } from '@/api';
 import { KanbanItem } from '@/api/Api';
 import { usePositionedToast } from '@/components/commons/custom-toast/usePositionedToast';
-import { NodeStatusType } from '@/constants/nodeStatus';
 
-const KANBAN_STATUSES: NodeStatusType[] = ['WAITING', 'IN_PROGRESS', 'DONE'];
+const KANBAN_STATUSES = ['WAITING', 'IN_PROGRESS', 'DONE'] as const;
+type KanbanStatusType = (typeof KANBAN_STATUSES)[number];
+
 const SORT_ORDER_GAP = 1024;
 
 interface UseKanbanDragDropParams {
-  groupedNodes: Record<NodeStatusType, KanbanItem[]>;
-  setGroupedNodes: React.Dispatch<React.SetStateAction<Record<NodeStatusType, KanbanItem[]>>>;
+  groupedNodes: Record<KanbanStatusType, KanbanItem[]>;
+  setGroupedNodes: React.Dispatch<React.SetStateAction<Record<KanbanStatusType, KanbanItem[]>>>;
   projectId: number;
   loadKanbanData: () => Promise<void>;
 }
@@ -32,7 +33,7 @@ export function useKanbanDragDrop({
   }, [groupedNodes]);
 
   const findNodeStatus = useCallback(
-    (nodeId: number, nodes: Record<NodeStatusType, KanbanItem[]>): NodeStatusType | null => {
+    (nodeId: number, nodes: Record<KanbanStatusType, KanbanItem[]>): KanbanStatusType | null => {
       for (const status of KANBAN_STATUSES) {
         if (nodes[status].some((n) => n.nodeId === nodeId)) {
           return status;
@@ -85,8 +86,8 @@ export function useKanbanDragDrop({
         const activeStatus = findNodeStatus(activeId, prev);
         if (!activeStatus) return prev;
 
-        const isOverColumn = KANBAN_STATUSES.includes(overId as NodeStatusType);
-        const overStatus = isOverColumn ? (overId as NodeStatusType) : findNodeStatus(Number(overId), prev);
+        const isOverColumn = KANBAN_STATUSES.includes(overId as KanbanStatusType);
+        const overStatus = isOverColumn ? (overId as KanbanStatusType) : findNodeStatus(Number(overId), prev);
 
         if (!overStatus) return prev;
 

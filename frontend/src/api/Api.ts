@@ -10,6 +10,74 @@
  * ---------------------------------------------------------------
  */
 
+/** 회의 수정 요청 */
+export interface UpdateMeetingRequest {
+  /**
+   * 회의 시작 시각 (날짜+시간)
+   * @format date-time
+   * @example "2026-05-20T15:30:00"
+   */
+  startedAt: string;
+  /**
+   * 참여자 사용자 ID 목록
+   * @minItems 1
+   * @example [10,20,30]
+   */
+  participantUserIds: number[];
+  /** 알림 발송 여부 */
+  isPushEnabled?: boolean;
+}
+
+/** 공통 응답 형식 */
+export interface CommonResponseObject {
+  /**
+   * HTTP 상태 코드
+   * @format int32
+   * @example 200
+   */
+  status?: number;
+  /**
+   * 응답 코드
+   * @example "OK"
+   */
+  code?: string;
+  /**
+   * 응답 메시지
+   * @example "요청에 성공했습니다."
+   */
+  message?: string;
+  /** 응답 데이터 */
+  data?: any;
+}
+
+/** 이메일 인증 코드 발송 요청 */
+export interface SendEmailVerificationRequest {
+  /**
+   * 인증할 이메일
+   * @format email
+   * @minLength 1
+   * @example "flowmin@flowmeet.kr"
+   */
+  email: string;
+}
+
+/** 이메일 인증 코드 검증 요청 */
+export interface VerifyEmailRequest {
+  /**
+   * 인증할 이메일
+   * @format email
+   * @minLength 1
+   * @example "flowmin@flowmeet.kr"
+   */
+  email: string;
+  /**
+   * 인증 코드
+   * @minLength 1
+   * @example "123456"
+   */
+  code: string;
+}
+
 /** 프로젝트 생성 요청 */
 export interface CreateProjectRequest {
   /**
@@ -148,28 +216,6 @@ export interface CreateTagRequest {
     | "PINK";
 }
 
-/** 공통 응답 형식 */
-export interface CommonResponseObject {
-  /**
-   * HTTP 상태 코드
-   * @format int32
-   * @example 200
-   */
-  status?: number;
-  /**
-   * 응답 코드
-   * @example "OK"
-   */
-  code?: string;
-  /**
-   * 응답 메시지
-   * @example "요청에 성공했습니다."
-   */
-  message?: string;
-  /** 응답 데이터 */
-  data?: any;
-}
-
 /** 노드 생성 요청 */
 export interface CreateNodeRequest {
   /**
@@ -206,6 +252,65 @@ export interface AddNodeTagRequest {
   tagId: number;
 }
 
+/** 공통 응답 형식 */
+export interface CommonResponseRequestNodeSummaryResponse {
+  /**
+   * HTTP 상태 코드
+   * @format int32
+   * @example 200
+   */
+  status?: number;
+  /**
+   * 응답 코드
+   * @example "OK"
+   */
+  code?: string;
+  /**
+   * 응답 메시지
+   * @example "요청에 성공했습니다."
+   */
+  message?: string;
+  /** 응답 데이터 */
+  data?: RequestNodeSummaryResponse;
+}
+
+/** 메인 노드 요약 요청 응답 */
+export interface RequestNodeSummaryResponse {
+  /**
+   * AI 요약 작업 ID
+   * @example "550e8400-e29b-41d4-a716-446655440000"
+   */
+  jobId?: string;
+}
+
+/** 회의 생성 요청 */
+export interface CreateMeetingRequest {
+  /**
+   * 회의 시작 시각 (날짜+시간)
+   * @format date-time
+   * @example "2026-05-20T15:30:00"
+   */
+  startedAt: string;
+  /**
+   * 참여자 사용자 ID 목록
+   * @minItems 1
+   * @example [10,20,30]
+   */
+  participantUserIds: number[];
+  /** 알림 발송 여부 */
+  isPushEnabled?: boolean;
+}
+
+/** 자막 저장 요청 */
+export interface AppendTranscriptRequest {
+  /**
+   * 자막 텍스트
+   * @minLength 1
+   * @example "플로우: 네, 다들 시간 맞춰주셔서 감사합니다."
+   */
+  content: string;
+}
+
 /** 노드 담당자 지정 요청 */
 export interface CreateAssigneeRequest {
   /**
@@ -214,6 +319,100 @@ export interface CreateAssigneeRequest {
    * @example 91
    */
   userId: number;
+}
+
+/** 드래그 노드 분석 요청 */
+export interface AnalyzeDraggedNodesRequest {
+  /**
+   * 분석할 노드 ID 목록 (최소 2개)
+   * @maxItems 2147483647
+   * @minItems 2
+   * @example [1,2,3]
+   */
+  nodeIds: number[];
+}
+
+/** 후속 업무 담당자별 분배 현황 */
+export interface ActionItemsAnalysisItem {
+  /**
+   * 전체 후속 업무 수
+   * @format int32
+   * @example 15
+   */
+  totalCount?: number;
+  /** 담당자별 업무 배분 */
+  byPerson?: Record<string, PersonAnalysisItem>;
+}
+
+/** 선택한 노드들의 회의록 기반 AI 분석 결과 */
+export interface AnalyzeDraggedNodesResponse {
+  /** 회의 간 연관 관계 (구체화, 시너지, 선행조건 등) */
+  meetingRelationships?: MeetingRelationshipItem[];
+  /** 회의에서 도출된 후속 업무의 담당자별 분배 현황 */
+  actionItemsAnalysis?: ActionItemsAnalysisItem;
+  /** 회의 내용 기반 AI 발전 아이디어 제안 (마크다운) */
+  developmentIdeas?: string;
+  /** 회의 관계 시각화 Mermaid 코드 */
+  mermaidCode?: string;
+}
+
+/** 공통 응답 형식 */
+export interface CommonResponseAnalyzeDraggedNodesResponse {
+  /**
+   * HTTP 상태 코드
+   * @format int32
+   * @example 200
+   */
+  status?: number;
+  /**
+   * 응답 코드
+   * @example "OK"
+   */
+  code?: string;
+  /**
+   * 응답 메시지
+   * @example "요청에 성공했습니다."
+   */
+  message?: string;
+  /** 응답 데이터 */
+  data?: AnalyzeDraggedNodesResponse;
+}
+
+/** 회의 간 연관 관계 */
+export interface MeetingRelationshipItem {
+  /**
+   * 기준 회의 제목
+   * @example "비즈니스 모델 전략 회의"
+   */
+  from?: string;
+  /**
+   * 연관 회의 제목
+   * @example "MVP기능 회의"
+   */
+  to?: string;
+  /**
+   * 관계 유형 (구체화/변화 발생/시너지/선행조건/대체 가능/상충)
+   * @example "구체화"
+   */
+  relation?: string;
+  /** 해당 관계로 판단한 근거 */
+  reason?: string;
+}
+
+/** 담당자별 업무 배분 */
+export interface PersonAnalysisItem {
+  /**
+   * 배정된 업무 수
+   * @format int32
+   * @example 5
+   */
+  count?: number;
+  /**
+   * 전체 대비 담당 비율 (합산 = 1.0)
+   * @format double
+   * @example "0.33"
+   */
+  rate?: number;
 }
 
 /** 프로젝트 멤버 초대 요청 */
@@ -629,6 +828,97 @@ export interface CreatePresignedUrlResponse {
   uploadUrl?: string;
 }
 
+/** 회원가입 요청 */
+export interface SignupRequest {
+  /**
+   * 소셜 제공자
+   * @example "GOOGLE"
+   */
+  socialProvider: "GOOGLE" | "KAKAO";
+  /**
+   * 소셜 access token (로그인 응답으로 받은 값)
+   * @minLength 1
+   * @example "ya29.a0AfH6SMB..."
+   */
+  socialAccessToken: string;
+  /**
+   * 닉네임(최대 20자)
+   * @minLength 0
+   * @maxLength 20
+   * @example "수민"
+   */
+  nickname: string;
+  /**
+   * 이메일
+   * @format email
+   * @minLength 1
+   * @example "tnals655@kookmin.ac.kr"
+   */
+  email: string;
+}
+
+/** 공통 응답 형식 */
+export interface CommonResponseTokenResponse {
+  /**
+   * HTTP 상태 코드
+   * @format int32
+   * @example 200
+   */
+  status?: number;
+  /**
+   * 응답 코드
+   * @example "OK"
+   */
+  code?: string;
+  /**
+   * 응답 메시지
+   * @example "요청에 성공했습니다."
+   */
+  message?: string;
+  /** 응답 데이터 */
+  data?: TokenResponse;
+}
+
+/** 토큰 응답 */
+export interface TokenResponse {
+  /**
+   * Access Token
+   * @example "eyJhbGciOiJIUzI1NiJ9..."
+   */
+  accessToken?: string;
+  /**
+   * Refresh Token
+   * @example "eyJhbGciOiJIUzI1NiJ9..."
+   */
+  refreshToken?: string;
+}
+
+/** 토큰 갱신 요청 */
+export interface RefreshTokenRequest {
+  /**
+   * Refresh Token
+   * @minLength 1
+   * @example "eyJhbGciOiJIUzI1NiJ9..."
+   */
+  refreshToken: string;
+}
+
+/** 소셜 로그인 요청 */
+export interface SocialLoginRequest {
+  /**
+   * 소셜 로그인 인증 코드
+   * @minLength 1
+   * @example "4/0AX4XfWjLkLi..."
+   */
+  code: string;
+  /**
+   * SPA 측에서 사용한 redirect URI (provider 에 등록된 값과 동일해야 합니다)
+   * @minLength 1
+   * @example "https://app.flowmeet.kr/auth/callback"
+   */
+  redirectUri: string;
+}
+
 /** 내 정보 수정 요청 */
 export interface UpdateUserRequest {
   /**
@@ -822,7 +1112,7 @@ export interface UpdateNodeStatusRequest {
    * 변경할 노드 상태
    * @example "IN_PROGRESS"
    */
-  status: "WAITING" | "IN_PROGRESS" | "DONE";
+  status: "WAITING" | "IN_PROGRESS" | "ON_HOLD" | "DONE" | "CLOSED";
 }
 
 /** 노드 노트 수정 요청 */
@@ -835,13 +1125,44 @@ export interface UpdateNodeNoteRequest {
   noteContent?: string;
 }
 
+/** 공통 응답 형식 */
+export interface CommonResponseEndMeetingResponse {
+  /**
+   * HTTP 상태 코드
+   * @format int32
+   * @example 200
+   */
+  status?: number;
+  /**
+   * 응답 코드
+   * @example "OK"
+   */
+  code?: string;
+  /**
+   * 응답 메시지
+   * @example "요청에 성공했습니다."
+   */
+  message?: string;
+  /** 응답 데이터 */
+  data?: EndMeetingResponse;
+}
+
+/** 회의 종료 응답 */
+export interface EndMeetingResponse {
+  /**
+   * AI 요약 작업 ID
+   * @example "550e8400-e29b-41d4-a716-446655440000"
+   */
+  jobId?: string;
+}
+
 /** 칸반 카드 이동(드래그 앤 드롭) 요청 */
 export interface UpdateNodeKanbanRequest {
   /**
    * 변경할 노드 상태
    * @example "IN_PROGRESS"
    */
-  status: "WAITING" | "IN_PROGRESS" | "DONE";
+  status: "WAITING" | "IN_PROGRESS" | "ON_HOLD" | "DONE" | "CLOSED";
   /**
    * 칸반 내 정렬 순서
    * @format int32
@@ -1235,7 +1556,7 @@ export interface SearchItem {
    * 노드 상태
    * @example "IN_PROGRESS"
    */
-  status?: "WAITING" | "IN_PROGRESS" | "DONE";
+  status?: "WAITING" | "IN_PROGRESS" | "ON_HOLD" | "DONE" | "CLOSED";
   /** 부여된 태그 목록 */
   tags?: TagItem[];
   /**
@@ -1262,6 +1583,12 @@ export interface SearchNodeResponse {
 
 /** 노드 담당자 정보 */
 export interface AssigneeItem {
+  /**
+   * 노드 담당자 ID
+   * @format int64
+   * @example 10
+   */
+  assigneeId?: number;
   /**
    * 사용자 ID
    * @format int64
@@ -1408,7 +1735,7 @@ export interface NodeItem {
    * 노드 상태
    * @example "IN_PROGRESS"
    */
-  status?: "WAITING" | "IN_PROGRESS" | "DONE";
+  status?: "WAITING" | "IN_PROGRESS" | "ON_HOLD" | "DONE" | "CLOSED";
   /**
    * 같은 상태 내 정렬 순서
    * @format int32
@@ -1459,6 +1786,21 @@ export interface CommonResponseGetNodeResponse {
   data?: GetNodeResponse;
 }
 
+/** 회의 생성자 */
+export interface CreatorItem {
+  /**
+   * 사용자 ID
+   * @format int64
+   * @example 10
+   */
+  userId?: number;
+  /**
+   * 닉네임
+   * @example "홍길동"
+   */
+  nickname?: string;
+}
+
 /** 노드 상세 조회 응답 */
 export interface GetNodeResponse {
   /**
@@ -1504,7 +1846,7 @@ export interface GetNodeResponse {
    * 노드 상태
    * @example "IN_PROGRESS"
    */
-  status?: "WAITING" | "IN_PROGRESS" | "DONE";
+  status?: "WAITING" | "IN_PROGRESS" | "ON_HOLD" | "DONE" | "CLOSED";
   /**
    * 같은 상태 내 정렬 순서
    * @format int32
@@ -1517,6 +1859,8 @@ export interface GetNodeResponse {
   assignees?: AssigneeItem[];
   /** 연결된 회의 정보 (없으면 null) */
   meeting?: MeetingItem;
+  /** 하위 노드 회의록을 종합한 AI 요약 (메인 노드 전용, 서브 노드에서는 필드 자체가 생략됨) */
+  mainSummary?: string;
   /**
    * 생성 시각
    * @format date-time
@@ -1543,7 +1887,7 @@ export interface MeetingItem {
    * 회의 상태
    * @example "SCHEDULED"
    */
-  status?: string;
+  status?: "SCHEDULED" | "IN_PROGRESS" | "ENDED";
   /**
    * 회의 시작 시각
    * @format date-time
@@ -1561,6 +1905,148 @@ export interface MeetingItem {
    * @example "2026-04-20T13:50:00"
    */
   pushNotifyAt?: string;
+  /**
+   * 화상 회의 링크
+   * @example "https://meet.google.com/abc-defg-hij"
+   */
+  meetingUrl?: string;
+  /** 회의록 AI 요약 (생성 전이라면 null) */
+  summary?: string;
+  /** Mermaid 다이어그램 코드 (생성 전이라면 null) */
+  mermaidCode?: string;
+  /** 참여자 목록 */
+  participants?: ParticipantItem[];
+  /** 회의 생성자 */
+  createdBy?: CreatorItem;
+  /**
+   * 생성 시각
+   * @format date-time
+   * @example "2026-04-19T10:15:30"
+   */
+  createdAt?: string;
+}
+
+/** 회의 참여자 */
+export interface ParticipantItem {
+  /**
+   * 회의 참여자 ID
+   * @format int64
+   * @example 1
+   */
+  meetingParticipantId?: number;
+  /**
+   * 사용자 ID
+   * @format int64
+   * @example 10
+   */
+  userId?: number;
+  /**
+   * 닉네임
+   * @example "홍길동"
+   */
+  nickname?: string;
+  /**
+   * 프로필 이미지 URL
+   * @example "https://cdn.flowmit.com/profiles/10.png"
+   */
+  profileImageUrl?: string;
+}
+
+/** 공통 응답 형식 */
+export interface CommonResponseGetLinkedNodesResponse {
+  /**
+   * HTTP 상태 코드
+   * @format int32
+   * @example 200
+   */
+  status?: number;
+  /**
+   * 응답 코드
+   * @example "OK"
+   */
+  code?: string;
+  /**
+   * 응답 메시지
+   * @example "요청에 성공했습니다."
+   */
+  message?: string;
+  /** 응답 데이터 */
+  data?: GetLinkedNodesResponse;
+}
+
+/** 노드에 연결된 상대 노드 목록 조회 응답 */
+export interface GetLinkedNodesResponse {
+  /** 연결된 노드 목록 */
+  linkedNodes?: LinkedNodeItem[];
+}
+
+/** 연결선을 만든 사용자 정보 */
+export interface LinkCreatorItem {
+  /**
+   * 사용자 ID
+   * @format int64
+   * @example 91
+   */
+  userId?: number;
+  /**
+   * 닉네임
+   * @example "윤신지"
+   */
+  nickname?: string;
+  /**
+   * 프로필 이미지 URL
+   * @example "https://cdn.flowmeet.kr/profile/91.png"
+   */
+  profileImageUrl?: string;
+}
+
+/** 연결된 상대 노드 항목 */
+export interface LinkedNodeItem {
+  /**
+   * 연결선 ID
+   * @format int64
+   * @example 9001
+   */
+  edgeId?: number;
+  /**
+   * 조회한 노드의 연결선 내 역할
+   * @example "START"
+   */
+  linkType?: "START" | "END";
+  /**
+   * 연결된 상대 노드 ID
+   * @format int64
+   * @example 102
+   */
+  linkedNodeId?: number;
+  /**
+   * 노드 번호 (노드 1번의 서브 노드라면 1.1)
+   * @example "1"
+   */
+  number?: string;
+  /**
+   * 노드 제목
+   * @example "메인 노드 제목입니다."
+   */
+  title?: string;
+  /**
+   * 노드 설명
+   * @example "노드 노트 요약 내용입니다."
+   */
+  description?: string;
+  /**
+   * 연결선 코멘트
+   * @example "로그인 성공 시 대시보드로 이동"
+   */
+  comment?: string;
+  /** 연결선을 만든 사용자 정보 */
+  createdBy?: LinkCreatorItem;
+  /**
+   * 연결선 생성 시각
+   * @format date-time
+   * @example "2026-04-19T10:15:30"
+   */
+  createdAt?: string;
 }
 
 /** 공통 응답 형식 */
@@ -1618,7 +2104,7 @@ export interface NodeListItem {
    * 노드 상태
    * @example "IN_PROGRESS"
    */
-  status?: "WAITING" | "IN_PROGRESS" | "DONE";
+  status?: "WAITING" | "IN_PROGRESS" | "ON_HOLD" | "DONE" | "CLOSED";
   /** 부여된 태그 목록 */
   tags?: TagItem[];
   /** 담당자 목록 */
@@ -1664,8 +2150,12 @@ export interface GetKanbanResponse {
   waiting?: KanbanItem[];
   /** 진행 중 상태의 노드 목록 */
   inProgress?: KanbanItem[];
+  /** 보류 상태의 노드 목록 */
+  onHold?: KanbanItem[];
   /** 완료 상태의 노드 목록 */
   done?: KanbanItem[];
+  /** 종료 상태의 노드 목록 */
+  closed?: KanbanItem[];
 }
 
 /** 칸반 보드의 개별 노드 카드 */
@@ -2350,6 +2840,547 @@ export class HttpClient<SecurityDataType = unknown> {
 export class Api<
   SecurityDataType extends unknown,
 > extends HttpClient<SecurityDataType> {
+  meeting = {
+    /**
+     * @description 회의 시작 시간과 참여자를 수정합니다.
+     *
+     * @tags Meeting
+     * @name UpdateMeeting
+     * @summary 회의 수정
+     * @request PUT:/v1/projects/{projectId}/nodes/{nodeId}/meetings/{meetingId}
+     * @secure
+     */
+    updateMeeting: (
+      projectId: number,
+      nodeId: number,
+      meetingId: number,
+      data: UpdateMeetingRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "UPDATE_MEETING"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "회의 정보를 수정했어요."
+           */
+          message?: object;
+          /** 응답 데이터 */
+          data?: object;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/projects/${projectId}/nodes/${nodeId}/meetings/${meetingId}`,
+        method: "PUT",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description 회의를 삭제합니다. 발급된 화상 회의 링크도 함께 정리합니다.
+     *
+     * @tags Meeting
+     * @name DeleteMeeting
+     * @summary 회의 삭제
+     * @request DELETE:/v1/projects/{projectId}/nodes/{nodeId}/meetings/{meetingId}
+     * @secure
+     */
+    deleteMeeting: (
+      projectId: number,
+      nodeId: number,
+      meetingId: number,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "DELETE_MEETING"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "회의를 삭제했어요."
+           */
+          message?: object;
+          /** 응답 데이터 */
+          data?: object;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/projects/${projectId}/nodes/${nodeId}/meetings/${meetingId}`,
+        method: "DELETE",
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * @description 노드에 회의를 생성합니다. 화상 회의 링크를 함께 발급합니다.
+     *
+     * @tags Meeting
+     * @name CreateMeeting
+     * @summary 회의 생성
+     * @request POST:/v1/projects/{projectId}/nodes/{nodeId}/meetings
+     * @secure
+     */
+    createMeeting: (
+      projectId: number,
+      nodeId: number,
+      data: CreateMeetingRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "CREATE_MEETING"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "회의를 만들었어요."
+           */
+          message?: object;
+          /** 응답 데이터 */
+          data?: object;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/projects/${projectId}/nodes/${nodeId}/meetings`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description 회의 중 자막 텍스트를 저장합니다. 프론트 익스텐션이 주기적으로 호출합니다.
+     *
+     * @tags Meeting
+     * @name AppendTranscript
+     * @summary 자막 저장
+     * @request POST:/v1/projects/{projectId}/nodes/{nodeId}/meetings/{meetingId}/transcripts
+     * @secure
+     */
+    appendTranscript: (
+      projectId: number,
+      nodeId: number,
+      meetingId: number,
+      data: AppendTranscriptRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "APPEND_TRANSCRIPT"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "자막을 저장했어요."
+           */
+          message?: object;
+          /** 응답 데이터 */
+          data?: object;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/projects/${projectId}/nodes/${nodeId}/meetings/${meetingId}/transcripts`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description 회의를 종료하고 자막을 기반으로 AI 요약을 자동 요청합니다.
+     *
+     * @tags Meeting
+     * @name EndMeeting
+     * @summary 회의 종료
+     * @request PATCH:/v1/projects/{projectId}/nodes/{nodeId}/meetings/{meetingId}/end
+     * @secure
+     */
+    endMeeting: (
+      projectId: number,
+      nodeId: number,
+      meetingId: number,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "END_MEETING"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "회의를 종료했어요."
+           */
+          message?: object;
+          /** 회의 종료 응답 */
+          data?: EndMeetingResponse;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/projects/${projectId}/nodes/${nodeId}/meetings/${meetingId}/end`,
+        method: "PATCH",
+        secure: true,
+        ...params,
+      }),
+  };
+  user = {
+    /**
+     * @description 변경할 이메일 주소로 6자리 인증 코드를 발송합니다. 코드 유효시간은 5분입니다.
+     *
+     * @tags User
+     * @name SendEmailVerification
+     * @summary 이메일 인증 코드 발송
+     * @request POST:/v1/users/me/email-verifications
+     * @secure
+     */
+    sendEmailVerification: (
+      data: SendEmailVerificationRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "SEND_EMAIL_VERIFICATION"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "인증 코드를 보냈어요. 메일함을 확인해 주세요."
+           */
+          message?: object;
+          /** 응답 데이터 */
+          data?: object;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/users/me/email-verifications`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description 발송된 인증 코드로 이메일 소유를 확인합니다.
+     *
+     * @tags User
+     * @name VerifyEmail
+     * @summary 이메일 인증 코드 검증
+     * @request POST:/v1/users/me/email-verifications/verify
+     * @secure
+     */
+    verifyEmail: (data: VerifyEmailRequest, params: RequestParams = {}) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "VERIFY_EMAIL"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "이메일 인증에 성공했어요."
+           */
+          message?: object;
+          /** 응답 데이터 */
+          data?: object;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/users/me/email-verifications/verify`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags User
+     * @name GetMe
+     * @summary 내 정보 조회
+     * @request GET:/v1/users/me
+     * @secure
+     */
+    getMe: (params: RequestParams = {}) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "GET_ME"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "내 정보를 조회했어요."
+           */
+          message?: object;
+          /** 내 정보 조회 응답 */
+          data?: GetUserResponse;
+        },
+        any
+      >({
+        path: `/v1/users/me`,
+        method: "GET",
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * @description 소유 중인 프로젝트가 있으면 탈퇴할 수 없습니다.
+     *
+     * @tags User
+     * @name DeleteMe
+     * @summary 회원 탈퇴
+     * @request DELETE:/v1/users/me
+     * @secure
+     */
+    deleteMe: (params: RequestParams = {}) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "DELETE_ME"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "회원 탈퇴가 완료됐어요."
+           */
+          message?: object;
+          /** 응답 데이터 */
+          data?: object;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/users/me`,
+        method: "DELETE",
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * @description 이메일을 변경할 때는 인증 코드 검증이 끝난 이메일만 사용할 수 있습니다.
+     *
+     * @tags User
+     * @name UpdateMe
+     * @summary 내 정보 수정
+     * @request PATCH:/v1/users/me
+     * @secure
+     */
+    updateMe: (data: UpdateUserRequest, params: RequestParams = {}) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "UPDATE_ME"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "내 정보를 수정했어요."
+           */
+          message?: object;
+          /** 내 정보 수정 응답 */
+          data?: UpdateUserResponse;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/users/me`,
+        method: "PATCH",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description png, jpeg, webp만 허용 (최대 5MB)
+     *
+     * @tags User
+     * @name UpdateProfileImage
+     * @summary 프로필 이미지 변경
+     * @request PATCH:/v1/users/me/profile-image
+     * @secure
+     */
+    updateProfileImage: (
+      data: {
+        /** @format binary */
+        profileImage: File;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "UPDATE_PROFILE_IMAGE"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "프로필 이미지를 변경했어요."
+           */
+          message?: object;
+          /** 응답 데이터 */
+          data?: object;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/users/me/profile-image`,
+        method: "PATCH",
+        body: data,
+        secure: true,
+        type: ContentType.FormData,
+        ...params,
+      }),
+  };
   project = {
     /**
      * @description 검색어, 정렬(LATEST/NAME), 커서 기반 슬라이싱을 지원합니다. 첫 요청은 cursorId/cursorValue 생략, 이후 응답의 nextCursorId/nextCursorValue를 그대로 전달합니다.
@@ -3262,6 +4293,106 @@ export class Api<
       }),
 
     /**
+     * @description 하위 노드의 회의록 요약을 종합하여 메인 노드 요약을 요청합니다.
+     *
+     * @tags Node
+     * @name RequestNodeSummary
+     * @summary 메인 노드 요약 요청
+     * @request POST:/v1/projects/{projectId}/nodes/{nodeId}/summary
+     * @secure
+     */
+    requestNodeSummary: (
+      projectId: number,
+      nodeId: number,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "REQUEST_NODE_SUMMARY"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "메인 노드 요약을 요청했어요."
+           */
+          message?: object;
+          /** 메인 노드 요약 요청 응답 */
+          data?: RequestNodeSummaryResponse;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/projects/${projectId}/nodes/${nodeId}/summary`,
+        method: "POST",
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * @description 드래그로 선택한 노드들의 회의록을 기반으로 AI 분석을 수행합니다.
+     *
+     * @tags Node
+     * @name AnalyzeDraggedNodes
+     * @summary 드래그 노드 분석
+     * @request POST:/v1/projects/{projectId}/nodes/analysis
+     * @secure
+     */
+    analyzeDraggedNodes: (
+      projectId: number,
+      data: AnalyzeDraggedNodesRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "ANALYZE_DRAGGED_NODES"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "드래그 노드 분석을 완료했어요."
+           */
+          message?: object;
+          /** 선택한 노드들의 회의록 기반 AI 분석 결과 */
+          data?: AnalyzeDraggedNodesResponse;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/projects/${projectId}/nodes/analysis`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
      * @description 노드의 제목만 수정합니다.
      *
      * @tags Node
@@ -3314,7 +4445,7 @@ export class Api<
       }),
 
     /**
-     * @description 노드의 상태(WAITING/IN_PROGRESS/DONE)만 변경합니다.
+     * @description 노드의 상태(WAITING/IN_PROGRESS/ON_HOLD/DONE/CLOSED)만 변경합니다.
      *
      * @tags Node
      * @name UpdateNodeStatus
@@ -3662,7 +4793,56 @@ export class Api<
       }),
 
     /**
-     * @description 노드를 리스트 형태로 조회합니다.
+     * @description 노드와 연결선으로 이어진 상대 노드 목록을 조회합니다.
+     *
+     * @tags Node
+     * @name GetLinkedNodes
+     * @summary 연결된 노드 조회
+     * @request GET:/v1/projects/{projectId}/nodes/{nodeId}/linked-nodes
+     * @secure
+     */
+    getLinkedNodes: (
+      projectId: number,
+      nodeId: number,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "GET_LINKED_NODES"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "연결된 노드를 조회했어요."
+           */
+          message?: object;
+          /** 노드에 연결된 상대 노드 목록 조회 응답 */
+          data?: GetLinkedNodesResponse;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/projects/${projectId}/nodes/${nodeId}/linked-nodes`,
+        method: "GET",
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * @description 노드를 리스트 형태로 조회합니다. (LATEST: 최신순, NAME: 가나다순)
      *
      * @tags Node
      * @name GetNodeList
@@ -3673,7 +4853,8 @@ export class Api<
     getNodeList: (
       projectId: number,
       query?: {
-        sort?: string;
+        /** @default "LATEST" */
+        sort?: "LATEST" | "NAME";
       },
       params: RequestParams = {},
     ) =>
@@ -4572,17 +5753,17 @@ export class Api<
         ...params,
       }),
   };
-  user = {
+  auth = {
     /**
-     * No description
+     * @description 소셜 로그인 후 미가입 유저의 추가 정보 입력 및 회원가입 완료
      *
-     * @tags User
-     * @name GetMe
-     * @summary 내 정보 조회
-     * @request GET:/v1/users/me
+     * @tags Auth
+     * @name Signup
+     * @summary 회원가입
+     * @request POST:/v1/auth/signup
      * @secure
      */
-    getMe: (params: RequestParams = {}) =>
+    signup: (data: SignupRequest, params: RequestParams = {}) =>
       this.request<
         {
           /**
@@ -4593,55 +5774,16 @@ export class Api<
           status?: object;
           /**
            * 응답 코드
-           * @example "GET_ME"
+           * @example "SIGNUP"
            */
           code?: object;
           /**
            * 응답 메시지
-           * @example "내 정보를 조회했어요."
+           * @example "회원가입에 성공했어요."
            */
           message?: object;
-          /** 내 정보 조회 응답 */
-          data?: GetUserResponse;
-        },
-        any
-      >({
-        path: `/v1/users/me`,
-        method: "GET",
-        secure: true,
-        ...params,
-      }),
-
-    /**
-     * @description 소유 중인 프로젝트가 있으면 탈퇴할 수 없습니다.
-     *
-     * @tags User
-     * @name DeleteMe
-     * @summary 회원 탈퇴
-     * @request DELETE:/v1/users/me
-     * @secure
-     */
-    deleteMe: (params: RequestParams = {}) =>
-      this.request<
-        {
-          /**
-           * HTTP 상태 코드
-           * @format int32
-           * @example 200
-           */
-          status?: object;
-          /**
-           * 응답 코드
-           * @example "DELETE_ME"
-           */
-          code?: object;
-          /**
-           * 응답 메시지
-           * @example "회원 탈퇴가 완료됐어요."
-           */
-          message?: object;
-          /** 응답 데이터 */
-          data?: object;
+          /** 토큰 응답 */
+          data?: TokenResponse;
         },
         {
           /** @format int32 */
@@ -4651,53 +5793,8 @@ export class Api<
           data?: object;
         }
       >({
-        path: `/v1/users/me`,
-        method: "DELETE",
-        secure: true,
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags User
-     * @name UpdateMe
-     * @summary 내 정보 수정
-     * @request PATCH:/v1/users/me
-     * @secure
-     */
-    updateMe: (data: UpdateUserRequest, params: RequestParams = {}) =>
-      this.request<
-        {
-          /**
-           * HTTP 상태 코드
-           * @format int32
-           * @example 200
-           */
-          status?: object;
-          /**
-           * 응답 코드
-           * @example "UPDATE_ME"
-           */
-          code?: object;
-          /**
-           * 응답 메시지
-           * @example "내 정보를 수정했어요."
-           */
-          message?: object;
-          /** 내 정보 수정 응답 */
-          data?: UpdateUserResponse;
-        },
-        {
-          /** @format int32 */
-          status?: number;
-          code?: string;
-          message?: string;
-          data?: object;
-        }
-      >({
-        path: `/v1/users/me`,
-        method: "PATCH",
+        path: `/v1/auth/signup`,
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -4705,19 +5802,103 @@ export class Api<
       }),
 
     /**
-     * @description png, jpeg, webp만 허용 (최대 5MB)
+     * @description Refresh Token 으로 Access Token 재발급
      *
-     * @tags User
-     * @name UpdateProfileImage
-     * @summary 프로필 이미지 변경
-     * @request PATCH:/v1/users/me/profile-image
+     * @tags Auth
+     * @name Refresh
+     * @summary 토큰 갱신
+     * @request POST:/v1/auth/refresh
      * @secure
      */
-    updateProfileImage: (
-      data: {
-        /** @format binary */
-        profileImage: File;
-      },
+    refresh: (data: RefreshTokenRequest, params: RequestParams = {}) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "REFRESH"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "토큰을 갱신했어요."
+           */
+          message?: object;
+          /** 토큰 응답 */
+          data?: TokenResponse;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/auth/refresh`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description 현재 유저의 모든 Refresh Token 을 무효화한다.
+     *
+     * @tags Auth
+     * @name Logout
+     * @summary 로그아웃
+     * @request POST:/v1/auth/logout
+     * @secure
+     */
+    logout: (params: RequestParams = {}) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "LOGOUT"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "로그아웃되었어요."
+           */
+          message?: object;
+          /** 응답 데이터 */
+          data?: object;
+        },
+        any
+      >({
+        path: `/v1/auth/logout`,
+        method: "POST",
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * @description 소셜 인증 코드로 로그인한다. 미가입 유저인 경우 회원가입 필요 응답을 반환한다. - 가입된 유저: code=`LOGIN`, data 에 accessToken/refreshToken - 미가입 유저: code=`SIGNUP_REQUIRED`, data 에 socialProvider/socialAccessToken/name/email
+     *
+     * @tags Auth
+     * @name Login
+     * @summary 소셜 로그인
+     * @request POST:/v1/auth/login/{provider}
+     * @secure
+     */
+    login: (
+      provider: string,
+      data: SocialLoginRequest,
       params: RequestParams = {},
     ) =>
       this.request<
@@ -4730,12 +5911,12 @@ export class Api<
           status?: object;
           /**
            * 응답 코드
-           * @example "UPDATE_PROFILE_IMAGE"
+           * @example "LOGIN"
            */
           code?: object;
           /**
            * 응답 메시지
-           * @example "프로필 이미지를 변경했어요."
+           * @example "로그인을 성공했어요."
            */
           message?: object;
           /** 응답 데이터 */
@@ -4749,11 +5930,11 @@ export class Api<
           data?: object;
         }
       >({
-        path: `/v1/users/me/profile-image`,
-        method: "PATCH",
+        path: `/v1/auth/login/${provider}`,
+        method: "POST",
         body: data,
         secure: true,
-        type: ContentType.FormData,
+        type: ContentType.Json,
         ...params,
       }),
   };

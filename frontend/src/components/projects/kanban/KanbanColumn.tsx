@@ -4,14 +4,13 @@ import { ContentBadge, ThemeColorsToken, Typography } from '@wanteddev/wds';
 import clsx from 'clsx';
 
 import { KanbanItem } from '@/api/Api';
-import { NodeStatusType } from '@/constants/nodeStatus';
 import { getNodeStatusColor, getNodeStatusIcon, getNodeStatusLabel } from '@/utils/getNodeStatus';
 import { formatDate } from '@/utils/nodeUtils';
 
 import { NodeCard } from './NodeCard';
 
 interface KanbanColumnProps {
-  status: NodeStatusType;
+  status: 'WAITING' | 'IN_PROGRESS' | 'DONE';
   nodes: KanbanItem[];
   onNodeDoubleClick?: (nodeId: number) => void;
 }
