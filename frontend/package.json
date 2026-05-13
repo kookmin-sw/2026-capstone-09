@@ -13,6 +13,9 @@
     "api:gen": "dotenv -- sh -c 'npx swagger-typescript-api generate -p $SWAGGER_URL -o ./src/api --httpClientType fetch --module-name-first-tag'"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@tanstack/react-query": "^5.100.9",
     "@tanstack/react-query-devtools": "^5.100.9",
     "@tiptap/core": "^3.22.4",
@@ -35,6 +38,7 @@
     "reactflow": "^11.11.4",
     "tailwind-merge": "^3.5.0",
     "tiptap-markdown": "^0.9.0",
+    "use-debounce": "^10.1.1",
     "y-websocket": "^3.0.0",
     "yjs": "^13.6.29"
   },
