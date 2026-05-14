@@ -14,7 +14,10 @@ class Agent:
         self.model = "gemini-2.5-flash"
         self.conversation_history = []
         self._tools = None
- 
+
+    async def close(self):
+        pass
+
     async def _get_gemini_tools(self) -> list[types.Tool]:
         mcp_tools = await self.mcp_client.list_tools()
  
@@ -51,7 +54,7 @@ class Agent:
                 config=types.GenerateContentConfig(
                     tools=self._tools,
                     thinking_config=types.ThinkingConfig(
-                        thinking_budget=512 #응답 너무 느리면 0으로 변경 가능
+                        thinking_budget=512 # 응답 너무 느리면 0으로 변경 가능
                     ),
                 ),
             )
