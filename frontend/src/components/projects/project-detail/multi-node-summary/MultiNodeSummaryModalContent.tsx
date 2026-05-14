@@ -33,12 +33,12 @@ export const MultiNodeSummaryModalContent = ({
   });
 
   const ideas = useMemo(
-    () => parseDevelopmentIdeas(result.development_ideas),
-    [result.development_ideas],
+    () => parseDevelopmentIdeas(result.developmentIdeas),
+    [result.developmentIdeas],
   );
   const diagramCode = useMemo(
-    () => buildMermaidCode(result.meeting_relationships),
-    [result.meeting_relationships],
+    () => result.mermaidCode ?? buildMermaidCode(result.meetingRelationships),
+    [result.mermaidCode, result.meetingRelationships],
   );
 
   return (
@@ -84,8 +84,8 @@ export const MultiNodeSummaryModalContent = ({
           className="custom-scrollbar flex max-h-150 w-full flex-col gap-6 overflow-y-auto pr-2"
         >
           <ReferenceNodesSection nodes={nodes} />
-          <ActionItemsSection analysis={result.action_items_analysis} />
-          <MeetingRelationshipsSection relationships={result.meeting_relationships} />
+          <ActionItemsSection analysis={result.actionItemsAnalysis} />
+          <MeetingRelationshipsSection relationships={result.meetingRelationships} />
           <DevelopmentIdeasSection ideas={ideas} />
           <RelationDiagramSection code={diagramCode} />
         </div>

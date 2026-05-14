@@ -131,7 +131,7 @@ export const EXAMPLE_MULTI_NODE_SUMMARY_RESULT = {
   // mermaid_code:
   //   'graph TD\n    비즈니스모델전략회의["비즈니스 모델 전략 회의"] --- "구체화" --- MVP기능회의["MVP기능 회의"]\n    MVP기능회의["MVP기능 회의"] --- "변화 발생" --- MVP개발일정조정회의["MVP 개발 일정 조정 회의"]\n    비즈니스모델전략회의["비즈니스 모델 전략 회의"] --- "시너지" --- PPT제작회의["PPT 제작 회의"]\n    MVP기능회의["MVP기능 회의"] --- "시너지" --- PPT제작회의["PPT 제작 회의"]\n    MVP개발일정조정회의["MVP 개발 일정 조정 회의"] --- "선행조건" --- PPT제작회의["PPT 제작 회의"]',
 
-  meeting_relationships: [
+  meetingRelationships: [
     {
       from: 'Yjs CRDT 통합 설계',
       to: '프레즌스 표시 UX 설계',
@@ -147,9 +147,9 @@ export const EXAMPLE_MULTI_NODE_SUMMARY_RESULT = {
         'AI 답변 출처 표시는 RAG 인덱싱 범위 확정을 통해 생성된 AI 답변의 신뢰도를 높이기 위한 후속 작업이다.',
     },
   ],
-  action_items_analysis: {
-    total_count: 3,
-    by_person: {
+  actionItemsAnalysis: {
+    totalCount: 3,
+    byPerson: {
       신지: {
         count: 2,
         rate: 0.6666666666666666,
@@ -160,9 +160,9 @@ export const EXAMPLE_MULTI_NODE_SUMMARY_RESULT = {
       },
     },
   },
-  development_ideas:
+  developmentIdeas:
     '### 아이디어1: 실시간 협업 에디터\\nYjs CRDT 통합과 프레즌스 표시를 결합하여 사용자 친화적인 실시간 협업 에디터를 개발합니다.\\n\\n### 아이디어2: AI 답변 신뢰도 향상 시스템\\nRAG 인덱싱 범위 확정과 AI 답변 출처 표시를 연계하여 AI 답변의 신뢰도를 높이는 시스템을 구축합니다.\\n\\n### 아이디어3: 개인화된 지식 검색\\nRAG 인덱싱에서 비공개 노드 인덱스 분리를 활용하여 개인화된 검색 경험을 제공합니다.',
-  mermaid_code:
+  mermaidCode:
     'graph TD\\n    YjsCRDT통합설계[\\"Yjs CRDT 통합 설계\\"] ---|\\"시너지\\"| 프레즌스표시UX설계[\\"프레즌스 표시 UX 설계\\"]\\n    AI답변출처표시[\\"AI 답변 출처 표시\\"] ---|\\"선행조건\\"| RAG인덱싱범위확정[\\"RAG 인덱싱 범위 확정\\"]',
 } as const;
 
