@@ -63,6 +63,7 @@ public class NodeAnalysisClient {
         SdkHttpFullRequest unsignedRequest = SdkHttpFullRequest.builder()
                 .method(SdkHttpMethod.POST)
                 .uri(uri)
+                .putHeader("x-amz-content-sha256", "UNSIGNED-PAYLOAD")
                 .build();
 
         Aws4SignerParams signerParams = Aws4SignerParams.builder()
