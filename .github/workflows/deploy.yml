@@ -87,6 +87,7 @@ jobs:
             set -euo pipefail
             cd /home/ubuntu
             export IMAGE_TAG=${{ needs.build-and-push.outputs.image_tag }}
+            sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=${IMAGE_TAG}/" .env
 
             echo "::group::Pull & Up"
             docker compose pull app
