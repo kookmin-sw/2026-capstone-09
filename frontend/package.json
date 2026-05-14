@@ -5,7 +5,6 @@
   "main": "electron/main.cjs",
   "scripts": {
     "dev": "next dev",
-    "dev:collab": "concurrently -k \"pnpm dev\" \"pnpm yjs:server\"",
     "yjs:server": "node yjs-server.mjs",
     "build": "next build",
     "start": "next start",
@@ -58,15 +57,12 @@
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-prettier": "^5.5.5",
     "eslint-plugin-unused-imports": "^4.4.1",
-    "lib0": "^0.2.117",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "swagger-typescript-api": "^13.6.10",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "wait-on": "^9.0.4",
-    "ws": "^8.20.0",
-    "y-protocols": "^1.0.7"
+    "wait-on": "^9.0.4"
   },
   "packageManager": "pnpm@10.10.0+sha512.d615db246fe70f25dcfea6d8d73dee782ce23e2245e3c4f6f888249fb568149318637dca73c2c5c8ef2a4ca0d5657fb9567188bfab47f566d1ee6ce987815c39"
 }
