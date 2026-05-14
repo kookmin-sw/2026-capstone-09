@@ -12,45 +12,26 @@ import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
-import software.amazon.awssdk.auth.signer.Aws4Signer;
-import software.amazon.awssdk.auth.signer.params.Aws4SignerParams;
-import software.amazon.awssdk.http.SdkHttpFullRequest;
-import software.amazon.awssdk.http.SdkHttpMethod;
-import software.amazon.awssdk.regions.Region;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class NodeAnalysisClient {
 
-    private static final String SIGNING_NAME = "execute-api";
-    private static final Region SIGNING_REGION = Region.AP_NORTHEAST_2;
-
     private final RestClient nodeAnalysisRestClient;
     private final NodeAnalysisProperties properties;
-    private final AwsCredentialsProvider awsCredentialsProvider;
 
     public NodeAnalysisResult analyze(final String fileContent) {
         URI uri = URI.create(properties.getEndpointUrl());
-
-        SdkHttpFullRequest signedRequest = signRequest(uri);
 
         MultipartBodyBuilder bodyBuilder = new MultipartBodyBuilder();
         bodyBuilder.part("file", toByteArrayResource(fileContent));
 
         log.info("노드 분석 API 호출 - endpoint: {}", properties.getEndpointUrl());
-        signedRequest.headers().forEach((key, values) ->
-                log.info("서명 헤더 - {}: {}", key, values));
 
         try {
             return nodeAnalysisRestClient.post()
                     .uri(uri)
-                    .headers(headers -> signedRequest.headers().forEach((key, values) -> {
-                            if (!"Host".equalsIgnoreCase(key)) {
-                                values.forEach(value -> headers.add(key, value));
-                            }
-                    }))
                     .contentType(MediaType.MULTIPART_FORM_DATA)
                     .body(bodyBuilder.build())
                     .retrieve()
@@ -59,24 +40,6 @@ public class NodeAnalysisClient {
             log.error("노드 분석 API 호출 실패", e);
             throw new ExternalException(NodeAnalysisErrorCode.NODE_ANALYSIS_FAILED);
         }
-    }
-
-    private SdkHttpFullRequest signRequest(final URI uri) {
-        Aws4Signer signer = Aws4Signer.create();
-
-        SdkHttpFullRequest unsignedRequest = SdkHttpFullRequest.builder()
-                .method(SdkHttpMethod.POST)
-                .uri(uri)
-                .putHeader("x-amz-content-sha256", "UNSIGNED-PAYLOAD")
-                .build();
-
-        Aws4SignerParams signerParams = Aws4SignerParams.builder()
-                .awsCredentials(awsCredentialsProvider.resolveCredentials())
-                .signingName(SIGNING_NAME)
-                .signingRegion(SIGNING_REGION)
-                .build();
-
-        return signer.sign(unsignedRequest, signerParams);
     }
 
     private ByteArrayResource toByteArrayResource(final String content) {
