@@ -91,10 +91,10 @@ export function NodeDetailLayout({
     updateCache((prev) => ({ ...prev, assignees: [...(prev.assignees ?? []), assignee] }));
   };
 
-  const handleAssigneeRemove = (userId: number) => {
+  const handleAssigneeRemove = (assigneeId: number) => {
     updateCache((prev) => ({
       ...prev,
-      assignees: prev.assignees?.filter((a) => a.userId !== userId),
+      assignees: prev.assignees?.filter((a) => a.assigneeId !== assigneeId),
     }));
   };
 
@@ -147,6 +147,11 @@ export function NodeDetailLayout({
                 assignees={nodeDetail?.assignees ?? []}
                 onAdd={handleAssigneeAdd}
                 onRemove={handleAssigneeRemove}
+                onRefresh={() =>
+                  queryClient.invalidateQueries({
+                    queryKey: nodeKeys.detail(projectId, nodeId),
+                  })
+                }
               />
             )}
           </MetaRow>

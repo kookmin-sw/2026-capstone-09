@@ -14,7 +14,8 @@ interface AssigneeFieldProps {
   nodeId: number;
   assignees: AssigneeItem[];
   onAdd: (assignee: AssigneeItem) => void;
-  onRemove: (userId: number) => void;
+  onRemove: (assigneeId: number) => void;
+  onRefresh: () => void;
 }
 
 export function AssigneeField({
@@ -23,6 +24,7 @@ export function AssigneeField({
   assignees,
   onAdd,
   onRemove,
+  onRefresh,
 }: AssigneeFieldProps) {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -44,17 +46,18 @@ export function AssigneeField({
     };
     onAdd(newAssignee);
     addAssignee(member.userId, {
+      onSuccess: () => onRefresh(),
       onError: (err) => {
-        onRemove(member.userId!);
+        onRefresh();
         showErrorToast(err, '담당자 추가에 실패했어요.');
       },
     });
   };
 
-  const handleRemove = (userId: number) => {
-    const removedAssignee = assignees.find((a) => a.userId === userId);
-    onRemove(userId);
-    removeAssignee(userId, {
+  const handleRemove = (assigneeId: number) => {
+    const removedAssignee = assignees.find((a) => a.assigneeId === assigneeId);
+    onRemove(assigneeId);
+    removeAssignee(assigneeId, {
       onError: (err) => {
         if (removedAssignee) onAdd(removedAssignee);
         showErrorToast(err, '담당자 제거에 실패했어요.');
@@ -90,7 +93,7 @@ export function AssigneeField({
               style={{ cursor: 'pointer' }}
               onClick={(e) => {
                 e.stopPropagation();
-                if (assignee.userId) handleRemove(assignee.userId);
+                if (assignee.assigneeId) handleRemove(assignee.assigneeId);
               }}
               aria-label={`${assignee.nickname} 담당자 제거`}
             />
