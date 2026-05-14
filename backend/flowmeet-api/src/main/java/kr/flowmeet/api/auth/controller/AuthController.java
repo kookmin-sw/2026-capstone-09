@@ -2,8 +2,10 @@ package kr.flowmeet.api.auth.controller;
 
 import jakarta.validation.Valid;
 import kr.flowmeet.api.auth.dto.request.RefreshTokenRequest;
+import kr.flowmeet.api.auth.dto.request.SendAuthEmailVerificationRequest;
 import kr.flowmeet.api.auth.dto.request.SignupRequest;
 import kr.flowmeet.api.auth.dto.request.SocialLoginRequest;
+import kr.flowmeet.api.auth.dto.request.VerifyAuthEmailRequest;
 import kr.flowmeet.api.auth.dto.response.TokenResponse;
 import kr.flowmeet.api.auth.facade.AuthFacade;
 import kr.flowmeet.api.auth.facade.LoginResult;
@@ -56,5 +58,21 @@ public class AuthController implements AuthApi {
     public CommonResponse<?> logout(@UserId Long userId) {
         authFacade.logout(userId);
         return CommonResponse.ok(AuthSuccessCode.LOGOUT);
+    }
+
+    @Override
+    @PostMapping("/signup/email-verifications")
+    public CommonResponse<?> sendEmailVerification(
+            @Valid @RequestBody SendAuthEmailVerificationRequest request
+    ) {
+        authFacade.sendEmailVerification(request.email());
+        return CommonResponse.ok(AuthSuccessCode.SEND_EMAIL_VERIFICATION);
+    }
+
+    @Override
+    @PostMapping("/signup/email-verifications/verify")
+    public CommonResponse<?> verifyEmail(@Valid @RequestBody VerifyAuthEmailRequest request) {
+        authFacade.verifyEmail(request.email(), request.code());
+        return CommonResponse.ok(AuthSuccessCode.VERIFY_EMAIL);
     }
 }

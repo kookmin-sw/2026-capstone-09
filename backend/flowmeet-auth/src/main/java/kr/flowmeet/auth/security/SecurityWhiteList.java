@@ -5,6 +5,8 @@ public class SecurityWhiteList {
             "/v1/auth/login/**",
             "/v1/auth/signup",
             "/v1/auth/refresh",
+            "/v1/auth/signup/email-verifications",
+            "/v1/auth/signup/email-verifications/verify",
             "/test/**",
             "/actuator/health",
             "/actuator/health/**"
