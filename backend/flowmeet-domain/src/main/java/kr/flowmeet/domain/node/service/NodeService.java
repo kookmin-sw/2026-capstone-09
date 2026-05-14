@@ -73,14 +73,6 @@ public class NodeService {
         return nodeRepository.searchByQuery(projectId, query);
     }
 
-    public int countRootNodes(final Long projectId) {
-        return nodeRepository.countByProjectIdAndParentIdIsNull(projectId);
-    }
-
-    public int countChildNodes(final Long parentId) {
-        return nodeRepository.countByParentId(parentId);
-    }
-
     public Map<Long, List<Long>> getChildNodeIdMap(final List<Node> nodes) {
         return nodes.stream()
                 .filter(n -> n.getParentId() != null)
@@ -95,12 +87,20 @@ public class NodeService {
         return parent.getNumber() + "." + parent.issueChildSeq();
     }
 
+    private static final int SORT_ORDER_GAP = 1024;
+
+    private int nextSortOrder(final Long projectId, final Long parentId, final NodeStatus status) {
+        int maxOrder = parentId != null
+                ? nodeRepository.findMaxSortOrderByParentId(parentId, status)
+                : nodeRepository.findMaxSortOrderByProjectIdAndRootNodes(projectId, status);
+        return maxOrder + SORT_ORDER_GAP;
+    }
+
     @Transactional
     public void create(final Long projectId, final String number, final CreateNodeCommand command) {
 
         Long parentId = command.parentId();
-        int sortOrder = parentId != null ? countChildNodes(parentId)
-                : countRootNodes(projectId);
+        int sortOrder = nextSortOrder(projectId, parentId, NodeStatus.WAITING);
 
         Node node = Node.builder()
                 .projectId(projectId)

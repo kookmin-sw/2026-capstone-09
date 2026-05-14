@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import kr.flowmeet.domain.node.entity.Node;
+import kr.flowmeet.domain.node.entity.NodeStatus;
 
 public interface NodeRepository extends JpaRepository<Node, Long>, NodeRepositoryCustom {
 
@@ -24,9 +25,17 @@ public interface NodeRepository extends JpaRepository<Node, Long>, NodeRepositor
 
     List<Node> findAllByParentId(Long parentId);
 
-    int countByProjectIdAndParentIdIsNull(Long projectId);
+    @Query("SELECT COALESCE(MAX(n.sortOrder), 0) FROM Node n WHERE n.projectId = :projectId AND n.parentId IS NULL AND n.status = :status")
+    int findMaxSortOrderByProjectIdAndRootNodes(
+            @Param("projectId") Long projectId,
+            @Param("status") NodeStatus status
+    );
 
-    int countByParentId(Long parentId);
+    @Query("SELECT COALESCE(MAX(n.sortOrder), 0) FROM Node n WHERE n.parentId = :parentId AND n.status = :status")
+    int findMaxSortOrderByParentId(
+            @Param("parentId") Long parentId,
+            @Param("status") NodeStatus status
+    );
 
     boolean existsByIdAndProjectId(Long id, Long projectId);
 
