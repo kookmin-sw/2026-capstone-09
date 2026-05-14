@@ -10,8 +10,10 @@ export function usePickerState() {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const outsideCloseDisabledRef = useRef(false);
 
   useClickOutside(containerRef, isPickerOpen, () => {
+    if (outsideCloseDisabledRef.current) return;
     setIsPickerOpen(false);
     setInputValue('');
     setSelectedIndex(-1);
@@ -31,6 +33,10 @@ export function usePickerState() {
     setSelectedIndex(-1);
   };
 
+  const setOutsideCloseDisabled = (disabled: boolean) => {
+    outsideCloseDisabledRef.current = disabled;
+  };
+
   return {
     isPickerOpen,
     setIsPickerOpen,
@@ -41,5 +47,6 @@ export function usePickerState() {
     inputRef,
     resetInput,
     handleInputChange,
+    setOutsideCloseDisabled,
   };
 }

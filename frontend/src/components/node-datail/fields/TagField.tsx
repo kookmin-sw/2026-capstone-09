@@ -9,25 +9,19 @@ import { useErrorToast } from '@/hooks/useErrorToast';
 import {
   useAddNodeTagMutation,
   useCreateTagMutation,
+  useDeleteTagMutation,
   useProjectTagsQuery,
   useRemoveNodeTagMutation,
+  useUpdateTagColorMutation,
 } from '@/queries/tag';
 import { getColorToken } from '@/utils/getBadgeColorInfo';
 import { usePickerState } from '../hooks/usePickerState';
 import { useYjsTags } from '../hooks/useYjsTags';
+import { TagContextMenu } from './TagContextMenu';
 
 const TAG_COLORS: ColorType[] = [
-  'RED',
-  'RED_ORANGE',
-  'ORANGE',
-  'LIME',
-  'GREEN',
-  'CYAN',
-  'LIGHT_BLUE',
-  'BLUE',
-  'VIOLET',
-  'PURPLE',
-  'PINK',
+  'RED', 'RED_ORANGE', 'ORANGE', 'LIME', 'GREEN',
+  'CYAN', 'LIGHT_BLUE', 'BLUE', 'VIOLET', 'PURPLE', 'PINK',
 ];
 const randomColor = (): ColorType => TAG_COLORS[Math.floor(Math.random() * TAG_COLORS.length)];
 
@@ -48,6 +42,7 @@ export function TagField({ projectId, nodeId, initialTags }: TagFieldProps) {
     inputRef,
     resetInput,
     handleInputChange,
+    setOutsideCloseDisabled,
   } = usePickerState();
 
   const showErrorToast = useErrorToast();
@@ -56,6 +51,10 @@ export function TagField({ projectId, nodeId, initialTags }: TagFieldProps) {
   const { mutate: addTag } = useAddNodeTagMutation(projectId, nodeId);
   const { mutate: removeTag } = useRemoveNodeTagMutation(projectId, nodeId);
   const { mutate: createTag } = useCreateTagMutation(projectId);
+  const { mutate: deleteTag } = useDeleteTagMutation(projectId);
+  const { mutate: updateTagColor } = useUpdateTagColorMutation(projectId);
+
+  const assignedTagIds = new Set(tags.map((t) => t.tagId));
 
   const handleAdd = (tag: TagItem) => {
     if (!tag.tagId) return;
@@ -80,7 +79,39 @@ export function TagField({ projectId, nodeId, initialTags }: TagFieldProps) {
     });
   };
 
-  const assignedTagIds = new Set(tags.map((t) => t.tagId));
+  const handleDeleteTag = (tag: TagItem) => {
+    if (!tag.tagId) return;
+    const isAssigned = assignedTagIds.has(tag.tagId);
+    if (isAssigned) yRemoveTag(tag.tagId);
+    deleteTag(tag.tagId, {
+      onError: (err) => {
+        if (isAssigned) yAddTag(tag);
+        showErrorToast(err, '태그 삭제에 실패했어요.');
+      },
+    });
+  };
+
+  const handleUpdateTagColor = (tag: TagItem, color: ColorType) => {
+    if (!tag.tagId || !tag.name) return;
+    const isAssigned = assignedTagIds.has(tag.tagId);
+    if (isAssigned) {
+      yRemoveTag(tag.tagId);
+      yAddTag({ ...tag, color });
+    }
+    updateTagColor(
+      { tagId: tag.tagId, name: tag.name, color },
+      {
+        onError: (err) => {
+          if (isAssigned) {
+            yRemoveTag(tag.tagId!);
+            yAddTag(tag);
+          }
+          showErrorToast(err, '태그 색상 변경에 실패했어요.');
+        },
+      },
+    );
+  };
+
   const availableTags = allTags.filter((t) => !assignedTagIds.has(t.tagId));
   const filteredTags = inputValue
     ? availableTags.filter((t) => t.name?.toLowerCase().includes(inputValue.toLowerCase()))
@@ -200,7 +231,7 @@ export function TagField({ projectId, nodeId, initialTags }: TagFieldProps) {
                   key={tag.tagId}
                   type="button"
                   onClick={() => handleAdd(tag)}
-                  className={`flex w-full items-center gap-2 px-3 py-2 ${selectedIndex === i ? 'bg-gray-100' : 'bg-white hover:bg-gray-50'}`}
+                  className={`flex w-full items-center justify-between gap-2 px-3 py-2 ${selectedIndex === i ? 'bg-gray-100' : 'bg-white hover:bg-gray-50'}`}
                 >
                   <ContentBadge
                     color="accent"
@@ -209,6 +240,14 @@ export function TagField({ projectId, nodeId, initialTags }: TagFieldProps) {
                   >
                     {tag.name}
                   </ContentBadge>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <TagContextMenu
+                      tag={tag}
+                      onDelete={() => handleDeleteTag(tag)}
+                      onColorChange={(color) => handleUpdateTagColor(tag, color)}
+                      onOpenChange={setOutsideCloseDisabled}
+                    />
+                  </div>
                 </button>
               ))}
               {canCreate && (

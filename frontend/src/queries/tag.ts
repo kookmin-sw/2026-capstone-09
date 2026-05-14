@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { privateApi } from '@/api';
-import { CreateTagRequest, TagItem } from '@/api/Api';
+import { CreateTagRequest, TagItem, UpdateTagRequest } from '@/api/Api';
 import { tagKeys } from './keys/tagKeys';
 
 export function useProjectTagsQuery(projectId: number) {
@@ -25,6 +25,27 @@ export function useAddNodeTagMutation(projectId: number, nodeId: number) {
 export function useRemoveNodeTagMutation(projectId: number, nodeId: number) {
   return useMutation({
     mutationFn: (tagId: number) => privateApi.tag.removeNodeTag(projectId, nodeId, tagId),
+  });
+}
+
+export function useDeleteTagMutation(projectId: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (tagId: number) => privateApi.tag.deleteTag(projectId, tagId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: tagKeys.list(projectId) });
+    },
+  });
+}
+
+export function useUpdateTagColorMutation(projectId: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ tagId, name, color }: { tagId: number } & Pick<UpdateTagRequest, 'name' | 'color'>) =>
+      privateApi.tag.updateTag(projectId, tagId, { name, color }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: tagKeys.list(projectId) });
+    },
   });
 }
 
