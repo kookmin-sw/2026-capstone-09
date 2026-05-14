@@ -41,6 +41,7 @@ interface TagFieldProps {
 export function TagField({ projectId, nodeId, initialTags }: TagFieldProps) {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const showErrorToast = useErrorToast();
@@ -54,6 +55,7 @@ export function TagField({ projectId, nodeId, initialTags }: TagFieldProps) {
   useClickOutside(containerRef, isPickerOpen, () => {
     setIsPickerOpen(false);
     setInputValue('');
+    setSelectedIndex(-1);
   });
 
   useEffect(() => {
@@ -64,6 +66,7 @@ export function TagField({ projectId, nodeId, initialTags }: TagFieldProps) {
     if (!tag.tagId) return;
     yAddTag(tag);
     setInputValue('');
+    setSelectedIndex(-1);
     addTag(tag.tagId, {
       onError: (err) => {
         yRemoveTag(tag.tagId!);
@@ -83,6 +86,16 @@ export function TagField({ projectId, nodeId, initialTags }: TagFieldProps) {
     });
   };
 
+  const assignedTagIds = new Set(tags.map((t) => t.tagId));
+  const availableTags = allTags.filter((t) => !assignedTagIds.has(t.tagId));
+  const filteredTags = inputValue
+    ? availableTags.filter((t) => t.name?.toLowerCase().includes(inputValue.toLowerCase()))
+    : availableTags;
+  const canCreate =
+    inputValue.trim() !== '' &&
+    !allTags.some((t) => t.name?.toLowerCase() === inputValue.trim().toLowerCase());
+  const totalItems = filteredTags.length + (canCreate ? 1 : 0);
+
   const handleCreateTag = () => {
     const trimmed = inputValue.trim();
     if (!trimmed) return;
@@ -90,7 +103,6 @@ export function TagField({ projectId, nodeId, initialTags }: TagFieldProps) {
     const exactMatch = allTags.find((t) => t.name?.toLowerCase() === trimmed.toLowerCase());
 
     if (exactMatch) {
-      const assignedTagIds = new Set(tags.map((t) => t.tagId));
       if (!assignedTagIds.has(exactMatch.tagId)) handleAdd(exactMatch);
       return;
     }
@@ -108,6 +120,7 @@ export function TagField({ projectId, nodeId, initialTags }: TagFieldProps) {
             },
           });
           setInputValue('');
+          setSelectedIndex(-1);
         },
         onError: (err) => showErrorToast(err, '태그 생성에 실패했어요.'),
       },
@@ -115,19 +128,23 @@ export function TagField({ projectId, nodeId, initialTags }: TagFieldProps) {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key !== 'Enter') return;
-    e.preventDefault();
-    handleCreateTag();
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedIndex((prev) => Math.min(prev + 1, totalItems - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedIndex((prev) => Math.max(prev - 1, -1));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (selectedIndex >= 0 && selectedIndex < filteredTags.length) {
+        handleAdd(filteredTags[selectedIndex]);
+      } else if (selectedIndex === filteredTags.length && canCreate) {
+        handleCreateTag();
+      } else {
+        handleCreateTag();
+      }
+    }
   };
-
-  const assignedTagIds = new Set(tags.map((t) => t.tagId));
-  const availableTags = allTags.filter((t) => !assignedTagIds.has(t.tagId));
-  const filteredTags = inputValue
-    ? availableTags.filter((t) => t.name?.toLowerCase().includes(inputValue.toLowerCase()))
-    : availableTags;
-  const canCreate =
-    inputValue.trim() !== '' &&
-    !allTags.some((t) => t.name?.toLowerCase() === inputValue.trim().toLowerCase());
 
   return (
     <div ref={containerRef} className="relative w-full">
@@ -166,7 +183,10 @@ export function TagField({ projectId, nodeId, initialTags }: TagFieldProps) {
           <input
             ref={inputRef}
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={(e) => {
+              setInputValue(e.target.value);
+              setSelectedIndex(-1);
+            }}
             onKeyDown={handleKeyDown}
             className="text-label-normal min-w-20 flex-1 border-0 bg-transparent text-sm outline-none"
             onClick={(e) => e.stopPropagation()}
@@ -186,12 +206,12 @@ export function TagField({ projectId, nodeId, initialTags }: TagFieldProps) {
             </p>
           ) : (
             <>
-              {filteredTags.map((tag) => (
+              {filteredTags.map((tag, i) => (
                 <button
                   key={tag.tagId}
                   type="button"
                   onClick={() => handleAdd(tag)}
-                  className="flex w-full items-center gap-2 bg-white px-3 py-2 hover:bg-gray-50"
+                  className={`flex w-full items-center gap-2 px-3 py-2 ${selectedIndex === i ? 'bg-gray-100' : 'bg-white hover:bg-gray-50'}`}
                 >
                   <ContentBadge
                     color="accent"
@@ -207,7 +227,7 @@ export function TagField({ projectId, nodeId, initialTags }: TagFieldProps) {
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={handleCreateTag}
-                  className="text-label-alternative flex w-full items-center gap-2 bg-white px-3 py-2 hover:bg-gray-50"
+                  className={`text-label-alternative flex w-full items-center gap-2 px-3 py-2 ${selectedIndex === filteredTags.length ? 'bg-gray-100' : 'bg-white hover:bg-gray-50'}`}
                 >
                   <Typography variant="caption1">
                     &apos;{inputValue.trim()}&apos; 태그 추가
