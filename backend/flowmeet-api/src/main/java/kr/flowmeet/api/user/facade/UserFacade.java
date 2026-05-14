@@ -40,10 +40,12 @@ public class UserFacade {
             user.updateNickname(request.nickname());
         }
 
-        if (request.email() != null && !request.email().equals(user.getEmail())) {
-            userService.validateEmailChangeable(request.email(), user.getEmail());
-            emailVerificationService.consumeVerified(userId, request.email());
-            user.updateEmail(request.email());
+        String newEmail = request.email();
+
+        if (newEmail != null && !newEmail.equals(user.getEmail())) {
+            userService.validateEmailChangeable(newEmail, user.getEmail());
+            emailVerificationService.consumeVerified(userId, newEmail);
+            user.updateEmail(newEmail);
         }
 
         return UpdateUserResponse.from(user);
