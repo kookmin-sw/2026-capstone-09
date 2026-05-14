@@ -1,6 +1,7 @@
 package kr.flowmeet.api.node.facade;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -81,7 +82,11 @@ public class NodeFacade {
         Set<Long> meetingNodeIds = meetingService.findAllMeetingNodeIds(nodeIds);
         Map<Long, List<Long>> childIdMap = nodeService.getChildNodeIdMap(nodes);
 
-        return GetFlowchartResponse.of(nodes, edges, nodeTagMap, assigneeMap, meetingNodeIds, childIdMap);
+        List<Node> sortedNodes = nodes.stream()
+                .sorted(NODE_NUMBER_ORDER)
+                .toList();
+
+        return GetFlowchartResponse.of(sortedNodes, edges, nodeTagMap, assigneeMap, meetingNodeIds, childIdMap);
     }
 
     public GetNodeResponse getNode(final Long userId, final Long projectId, final Long nodeId) {
@@ -326,6 +331,16 @@ public class NodeFacade {
 
         return SearchNodeResponse.of(nodes, nodeTagMap);
     }
+
+    private static final Comparator<Node> NODE_NUMBER_ORDER = (a, b) -> {
+        String[] partsA = a.getNumber().split("\\.");
+        String[] partsB = b.getNumber().split("\\.");
+        for (int i = 0; i < Math.min(partsA.length, partsB.length); i++) {
+            int cmp = Integer.compare(Integer.parseInt(partsA[i]), Integer.parseInt(partsB[i]));
+            if (cmp != 0) return cmp;
+        }
+        return Integer.compare(partsA.length, partsB.length);
+    };
 
     private List<Long> getNodeIdFromNodes(List<Node> nodes) {
         return nodes.stream()
