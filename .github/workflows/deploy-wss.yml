@@ -2,7 +2,7 @@ name: WSS CI/CD
 
 on:
   push:
-    branches: [wss/develop]
+    branches: [backend/develop]
     paths:
       - 'wss/**'
       - '.github/workflows/deploy-wss.yml'
