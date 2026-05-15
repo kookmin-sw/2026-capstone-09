@@ -144,7 +144,7 @@ export function NodeDetailLayout({
 
         {nodeDetail?.meeting?.meetingId && nodeDetail.meeting.status !== 'ENDED' ? (
           <a
-            href="https://meet.google.com/jne-evsa-qzn"
+            href={nodeDetail?.meeting?.meetingUrl}
             className="text-label-1-normal flex items-center justify-between rounded-lg border border-gray-200 p-3"
           >
             <div>{formatDatetoString(nodeDetail?.meeting?.startedAt)}에 회의 예정</div>
