@@ -106,11 +106,7 @@ export function NodeDetailLayout({
         <div className="flex flex-col gap-5">
           <MetaRow icon={<IconTag />} label="태그">
             {nodeId && (
-              <TagField
-                projectId={projectId}
-                nodeId={nodeId}
-                initialTags={nodeDetail?.tags}
-              />
+              <TagField projectId={projectId} nodeId={nodeId} initialTags={nodeDetail?.tags} />
             )}
           </MetaRow>
 
@@ -146,8 +142,7 @@ export function NodeDetailLayout({
           </MetaRow>
         </div>
 
-        {nodeDetail?.meeting?.meetingId ? (
-          // 추후 수정 필요...
+        {nodeDetail?.meeting?.meetingId && nodeDetail.meeting.status !== 'ENDED' ? (
           <a
             href="https://meet.google.com/jne-evsa-qzn"
             className="text-label-1-normal flex items-center justify-between rounded-lg border border-gray-200 p-3"
