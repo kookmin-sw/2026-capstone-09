@@ -17,7 +17,13 @@ export const NodeMeetingTab = ({ nodeId, projectId }: NodeMeetingTabProps) => {
   if (!meeting) return <CreateMeeting />;
   if (!meeting.summary) return <HasMeeting />;
 
-  return <MeetingSummary summary={meeting.summary} mermaidCode={meeting.mermaidCode} />;
+  return (
+    <MeetingSummary
+      summary={meeting.summary}
+      mermaidCode={meeting.mermaidCode}
+      participants={meeting.participants}
+    />
+  );
 };
 
 export default NodeMeetingTab;
