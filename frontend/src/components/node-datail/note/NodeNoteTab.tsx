@@ -17,6 +17,8 @@ export default function NodeNoteTab({ nodeId, projectId }: NodeNoteTabProps) {
   const yjsCtx = useYjsContext();
   const fragment = yjsCtx?.ydoc.getXmlFragment(YJS_FIELDS.note) ?? null;
 
+  const isMainNode = !nodeDetail?.parentId;
+
   const handleUpdate = (markdown: string) => {
     if (!nodeId) return;
     updateNote(markdown, {
@@ -26,11 +28,15 @@ export default function NodeNoteTab({ nodeId, projectId }: NodeNoteTabProps) {
 
   return (
     <main className="flex">
-      <Editor
-        content={nodeDetail?.noteContent}
-        fragment={fragment}
-        onUpdate={handleUpdate}
-      />
+      {isMainNode ? (
+        <Editor content={nodeDetail?.mainSummary} editable={false} />
+      ) : (
+        <Editor
+          content={nodeDetail?.noteContent}
+          fragment={fragment}
+          onUpdate={handleUpdate}
+        />
+      )}
     </main>
   );
 }

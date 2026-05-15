@@ -18,9 +18,11 @@ interface EditorProps {
   fragment?: XmlFragment | null;
   /** 로컬 변경 발생 후 디바운스 저장 콜백 */
   onUpdate?: (markdown: string) => void;
+  /** false 전달 시 읽기 전용 (기본값: true) */
+  editable?: boolean;
 }
 
-export default function Editor({ content, fragment, onUpdate }: EditorProps) {
+export default function Editor({ content, fragment, onUpdate, editable = true }: EditorProps) {
   const onUpdateRef = useRef(onUpdate);
   onUpdateRef.current = onUpdate;
 
@@ -34,6 +36,7 @@ export default function Editor({ content, fragment, onUpdate }: EditorProps) {
         Placeholder.configure({ placeholder: '내용을 입력하세요.' }),
         ...(fragment ? [Collaboration.configure({ fragment })] : []),
       ],
+      editable,
       content: fragment ? undefined : (content ?? ''),
       onUpdate({ editor: e, transaction }) {
         if (isChangeOrigin(transaction)) return;
