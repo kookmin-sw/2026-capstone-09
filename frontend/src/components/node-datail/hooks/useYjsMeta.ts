@@ -7,7 +7,7 @@ import { YJS_FIELDS, useYjsContext } from '@/contexts/YjsContext';
 
 export function useYjsMeta(initialStatus: NodeStatusType | undefined) {
   const yjsCtx = useYjsContext();
-  const [status, setStatus] = useState<NodeStatusType | undefined>(undefined);
+  const [status, setStatus] = useState<NodeStatusType | undefined>(initialStatus);
   const initializedRef = useRef(false);
 
   useEffect(() => {
@@ -18,6 +18,11 @@ export function useYjsMeta(initialStatus: NodeStatusType | undefined) {
     }
 
     const map = yjsCtx.ydoc.getMap<string>(YJS_FIELDS.meta);
+    // observer는 변경 이벤트만 감지하므로, 이미 데이터가 있는 경우 초기 상태를 직접 동기화
+    const currentStatus = map.get('status') as NodeStatusType;
+    if (currentStatus) {
+      setStatus(currentStatus);
+    }
     const observer = () => setStatus((map.get('status') as NodeStatusType) || undefined);
     map.observe(observer);
     return () => map.unobserve(observer);
