@@ -66,7 +66,7 @@ export default function AuthCallbackPage() {
           }
         },
         onError: (error) => {
-          console.error('Login error:', error);
+          showToast(error.message);
           router.replace('/auth/login');
         },
       },
