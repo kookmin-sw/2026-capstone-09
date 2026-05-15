@@ -43,6 +43,12 @@ export function useLoginGoogleMutation() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(request),
       });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => null);
+        throw new Error(error?.message || '로그인에 실패했어요.');
+      }
+
       return res.json();
     },
   });
@@ -57,6 +63,12 @@ export function useSignupMutation() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(request),
       });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => null);
+        throw new Error(error?.message || '회원가입에 실패했어요.');
+      }
+
       return res.json();
     },
   });
@@ -71,12 +83,18 @@ export function useRefreshMutation() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(request),
       });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => null);
+        throw new Error(error?.message || '토큰 갱신에 실패했어요.');
+      }
+
       return res.json();
     },
   });
 }
 
-// 회원가입 이메일 인증 코드 발송 
+// 회원가입 이메일 인증 코드 발송
 export function useSendEmailVerificationMutation() {
   return useMutation({
     mutationFn: async ({ email }: { email: string }): Promise<AuthResponse> => {
@@ -85,6 +103,12 @@ export function useSendEmailVerificationMutation() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => null);
+        throw new Error(error?.message || '인증 코드 발송에 실패했어요.');
+      }
+
       return res.json();
     },
   });
@@ -99,6 +123,12 @@ export function useVerifyEmailCodeMutation() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, code }),
       });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => null);
+        throw new Error(error?.message || '인증 코드 검증에 실패했어요.');
+      }
+
       return res.json();
     },
   });
