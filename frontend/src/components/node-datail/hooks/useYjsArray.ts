@@ -10,7 +10,7 @@ export function useYjsArray<T extends object>(
   dedupeKey: keyof T,
 ) {
   const yjsCtx = useYjsContext();
-  const [items, setItems] = useState<T[]>([]);
+  const [items, setItems] = useState<T[]>(initial ?? []);
   const initializedRef = useRef(false);
 
   useEffect(() => {
@@ -21,6 +21,10 @@ export function useYjsArray<T extends object>(
     }
 
     const arr = yjsCtx.ydoc.getArray<T>(fieldName);
+    // observer는 변경 이벤트만 감지하므로, 이미 데이터가 있는 경우 초기 상태를 직접 동기화
+    if (arr.length > 0) {
+      setItems(dedupe(arr.toArray(), dedupeKey));
+    }
     const observer = () => setItems(dedupe(arr.toArray(), dedupeKey));
     arr.observe(observer);
     return () => arr.unobserve(observer);
@@ -53,7 +57,7 @@ export function useYjsArray<T extends object>(
     };
     provider.on('sync', handleSync);
     return () => provider.off('sync', handleSync);
-  }, [yjsCtx, initial]);  // eslint-disable-line react-hooks/exhaustive-deps
+  }, [yjsCtx, initial]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const yAdd = (item: T) => {
     if (!yjsCtx) {
