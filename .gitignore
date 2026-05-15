@@ -1,5 +1,5 @@
 .DS_Store
-__pychache__/
-.pyc
-venv/
-.env
+.idea/
+docs/
+!wss/docs/
+!wss/docs/**

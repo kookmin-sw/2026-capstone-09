@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>FlowMeet 프로젝트 초대</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f6f8fa; margin: 0; padding: 24px;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 560px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden;">
+        <tr>
+            <td style="padding: 32px;">
+                <h1 style="margin: 0 0 16px; font-size: 22px; color: #111827;">FlowMeet 프로젝트 초대</h1>
+                <p style="margin: 0 0 16px; font-size: 15px; color: #374151; line-height: 1.6;">
+                    <strong th:text="${inviterNickname}">홍길동</strong>님이
+                    <strong th:text="${projectName}">샘플 프로젝트</strong> 프로젝트에 초대했어요.
+                </p>
+                <p style="margin: 0 0 24px; font-size: 14px; color: #6b7280; line-height: 1.6;">
+                    아래 버튼을 눌러 프로젝트에 참여해 주세요. 링크는 7일 후 만료됩니다.
+                </p>
+                <p style="margin: 0 0 24px;">
+                    <a th:href="${inviteLink}" target="_blank"
+                       style="display: inline-block; padding: 12px 20px; background-color: #2563eb; color: #ffffff; text-decoration: none; border-radius: 8px; font-size: 15px; font-weight: 600;">
+                        프로젝트 참여하기
+                    </a>
+                </p>
+                <p style="margin: 0; font-size: 12px; color: #9ca3af; line-height: 1.6;">
+                    버튼이 동작하지 않으면 아래 링크를 브라우저에 붙여 넣으세요.<br>
+                    <a th:href="${inviteLink}" th:text="${inviteLink}" style="color: #2563eb; word-break: break-all;">링크</a>
+                </p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
