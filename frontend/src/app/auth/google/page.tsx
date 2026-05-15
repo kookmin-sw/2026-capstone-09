@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
 import { Loading } from '@wanteddev/wds';
+import { useEffect } from 'react';
 import { startGoogleLogin } from '@/lib/oauth';
 
 export default function GoogleAuthPage() {

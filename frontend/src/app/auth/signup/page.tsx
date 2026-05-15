@@ -21,6 +21,8 @@ interface SignupPending {
 }
 
 const getSignupPending = (): SignupPending | null => {
+  if (typeof window === 'undefined') return null;
+
   try {
     const data = sessionStorage.getItem('signup_pending');
     return data ? JSON.parse(data) : null;
@@ -96,6 +98,7 @@ export default function SignupPage() {
   useEffect(() => {
     if (verificationCode.length !== 6) return;
     if (isEmailVerified || !isCodeSent || timeLeft === 0 || isVerifying) return;
+    if (verificationError) return;
     if (!pending) return;
 
     verifyEmail(
@@ -135,7 +138,7 @@ export default function SignupPage() {
         },
       },
     );
-  }, [verificationCode, isEmailVerified, isCodeSent, timeLeft, isVerifying, pending, email, verifyEmail, toast]);
+  }, [verificationCode, isEmailVerified, isCodeSent, timeLeft, isVerifying, verificationError, pending, email, verifyEmail, toast]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -262,7 +265,7 @@ export default function SignupPage() {
                     trailingButton={
                       <TextFieldButton
                         onClick={handleSendVerification}
-                        disabled={sendEmailMutation.isPending || !email.trim() || (timeLeft > 0 && isCodeSent)}
+                        disabled={sendEmailMutation.isPending || !email.trim()}
                       >
                         {isCodeSent ? '재전송' : '인증하기'}
                       </TextFieldButton>
@@ -288,11 +291,6 @@ export default function SignupPage() {
                     maxLength={6}
                     trailingContent={
                       <>
-                        {isCodeSent && timeLeft > 0 && (
-                          <TextFieldContent variant="timer">
-                            {formatTime(timeLeft)}
-                          </TextFieldContent>
-                        )}
                         {isCodeSent && timeLeft === 0 && (
                           <TextFieldContent variant="text" color="semantic.status.negative">
                             만료됨
@@ -302,11 +300,20 @@ export default function SignupPage() {
                     }
                   />
                 </FormControl>
-                {verificationError && (
-                  <p className="text-caption-1 text-status-negative">인증번호가 잘못되었어요.</p>
-                )}
-                {isEmailVerified && (
-                  <p className="text-caption-1 text-label-alternative">인증에 성공했어요.</p>
+                {isCodeSent && timeLeft > 0 && (
+                  <div className={verificationError || isEmailVerified ? "flex items-center justify-between" : "flex justify-end"}>
+                    {verificationError && (
+                      <p className="text-caption-1 text-status-negative">
+                        인증번호가 잘못되었어요.
+                      </p>
+                    )}
+                    {isEmailVerified && (
+                      <p className="text-caption-1 text-label-alternative">인증에 성공했어요.</p>
+                    )}
+                    <p className="text-caption-1 text-label-normal tabular-nums">
+                      유효시간 {formatTime(timeLeft)}
+                    </p>
+                  </div>
                 )}
               </FormField>
             </div>
