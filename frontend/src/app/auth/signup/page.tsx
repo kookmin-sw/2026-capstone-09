@@ -3,7 +3,7 @@
 import { FormField, FormLabel, FormControl, TextField, TextFieldContent, TextFieldButton, Button } from '@wanteddev/wds';
 import type { Theme } from '@wanteddev/wds-engine';
 import { useRouter } from 'next/navigation';
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { authStorage } from '@/api/authStorage';
 import { usePositionedToast } from '@/components/commons/custom-toast/usePositionedToast';
 import { useCountdown } from '@/hooks/useCountdown';
@@ -93,52 +93,49 @@ export default function SignupPage() {
 
   const { mutate: verifyEmail, isPending: isVerifying } = verifyEmailMutation;
 
-  const handleVerifyCode = useCallback(
-    (code: string) => {
-      if (!pending || code.length !== 6 || isEmailVerified || isVerifying || !isCodeSent || timeLeft === 0) {
-        return;
-      }
+  useEffect(() => {
+    if (verificationCode.length !== 6) return;
+    if (isEmailVerified || !isCodeSent || timeLeft === 0 || isVerifying) return;
+    if (!pending) return;
 
-      verifyEmail(
-        {
-          email: email.trim(),
-          code: code.trim(),
-        },
-        {
-          onSuccess: (data) => {
-            if (data.code === 'VERIFY_EMAIL') {
-              setIsEmailVerified(true);
-              setVerifiedEmail(email.trim());
-              setVerificationError(false);
-              toast({
-                content: data.message,
-                variant: 'positive',
-                placement: 'top-center',
-              });
-            } else {
-              setVerificationError(true);
-              setIsEmailVerified(false);
-              toast({
-                content: data.message,
-                variant: 'negative',
-                placement: 'top-center',
-              });
-            }
-          },
-          onError: (error) => {
+    verifyEmail(
+      {
+        email: email.trim(),
+        code: verificationCode.trim(),
+      },
+      {
+        onSuccess: (data) => {
+          if (data.code === 'VERIFY_EMAIL') {
+            setIsEmailVerified(true);
+            setVerifiedEmail(email.trim());
+            setVerificationError(false);
+            toast({
+              content: data.message,
+              variant: 'positive',
+              placement: 'top-center',
+            });
+          } else {
             setVerificationError(true);
             setIsEmailVerified(false);
             toast({
-              content: error.message,
+              content: data.message,
               variant: 'negative',
               placement: 'top-center',
             });
-          },
+          }
         },
-      );
-    },
-    [email, pending, verifyEmail, toast, isEmailVerified, isVerifying, isCodeSent, timeLeft],
-  );
+        onError: (error) => {
+          setVerificationError(true);
+          setIsEmailVerified(false);
+          toast({
+            content: error.message,
+            variant: 'negative',
+            placement: 'top-center',
+          });
+        },
+      },
+    );
+  }, [verificationCode, isEmailVerified, isCodeSent, timeLeft, isVerifying, pending, email, verifyEmail, toast]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -282,7 +279,6 @@ export default function SignupPage() {
                       const newValue = e.target.value.replace(/\D/g, '').slice(0, 6);
                       setVerificationCode(newValue);
                       setVerificationError(false);
-                      handleVerifyCode(newValue);
                     }}
                     placeholder="인증번호를 입력해 주세요."
                     disabled={isEmailVerified}
