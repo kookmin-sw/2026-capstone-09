@@ -4,14 +4,17 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import kr.flowmeet.api.auth.dto.request.RefreshTokenRequest;
+import kr.flowmeet.api.auth.dto.request.SendAuthEmailVerificationRequest;
 import kr.flowmeet.api.auth.dto.request.SignupRequest;
 import kr.flowmeet.api.auth.dto.request.SocialLoginRequest;
+import kr.flowmeet.api.auth.dto.request.VerifyAuthEmailRequest;
 import kr.flowmeet.api.auth.dto.response.TokenResponse;
 import kr.flowmeet.api.auth.success.AuthSuccessCode;
 import kr.flowmeet.api.common.dto.CommonResponse;
 import kr.flowmeet.api.common.swagger.ApiErrorCode;
 import kr.flowmeet.api.common.swagger.ApiSuccessCode;
 import kr.flowmeet.auth.exception.AuthErrorCode;
+import kr.flowmeet.domain.emailverification.exception.EmailVerificationErrorCode;
 import kr.flowmeet.domain.user.entity.SocialProvider;
 import kr.flowmeet.domain.user.exception.UserErrorCode;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,7 +46,23 @@ public interface AuthApi {
     @ApiErrorCode(code = UserErrorCode.class, names = {
             "USER_EMAIL_DUPLICATED", "USER_NICKNAME_DUPLICATED"
     })
+    @ApiErrorCode(code = EmailVerificationErrorCode.class, names = {"EMAIL_VERIFICATION_REQUIRED"})
     CommonResponse<TokenResponse> signup(@Valid @RequestBody SignupRequest request);
+
+    @Operation(
+            summary = "회원가입 이메일 인증 코드 발송",
+            description = "회원가입할 이메일 주소로 6자리 인증 코드를 발송합니다. 코드 유효시간은 5분입니다."
+    )
+    @ApiSuccessCode(code = AuthSuccessCode.class, name = "SEND_EMAIL_VERIFICATION")
+    @ApiErrorCode(code = UserErrorCode.class, names = {"USER_EMAIL_DUPLICATED"})
+    CommonResponse<?> sendEmailVerification(@Valid @RequestBody SendAuthEmailVerificationRequest request);
+
+    @Operation(summary = "회원가입 이메일 인증 코드 검증", description = "발송된 인증 코드로 이메일 소유를 확인합니다.")
+    @ApiSuccessCode(code = AuthSuccessCode.class, name = "VERIFY_EMAIL")
+    @ApiErrorCode(code = EmailVerificationErrorCode.class, names = {
+            "EMAIL_VERIFICATION_NOT_FOUND", "EMAIL_VERIFICATION_CODE_INVALID", "EMAIL_VERIFICATION_CODE_EXPIRED"
+    })
+    CommonResponse<?> verifyEmail(@Valid @RequestBody VerifyAuthEmailRequest request);
 
     @Operation(summary = "토큰 갱신", description = "Refresh Token 으로 Access Token 재발급")
     @ApiSuccessCode(code = AuthSuccessCode.class, name = "REFRESH")

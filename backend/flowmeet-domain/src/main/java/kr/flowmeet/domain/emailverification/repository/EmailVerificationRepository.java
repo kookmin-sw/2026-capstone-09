@@ -2,9 +2,6 @@ package kr.flowmeet.domain.emailverification.repository;
 
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import kr.flowmeet.domain.emailverification.entity.EmailVerification;
 
 public interface EmailVerificationRepository extends JpaRepository<EmailVerification, Long> {
@@ -17,7 +14,15 @@ public interface EmailVerificationRepository extends JpaRepository<EmailVerifica
             Long userId, String email
     );
 
-    @Modifying(clearAutomatically = true)
-    @Query("DELETE FROM EmailVerification ev WHERE ev.userId = :userId AND ev.email = :email")
-    int deleteAllByUserIdAndEmail(@Param("userId") Long userId, @Param("email") String email);
+    void deleteAllByUserIdAndEmail(Long userId, String email);
+
+    Optional<EmailVerification> findTopByUserIdIsNullAndEmailAndVerifiedAtIsNullOrderByCreatedAtDesc(
+            String email
+    );
+
+    Optional<EmailVerification> findTopByUserIdIsNullAndEmailAndVerifiedAtIsNotNullOrderByCreatedAtDesc(
+            String email
+    );
+
+    void deleteAllByUserIdIsNullAndEmail(String email);
 }

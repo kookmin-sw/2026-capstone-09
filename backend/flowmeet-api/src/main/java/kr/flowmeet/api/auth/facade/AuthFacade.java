@@ -15,6 +15,7 @@ import kr.flowmeet.auth.exception.AuthErrorCode;
 import kr.flowmeet.auth.exception.AuthException;
 import kr.flowmeet.auth.jwt.JwtProvider;
 import kr.flowmeet.domain.auth.service.RefreshTokenService;
+import kr.flowmeet.domain.emailverification.service.EmailVerificationService;
 import kr.flowmeet.domain.user.entity.SocialProvider;
 import kr.flowmeet.domain.user.entity.User;
 import kr.flowmeet.domain.user.service.UserService;
@@ -30,6 +31,7 @@ import kr.flowmeet.external.oauth.dto.SocialUserInfo;
 public class AuthFacade {
 
     private final UserService userService;
+    private final EmailVerificationService emailVerificationService;
     private final RefreshTokenService refreshTokenService;
     private final JwtProvider jwtProvider;
     private final SocialOAuthGateway oauthGateway;
@@ -45,6 +47,7 @@ public class AuthFacade {
                 .orElseGet(() -> handleNewUser(provider, tokens, userInfo));
     }
 
+    @Transactional
     public TokenResponse signup(final SignupRequest request) {
         SocialUserInfo userInfo = oauthGateway.fetchUserInfo(
                 request.socialProvider(), request.socialAccessToken());
@@ -54,6 +57,8 @@ public class AuthFacade {
         if (userService.existsBySocialIdentity(identity)) {
             throw new AuthException(AuthErrorCode.AUTH_SOCIAL_ID_DUPLICATED);
         }
+
+        emailVerificationService.consumeVerified(request.email());
 
         CreateUserCommand command = CreateUserCommand.of(
                 request.socialProvider(),
@@ -76,6 +81,17 @@ public class AuthFacade {
 
         User user = userService.findById(userId);
         return issueTokens(user.getId(), user.getEmail(), user.getNickname());
+    }
+
+    @Transactional
+    public void sendEmailVerification(final String email) {
+        userService.validateEmailNotDuplicated(email);
+        emailVerificationService.issueCode(email);
+    }
+
+    @Transactional
+    public void verifyEmail(final String email, final String code) {
+        emailVerificationService.verify(email, code);
     }
 
     @Transactional

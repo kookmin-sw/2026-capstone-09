@@ -34,7 +34,7 @@ public class EmailVerification extends BaseCreatedTimeEntity {
     @Column(name = "email_verification_id")
     private Long id;
 
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "user_id")
     private Long userId;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -70,6 +70,49 @@ public class EmailVerificationService {
         emailVerificationRepository.deleteAllByUserIdAndEmail(userId, email);
     }
 
+    @Transactional
+    public EmailVerification issueCode(final String email) {
+        emailVerificationRepository.deleteAllByUserIdIsNullAndEmail(email);
+
+        EmailVerification verification = EmailVerification.builder()
+                .email(email)
+                .code(generateCode())
+                .expiresAt(LocalDateTime.now().plusMinutes(EXPIRATION_MINUTES))
+                .build();
+
+        EmailVerification saved = emailVerificationRepository.save(verification);
+
+        eventPublisher.publishEvent(EmailVerificationIssuedEvent.of(saved.getEmail(), saved.getCode()));
+
+        return saved;
+    }
+
+    @Transactional
+    public void verify(final String email, final String code) {
+        EmailVerification verification = emailVerificationRepository
+                .findTopByUserIdIsNullAndEmailAndVerifiedAtIsNullOrderByCreatedAtDesc(email)
+                .orElseThrow(() -> new BusinessException(EmailVerificationErrorCode.EMAIL_VERIFICATION_NOT_FOUND));
+
+        if (verification.isExpired()) {
+            throw new BusinessException(EmailVerificationErrorCode.EMAIL_VERIFICATION_CODE_EXPIRED);
+        }
+
+        if (!verification.matchesCode(code)) {
+            throw new BusinessException(EmailVerificationErrorCode.EMAIL_VERIFICATION_CODE_INVALID);
+        }
+
+        verification.markVerified();
+    }
+
+    @Transactional
+    public void consumeVerified(final String email) {
+        emailVerificationRepository
+                .findTopByUserIdIsNullAndEmailAndVerifiedAtIsNotNullOrderByCreatedAtDesc(email)
+                .orElseThrow(() -> new BusinessException(EmailVerificationErrorCode.EMAIL_VERIFICATION_REQUIRED));
+
+        emailVerificationRepository.deleteAllByUserIdIsNullAndEmail(email);
+    }
+
     private String generateCode() {
         int value = RANDOM.nextInt(CODE_BOUND);
         return String.format("%0" + CODE_LENGTH + "d", value);
