@@ -1,77 +1,95 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/Lvs6kcL8)
-# Welcome to GitHub
+# Flowmeet <img src="https://github.com/user-attachments/assets/82677f50-3ff8-4407-8b39-9d6bdb4f1bc0" width="100" align="left" />
 
-캡스톤 팀 생성을 축하합니다.
+기획이 흐름을 만나는 순간,
 
-## 팀소개 및 페이지를 꾸며주세요.
+<img src="https://github.com/user-attachments/assets/eee5321e-0206-404a-9058-4964b80f8c99" />
 
-- 프로젝트 소개
-  - 프로젝트 설치방법 및 데모, 사용방법, 프리뷰등을 readme.md에 작성.
-  - Api나 사용방법등 내용이 많을경우 wiki에 꾸미고 링크 추가.
+</br>
 
-- 팀페이지 꾸미기
-  - 프로젝트 소개 및 팀원 소개
-  - index.md 예시보고 수정.
+<div align="center">
+  <a href="https://kookmin-sw.github.io/2026-capstone-09/">
+    <img src="https://github.com/user-attachments/assets/ad3e9aff-e667-416a-83e6-98c4ec2785bc" width="500" />
+  </a>
+    <br>
+    <br>
+    <p>로고 클릭 시 소개 페이지로 이동합니다.</p>
+    <img src="" width="700" alt="서비스 포스터 />
+</div>
 
-- GitHub Pages 리파지토리 Settings > Options > GitHub Pages 
-  - Source를 marster branch
-  - Theme Chooser에서 태마선택
-  - 수정후 팀페이지 확인하여 점검.
+</br>
 
-**팀페이지 주소** -> https://kookmin-sw.github.io/ '{{자신의 리파지토리 아이디}}'
+## ✏️ 서비스 한 줄 소개
 
-**예시)** 2023년 0조  https://kookmin-sw.github.io/capstone-2023-00/
+## 🫂 팀원 소개
 
+<table align="center">
+    <tr align="center">
+      <td style="min-width: 150px;">
+            <a href="https://github.com/tnals0924">
+              <img src="https://github.com/tnals0924.png" width="200" alt="깃허브계정-프로필사진">
+              <br />
+              <b>🦊 황수민</b>
+            </a>
+        </td>
+      <td style="min-width: 150px;">
+            <a href="https://github.com/wngktjd13">
+              <img src="https://github.com/wngktjd13.png" width="200" alt="깃허브계정-프로필사진">
+              <br />
+              <b>🐯 윤성욱</b>
+            </a>
+        </td>
+      <td style="min-width: 150px;">
+            <a href="https://github.com/ovepje2004">
+              <img src="https://github.com/ovepje2004.png" width="200" alt="깃허브계정-프로필사진">
+              <br />
+              <b>🐟 박정은</b>
+            </a>
+        </td>
+      <td style="min-width: 150px;">
+            <a href="https://github.com/sinji2102">
+              <img src="https://github.com/sinji2102.png" width="200" alt="깃허브계정-프로필사진">
+              <br />
+              <b>🐣 윤신지</b>
+            </a>
+        </td>
+        <td style="min-width: 150px;">
+            <a href="https://github.com/chael-in">
+              <img src="https://github.com/chael-in.png" width="200" alt="깃허브계정-프로필사진">
+              <br />
+              <b>🐹 백채린</b>
+            </a>
+        </td>
+        <td style="min-width: 150px;">
+            <a href="https://github.com/pkm021118">
+              <img src="https://github.com/pkm021118
+.png" width="200" alt="깃허브계정-프로필사진">
+              <br />
+              <b>🦄 박건민</b>
+            </a>
+        </td>
+    </tr>
+    <tr align="center">
+       <td>
+            팀장, Backend <br/>
+      </td>
+       <td>
+            Backend <br/>
+      </td>
+       <td>
+            AI <br/>
+      </td>
+      <td>
+            Frontend <br/>
+      </td>
+      <td>
+            Frontend <br/>
+      </td>
+      <td>
+            Frontend <br/>
+      </td>
+    </tr>
+</table>
 
-## 내용에 아래와 같은 내용들을 추가하세요.
+## ⚒️ 서비스 아키텍처
 
-### 1. 프로잭트 소개
-
-프로젝트
-
-### 2. 소개 영상
-
-프로젝트 소개하는 영상을 추가하세요
-
-### 3. 팀 소개
-
-팀을 소개하세요.
-
-팀원정보 및 담당이나 사진 및 SNS를 이용하여 소개하세요.
-
-### 4. 사용법
-
-소스코드제출시 설치법이나 사용법을 작성하세요.
-
-### 5. 기타
-
-추가적인 내용은 자유롭게 작성하세요.
-
-
-## Markdown을 사용하여 내용꾸미기
-
-Markdown은 작문을 스타일링하기위한 가볍고 사용하기 쉬운 구문입니다. 여기에는 다음을위한 규칙이 포함됩니다.
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-자세한 내용은 [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Support or Contact
-
-readme 파일 생성에 추가적인 도움이 필요하면 [도움말](https://help.github.com/articles/about-readmes/) 이나 [contact support](https://github.com/contact) 을 이용하세요.
+<img src="https://github.com/user-attachments/assets/951f9b2d-21b2-4694-9de5-08ac70b6880f"/>
