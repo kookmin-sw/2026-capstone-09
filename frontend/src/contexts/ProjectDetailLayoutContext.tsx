@@ -4,6 +4,8 @@ import { createContext, useContext } from 'react';
 
 export type ProjectViewTypes = 'node-flow' | 'list' | 'kanban';
 
+export const VALID_VIEWS: readonly ProjectViewTypes[] = ['node-flow', 'list', 'kanban'] as const;
+
 interface ProjectDetailLayoutContextProps {
   activeView: ProjectViewTypes;
 }

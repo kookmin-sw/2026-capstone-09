@@ -1,6 +1,6 @@
-import { IconCheck, IconDot, IconMoreHorizontal } from '@wanteddev/wds-icon';
+import { IconCheck, IconClose, IconFire, IconMoreHorizontal, IconPause } from '@wanteddev/wds-icon';
 
-export type NodeStatusType = 'WAITING' | 'IN_PROGRESS' | 'DONE';
+export type NodeStatusType = 'WAITING' | 'IN_PROGRESS' | 'DONE' | 'ON_HOLD' | 'CLOSED';
 
 export const NODE_STATUS_INFO: Record<
   NodeStatusType,
@@ -14,11 +14,21 @@ export const NODE_STATUS_INFO: Record<
   IN_PROGRESS: {
     label: '진행 중',
     color: 'semantic.accent.foreground.redOrange',
-    icon: <IconDot />,
+    icon: <IconFire />,
   },
   DONE: {
     label: '완료',
     color: 'semantic.accent.foreground.green',
     icon: <IconCheck />,
+  },
+  ON_HOLD: {
+    label: '보류',
+    color: 'semantic.accent.foreground.violet',
+    icon: <IconPause />,
+  },
+  CLOSED: {
+    label: '종료',
+    color: 'semantic.accent.foreground.red',
+    icon: <IconClose />,
   },
 } as const;

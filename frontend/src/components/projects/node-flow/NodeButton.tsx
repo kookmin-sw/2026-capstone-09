@@ -1,6 +1,5 @@
 import { Button, Switch } from '@wanteddev/wds';
 import { IconAiReview, IconPlus, IconPresentation } from '@wanteddev/wds-icon';
-import React from 'react';
 
 interface NodeButtonProps {
   onAddMainNode: () => void;
@@ -9,16 +8,18 @@ interface NodeButtonProps {
   onAISummary?: () => void;
   showDashedLines?: boolean;
   onToggleDashedLines?: (value: boolean) => void;
+  isCreating?: boolean;
 }
 
-const NodeButton: React.FC<NodeButtonProps> = ({
+export function NodeButton({
   onAddMainNode,
   onAddSubNode,
   onAddMeeting,
   onAISummary,
   showDashedLines = false,
   onToggleDashedLines,
-}) => {
+  isCreating = false,
+}: NodeButtonProps) {
 
   return (
     <div className="px-3 py-2 bg-white rounded-xl inline-flex justify-start items-center gap-3">
@@ -36,6 +37,7 @@ const NodeButton: React.FC<NodeButtonProps> = ({
         color="primary"
         size="small"
         onClick={onAddMainNode}
+        disabled={isCreating}
         leadingContent={<IconPlus />}
       >
         메인 노드
@@ -46,7 +48,7 @@ const NodeButton: React.FC<NodeButtonProps> = ({
         color={onAddSubNode ? 'primary' : 'assistive'}
         size="small"
         onClick={onAddSubNode}
-        disabled={!onAddSubNode}
+        disabled={!onAddSubNode || isCreating}
         leadingContent={<IconPlus />}
       >
         서브 노드
@@ -75,6 +77,4 @@ const NodeButton: React.FC<NodeButtonProps> = ({
       </Button>
     </div>
   );
-};
-
-export default NodeButton;
+}

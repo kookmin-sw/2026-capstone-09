@@ -56,10 +56,10 @@ export function AssigneeField({ projectId, nodeId, initialAssignees }: AssigneeF
     });
   };
 
-  const handleRemove = (userId: number) => {
-    const removedAssignee = assignees.find((a) => a.userId === userId);
-    yRemoveAssignee(userId);
-    removeAssignee(userId, {
+  const handleRemove = (assigneeId: number) => {
+    const removedAssignee = assignees.find((a) => a.assigneeId === assigneeId);
+    if (removedAssignee?.userId) yRemoveAssignee(removedAssignee.userId);
+    removeAssignee(assigneeId, {
       onError: (err) => {
         if (removedAssignee) yAddAssignee(removedAssignee);
         showErrorToast(err, '담당자 제거에 실패했어요.');
@@ -117,7 +117,7 @@ export function AssigneeField({ projectId, nodeId, initialAssignees }: AssigneeF
               style={{ cursor: 'pointer' }}
               onClick={(e) => {
                 e.stopPropagation();
-                if (assignee.userId) handleRemove(assignee.userId);
+                if (assignee.assigneeId) handleRemove(assignee.assigneeId);
               }}
               aria-label={`${assignee.nickname} 담당자 제거`}
             />
