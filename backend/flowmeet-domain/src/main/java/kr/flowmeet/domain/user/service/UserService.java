@@ -48,18 +48,6 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
-    public void validateNicknameNotDuplicated(final String nickname, final String currentNickname) {
-        if (!nickname.equals(currentNickname) && userRepository.existsByNickname(nickname)) {
-            throw new BusinessException(UserErrorCode.USER_NICKNAME_DUPLICATED);
-        }
-    }
-
-    public void validateNicknameNotDuplicated(final String nickname) {
-        if (userRepository.existsByNickname(nickname)) {
-            throw new BusinessException(UserErrorCode.USER_NICKNAME_DUPLICATED);
-        }
-    }
-
     public void validateEmailNotDuplicated(final String email) {
         userRepository.findByEmail(email).ifPresent(existing -> {
             throw new BusinessException(UserErrorCode.USER_EMAIL_DUPLICATED);
@@ -88,7 +76,6 @@ public class UserService {
 
     @Transactional
     public User create(final CreateUserCommand command) {
-        validateNicknameNotDuplicated(command.nickname());
         validateEmailNotDuplicated(command.email());
 
         User user = User.builder()

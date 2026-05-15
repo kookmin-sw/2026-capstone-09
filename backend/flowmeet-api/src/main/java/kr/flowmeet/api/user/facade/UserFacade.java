@@ -36,7 +36,6 @@ public class UserFacade {
         User user = userService.findById(userId);
 
         if (request.nickname() != null) {
-            userService.validateNicknameNotDuplicated(request.nickname(), user.getNickname());
             user.updateNickname(request.nickname());
         }
 
