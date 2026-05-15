@@ -11,6 +11,7 @@ import { ModalProvider } from '@/components/commons/modal/ModalContext';
 import Dialog from './commons/custom-dialog/Dialog';
 import { DialogProvider } from './commons/custom-dialog/DialogContext';
 import { ToastProvider } from './commons/custom-toast/ToastProvider';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -26,22 +27,24 @@ export function Providers({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <AppRouterCacheProvider>
-          <ToastProvider>
-            <ModalProvider>
-              <DialogProvider>
-                {children}
-                <Modal />
-                <Dialog />
-              </DialogProvider>
-            </ModalProvider>
-          </ToastProvider>
-        </AppRouterCacheProvider>
-      </ThemeProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
+    <AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <AppRouterCacheProvider>
+            <ToastProvider>
+              <ModalProvider>
+                <DialogProvider>
+                  {children}
+                  <Modal />
+                  <Dialog />
+                </DialogProvider>
+              </ModalProvider>
+            </ToastProvider>
+          </AppRouterCacheProvider>
+        </ThemeProvider>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
+    </AuthProvider>
   );
 }
 
