@@ -81,7 +81,11 @@ export default function SignupPage() {
           }
         },
         onError: (error) => {
-          console.error('Email verification error:', error);
+          toast({
+            content: error.message,
+            variant: 'negative',
+            placement: 'top-center',
+          });
         },
       },
     );
@@ -122,9 +126,13 @@ export default function SignupPage() {
             }
           },
           onError: (error) => {
-            console.error('Code verification error:', error);
             setVerificationError(true);
             setIsEmailVerified(false);
+            toast({
+              content: error.message,
+              variant: 'negative',
+              placement: 'top-center',
+            });
           },
         },
       );
@@ -173,7 +181,11 @@ export default function SignupPage() {
           }
         },
         onError: (error) => {
-          console.error('Signup error:', error);
+          toast({
+            content: error.message,
+            variant: 'negative',
+            placement: 'top-center',
+          });
         },
       },
     );
