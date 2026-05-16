@@ -38,9 +38,7 @@ export function startGoogleLogin(redirectUri?: string): void {
   sessionStorage.setItem('oauth_state', state);
 
   const uri = redirectUri || `${window.location.origin}/auth/callback`;
-  const url = buildGoogleOAuthUrl({ redirectUri: uri, state });
-
-  window.location.href = url;
+  window.location.href = buildGoogleOAuthUrl({ redirectUri: uri, state });
 }
 
 // OAuth state 검증
