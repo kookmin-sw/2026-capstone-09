@@ -14,7 +14,10 @@ class Agent:
         self.model = "gemini-2.5-flash"
         self.conversation_history = []
         self._tools = None
- 
+
+    async def close(self):
+        pass
+
     async def _get_gemini_tools(self) -> list[types.Tool]:
         mcp_tools = await self.mcp_client.list_tools()
  
@@ -33,6 +36,12 @@ class Agent:
     async def run(self, user_message: str) -> str:
 
         self.conversation_history = self.conversation_history[-MAX_HISTORY:]
+        # tool_call/response 쌍 중간에서 잘리면 Gemini 오류 발생 — 텍스트 user 메시지부터 시작
+        while self.conversation_history and (
+            self.conversation_history[0].role != "user"
+            or any(p.function_response is not None for p in self.conversation_history[0].parts)
+        ):
+            self.conversation_history.pop(0)
 
         # 대화 히스토리에 사용자 메시지 추가
         self.conversation_history.append(
@@ -51,7 +60,7 @@ class Agent:
                 config=types.GenerateContentConfig(
                     tools=self._tools,
                     thinking_config=types.ThinkingConfig(
-                        thinking_budget=512 #응답 너무 느리면 0으로 변경 가능
+                        thinking_budget=512 # 응답 너무 느리면 0으로 변경 가능
                     ),
                 ),
             )

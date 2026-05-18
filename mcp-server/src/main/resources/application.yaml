@@ -5,9 +5,10 @@ spring:
         name: flowmeet-mcp-server
         version: 1.0.0
         type: SYNC
-        protocol: SSE
-        sse-endpoint: /sse
-        sse-message-endpoint: /mcp/message
+        protocol: STREAMABLE
 
 server:
   port: 8082
+
+backend:
+  url: http://localhost:8080
