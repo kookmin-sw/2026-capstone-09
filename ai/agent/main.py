@@ -16,26 +16,33 @@ SESSION_TTL_MINUTES = 30
 sessions: dict[str, dict] = {}  # {session_id: {"agent", "mcp_client", "last_active", "lock"}}
 
 
-async def get_or_create_session(session_id: str, token: str) -> dict:
+async def get_or_create_session(session_id: str, token: str, project_id: str) -> dict:
     now = datetime.utcnow()
 
     # 만료 세션 정리
     expired = [sid for sid, s in sessions.items()
                if now - s["last_active"] > timedelta(minutes=SESSION_TTL_MINUTES)]
     for sid in expired:
-        await sessions[sid]["mcp_client"].close()
-        del sessions[sid]
+        try:
+            await sessions[sid]["mcp_client"].close()
+        except Exception as e:
+            print(f"[Session] {sid} 종료 중 오류: {e}")
+        finally:
+            sessions.pop(sid, None)
 
     if session_id not in sessions:
         mcp_client = MCPClient()
         await mcp_client.connect(MCP_SERVER_URL, token)
         sessions[session_id] = {
-            "agent": Agent(mcp_client=mcp_client),
+            "agent": Agent(mcp_client=mcp_client, project_id=project_id),
             "mcp_client": mcp_client,
             "last_active": now,
             "lock": asyncio.Lock(),
         }
     else:
+        if sessions[session_id]["agent"].project_id != project_id:
+            print(f"[Session] 경고: session {session_id}의 project_id 불일치 "
+                f"(기존: {sessions[session_id]['agent'].project_id}, 요청: {project_id})")
         sessions[session_id]["last_active"] = now
 
     return sessions[session_id]
@@ -48,6 +55,7 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 class ChatRequest(BaseModel):
     message: str
     session_id: str | None = None
+    project_id: str
 
 
 class ChatResponse(BaseModel):
@@ -69,7 +77,7 @@ async def chat(body: ChatRequest, authorization: str = Header(None)):
 
     token = authorization.removeprefix("Bearer ")
     session_id = body.session_id or str(uuid.uuid4())
-    session = await get_or_create_session(session_id, token)
+    session = await get_or_create_session(session_id, token, body.project_id)
 
     async with session["lock"]:
         response = await session["agent"].run(body.message)

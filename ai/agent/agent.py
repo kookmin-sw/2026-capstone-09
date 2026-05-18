@@ -8,8 +8,9 @@ MAX_TOOL_ROUNDS = 10
 MAX_HISTORY = 30
  
 class Agent:
-    def __init__(self, mcp_client: MCPClient):
+    def __init__(self, mcp_client: MCPClient, project_id: str):
         self.mcp_client = mcp_client
+        self.project_id = project_id
         self.client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
         self.model = "gemini-2.5-flash"
         self.conversation_history = []
@@ -86,12 +87,18 @@ class Agent:
             tool_results = []
             for part in tool_calls:
                 fc = part.function_call
-                print(f"[Agent] 툴 호출: {fc.name}({dict(fc.args)})")
 
+                all_args = {
+                    **dict(fc.args),
+                    "project_id": self.project_id,
+                }
+
+                print(f"[Agent] 툴 호출: {fc.name}({all_args})")
+                
                 try:
                     result = await self.mcp_client.call_tool(
                         tool_name=fc.name,
-                        arguments=dict(fc.args),
+                        arguments=all_args,
                     )
                 except Exception as e:
                     result = f"Tool execution failed: {str(e)}"
