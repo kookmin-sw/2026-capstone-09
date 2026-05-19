@@ -40,6 +40,13 @@ export function useUpdateNodeStatusMutation(projectId: number, nodeId: number) {
   });
 }
 
+export function useUpdateNodeNoteMutation(projectId: number, nodeId: number) {
+  return useMutation({
+    mutationFn: (noteContent: string) =>
+      privateApi.node.updateNodeNote(projectId, nodeId, { noteContent }),
+  });
+}
+
 export function useUpdateNodeTitleMutation(projectId: number, nodeId: number | null) {
   const queryClient = useQueryClient();
   const queryKey = nodeKeys.detail(projectId, nodeId);

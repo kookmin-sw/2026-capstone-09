@@ -12,10 +12,15 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useParams, usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
-import { privateApi } from '@/api';
-import { useErrorToast } from '@/hooks/useErrorToast';
+import { userStorage } from '@/api/userStorage';
+import { useModal } from '@/components/commons/modal/ModalContext';
+import { useProjectQuery } from '@/queries/project';
+import { useUnreadCountQuery } from '@/queries/notification';
 import { cn } from '@/utils/cn';
 
+import { AccountSettingsModalContent } from './account-settings';
+import { SearchModalContent } from './SearchModalContent';
+import { SettingsModalContent } from './setting-modal';
 import { SidebarAlarmModal } from './SidebarAlarmModal';
 import { SidebarMenuButton } from './SidebarMenuButton';
 import { UserProfileButton } from './UserProfileButton';
@@ -55,92 +60,28 @@ export const ProjectSidebar = ({
   const projectIdRaw = params?.projectId;
   const projectId = projectIdRaw ? Number(projectIdRaw) : undefined;
   const isProjectIdValid = projectId !== undefined && !Number.isNaN(projectId);
-
-  const showErrorToast = useErrorToast();
+  const { openModal, closeModal } = useModal();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isCollapsedInternal, setIsCollapsedInternal] = useState(false);
   const [isAlarmModalOpen, setIsAlarmModalOpen] = useState(false);
-  // 사이드바가 직접 fetch 한 결과 — props 로 명시 전달된 값이 있으면 그 값을, 없으면 fetch 결과를 사용한다.
-  const [fetchedProjectName, setFetchedProjectName] = useState<string | undefined>(undefined);
-  const [me, setMe] = useState<{
-    nickname?: string;
-    email?: string;
-    profileImageUrl?: string;
-  } | null>(null);
-  const [unreadCount, setUnreadCount] = useState(0);
   const isProjectSelectionPage = pathname === '/projects';
 
-  // 프로젝트 이름 fetch — 라우트에 projectId 가 있을 때만.
-  // setState 는 inline async 함수 안에서 호출해 `react-hooks/set-state-in-effect` 룰 회피.
-  useEffect(() => {
-    let cancelled = false;
-    const fetchProjectName = async () => {
-      if (!isProjectIdValid || projectId === undefined) {
-        if (!cancelled) setFetchedProjectName(undefined);
-        return;
-      }
-      try {
-        const response = await privateApi.project.getProject(projectId);
-        if (cancelled) return;
-        setFetchedProjectName(response.data.data?.name);
-      } catch (caught) {
-        if (cancelled) return;
-        showErrorToast(caught, '프로젝트 이름 조회에 실패했어요.');
-      }
-    };
-    void fetchProjectName();
-    return () => {
-      cancelled = true;
-    };
-  }, [isProjectIdValid, projectId, showErrorToast]);
+  // 프로젝트 이름 — Tanstack Query
+  const { data: projectData } = useProjectQuery(isProjectIdValid ? (projectId as number) : 0);
 
-  // 내 계정 fetch — 사이드바 마운트 시 한 번.
-  useEffect(() => {
-    let cancelled = false;
-    const fetchMe = async () => {
-      try {
-        const response = await privateApi.user.getMe();
-        if (cancelled) return;
-        const data = response.data.data;
-        setMe({
-          nickname: data?.nickname,
-          email: data?.email,
-          profileImageUrl: normalizeImageUrl(data?.profileImageUrl),
-        });
-      } catch (caught) {
-        if (cancelled) return;
-        showErrorToast(caught, '내 정보 조회에 실패했어요.');
-      }
-    };
-    void fetchMe();
-    return () => {
-      cancelled = true;
-    };
-  }, [showErrorToast]);
+  // 사용자 정보 — localStorage (로그인 시 저장된 값)
+  const storedUser = userStorage.get();
 
-  // 읽지 않은 알림 개수 fetch — 알림 모달 열고 닫을 때마다 재조회해 배지 동기화.
-  useEffect(() => {
-    let cancelled = false;
-    const fetchUnreadCount = async () => {
-      try {
-        const response = await privateApi.notification.getUnreadCount();
-        if (cancelled) return;
-        setUnreadCount(response.data.data?.unreadCount ?? 0);
-      } catch (caught) {
-        if (cancelled) return;
-        showErrorToast(caught, '알림 개수를 불러오지 못했어요.');
-      }
-    };
-    void fetchUnreadCount();
-    return () => {
-      cancelled = true;
-    };
-  }, [isAlarmModalOpen, showErrorToast]);
+  // 읽지 않은 알림 개수 — Tanstack Query
+  const { data: unreadCount = 0 } = useUnreadCountQuery();
 
-  // prop > fetch > 빈 문자열 우선순위로 합성.
-  const projectName = projectNameProp ?? fetchedProjectName ?? '';
-  const userName = userNameProp ?? me?.nickname ?? '';
-  const userEmail = userEmailProp ?? me?.email ?? '';
+  // prop > query/storage > 빈 문자열 우선순위로 합성.
+  const projectName = projectNameProp ?? projectData?.name ?? '';
+  const userName = userNameProp ?? storedUser?.nickname ?? '';
+  const userEmail = userEmailProp ?? storedUser?.email ?? '';
+  const profileImageUrl = storedUser?.profileImageUrl
+    ? normalizeImageUrl(storedUser.profileImageUrl)
+    : undefined;
   const isCollapsed = isProjectSelectionPage || isCollapsedInternal;
   const [isCollapseSettled, setIsCollapseSettled] = useState(true);
   const shouldUseCollapsedLayout = isCollapsed && isCollapseSettled;
@@ -178,6 +119,40 @@ export const ProjectSidebar = ({
   const handleAlarmModalToggle = () => {
     setIsAlarmModalOpen((prev) => !prev);
     onInboxClick?.();
+  };
+
+  const handleSearchClick = () => {
+    onSearchClick?.();
+    if (!isProjectIdValid || projectId === undefined) return;
+    openModal({
+      variant: 'compact',
+      closeOnBackdrop: true,
+      closeOnEsc: true,
+      content: (
+        <SearchModalContent projectId={projectId} onResultClick={() => closeModal()} />
+      ),
+    });
+  };
+
+  const handleSettingClick = () => {
+    onSettingClick?.();
+    if (!isProjectIdValid || projectId === undefined) return;
+    openModal({
+      variant: 'default',
+      closeOnBackdrop: true,
+      closeOnEsc: true,
+      content: <SettingsModalContent projectId={projectId} onClose={closeModal} />,
+    });
+  };
+
+  const handleProfileClick = () => {
+    onProfileClick?.();
+    openModal({
+      variant: 'default',
+      closeOnBackdrop: true,
+      closeOnEsc: true,
+      content: <AccountSettingsModalContent onClose={closeModal} />,
+    });
   };
 
   return (
@@ -264,7 +239,7 @@ export const ProjectSidebar = ({
                   label="검색"
                   labelWidth={48}
                   labelTransitionDuration={SIDEBAR_LABEL_TRANSITION_DURATION}
-                  onClick={onSearchClick}
+                  onClick={handleSearchClick}
                 />
                 <SidebarMenuButton
                   icon={IconBell}
@@ -281,7 +256,7 @@ export const ProjectSidebar = ({
                   label="설정"
                   labelWidth={48}
                   labelTransitionDuration={SIDEBAR_LABEL_TRANSITION_DURATION}
-                  onClick={onSettingClick}
+                  onClick={handleSettingClick}
                 />
               </nav>
             )}
@@ -292,7 +267,7 @@ export const ProjectSidebar = ({
               isCollapsed={isCollapsed}
               userName={userName}
               userEmail={userEmail}
-              profileImageUrl={me?.profileImageUrl}
+              profileImageUrl={profileImageUrl}
               onClick={onProfileClick}
             />
           </div>
