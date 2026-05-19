@@ -115,10 +115,62 @@ AI 회의 요약과 AI 에이전트를 통해 핵심 내용을 빠르게 정리�
 
 ### 🌐 Frontend
 
+#### Language & Framework
+
+<img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript badge"> <img src="https://img.shields.io/badge/Next.js-000000?style=flat-square&logo=next.js&logoColor=white" alt="Next.js badge"> <img src="https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React badge">
+
+#### Styling
+
+<img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS badge">
+
+#### Desktop
+
+<img src="https://img.shields.io/badge/Electron-47848F?style=flat-square&logo=electron&logoColor=white" alt="Electron badge">
+
+#### Collaboration
+
+<img src="https://img.shields.io/badge/Yjs-000000?style=flat-square&logo=y-combinator&logoColor=white" alt="Yjs badge"> <img src="https://img.shields.io/badge/Tiptap-000000?style=flat-square&logo=tiptap&logoColor=white" alt="Tiptap badge">
+
 ### 📊 Backend
+
+#### Language & Framework
+
+<img src="https://img.shields.io/badge/Java_21-ED8B00?style=flat-square&logo=openjdk&logoColor=white" alt="Java 21 badge"> <img src="https://img.shields.io/badge/Spring_Boot-6DB33F?style=flat-square&logo=springboot&logoColor=white" alt="Spring Boot badge"> <img src="https://img.shields.io/badge/Gradle-02303A?style=flat-square&logo=gradle&logoColor=white" alt="Gradle badge">
+
+#### ORM & Migration
+
+<img src="https://img.shields.io/badge/Spring_Data_JPA-6DB33F?style=flat-square&logo=databricks&logoColor=white" alt="Spring Data JPA badge"> <img src="https://img.shields.io/badge/Flyway-CC0200?style=flat-square&logo=flyway&logoColor=white" alt="Flyway badge">
+
+#### Authorization
+
+<img src="https://img.shields.io/badge/Spring_Security-6DB33F?style=flat-square&logo=springsecurity&logoColor=white" alt="Spring Security badge"> <img src="https://img.shields.io/badge/JWT-000000?style=flat-square&logo=jsonwebtokens&logoColor=white" alt="JWT badge">
+
+#### Database
+
+<img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL badge">
+
+#### WebSocket
+
+<img src="https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node.js badge"> <img src="https://img.shields.io/badge/Yjs-000000?style=flat-square&logo=y-combinator&logoColor=white" alt="Yjs badge">
+
+#### Other
+
+<img src="https://img.shields.io/badge/Swagger-85EA2D?style=flat-square&logo=swagger&logoColor=black" alt="Swagger badge">
 
 ### 🤖 AI
 
+#### Language & Framework
+
+<img src="https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python badge"> <img src="https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI badge">
+
+#### AI Model
+
+<img src="https://img.shields.io/badge/Google_Gemini-8E75B2?style=flat-square&logo=google&logoColor=white" alt="Google Gemini badge">
+
+#### Cloud
+
+<img src="https://img.shields.io/badge/AWS_Lambda-FF9900?style=flat-square&logo=awslambda&logoColor=white" alt="AWS Lambda badge"> <img src="https://img.shields.io/badge/AWS_SQS-FF9900?style=flat-square&logo=amazonsqs&logoColor=white" alt="AWS SQS badge">
+
 ### ⚒️ 서비스 아키텍처
 
-<img src="https://github.com/user-attachments/assets/951f9b2d-21b2-4694-9de5-08ac70b6880f"/>
+<img src="https://github.com/user-attachments/assets/951f9b2d-21b2-4694-9de5-08ac70b6880f" alt="FlowMeet 서비스 아키텍처"/>
