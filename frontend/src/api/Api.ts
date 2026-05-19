@@ -842,6 +842,11 @@ export interface SignupRequest {
    */
   socialAccessToken: string;
   /**
+   * 소셜 refresh token (로그인 응답으로 받은 값, 없으면 null)
+   * @example "1//0gLY..."
+   */
+  socialRefreshToken?: string;
+  /**
    * 닉네임(최대 20자)
    * @minLength 0
    * @maxLength 20
@@ -891,6 +896,34 @@ export interface TokenResponse {
    * @example "eyJhbGciOiJIUzI1NiJ9..."
    */
   refreshToken?: string;
+}
+
+/** 회원가입 이메일 인증 코드 발송 요청 */
+export interface SendAuthEmailVerificationRequest {
+  /**
+   * 인증할 이메일
+   * @format email
+   * @minLength 1
+   * @example "flowmin@flowmeet.kr"
+   */
+  email: string;
+}
+
+/** 회원가입 이메일 인증 코드 검증 요청 */
+export interface VerifyAuthEmailRequest {
+  /**
+   * 인증할 이메일
+   * @format email
+   * @minLength 1
+   * @example "flowmin@flowmeet.kr"
+   */
+  email: string;
+  /**
+   * 인증 코드
+   * @minLength 1
+   * @example "123456"
+   */
+  code: string;
 }
 
 /** 토큰 갱신 요청 */
@@ -1945,6 +1978,11 @@ export interface ParticipantItem {
    * @example "홍길동"
    */
   nickname?: string;
+  /**
+   * 이메일
+   * @example "test@flowmeet.kr"
+   */
+  email?: string;
   /**
    * 프로필 이미지 URL
    * @example "https://cdn.flowmit.com/profiles/10.png"
@@ -5794,6 +5832,103 @@ export class Api<
         }
       >({
         path: `/v1/auth/signup`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description 회원가입할 이메일 주소로 6자리 인증 코드를 발송합니다. 코드 유효시간은 5분입니다.
+     *
+     * @tags Auth
+     * @name SendEmailVerification1
+     * @summary 회원가입 이메일 인증 코드 발송
+     * @request POST:/v1/auth/signup/email-verifications
+     * @secure
+     */
+    sendEmailVerification1: (
+      data: SendAuthEmailVerificationRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "SEND_EMAIL_VERIFICATION"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "인증 코드를 보냈어요. 메일함을 확인해 주세요."
+           */
+          message?: object;
+          /** 응답 데이터 */
+          data?: object;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/auth/signup/email-verifications`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description 발송된 인증 코드로 이메일 소유를 확인합니다.
+     *
+     * @tags Auth
+     * @name VerifyEmail1
+     * @summary 회원가입 이메일 인증 코드 검증
+     * @request POST:/v1/auth/signup/email-verifications/verify
+     * @secure
+     */
+    verifyEmail1: (data: VerifyAuthEmailRequest, params: RequestParams = {}) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "VERIFY_EMAIL"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "이메일 인증에 성공했어요."
+           */
+          message?: object;
+          /** 응답 데이터 */
+          data?: object;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/auth/signup/email-verifications/verify`,
         method: "POST",
         body: data,
         secure: true,

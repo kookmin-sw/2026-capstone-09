@@ -1,67 +1,55 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { Collaboration } from '@tiptap/extension-collaboration';
+import { Extension } from '@tiptap/core';
+import { Placeholder } from '@tiptap/extensions';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { Placeholder } from '@tiptap/extensions';
-import { Extension } from '@tiptap/core';
+
+import { YJS_FIELDS, useYjsContext } from '@/contexts/YjsContext';
+import { useYjsFragmentInit } from '@/hooks/useYjsFragmentInit';
+import { stripNewlinesPaste } from '@/utils/tiptapPaste';
 
 export function useTitleEditor(title: string | undefined, onSave: (value: string) => void) {
-  const titleRef = useRef(title);
   const onSaveRef = useRef(onSave);
-
-  useEffect(() => {
-    titleRef.current = title;
-  }, [title]);
-
   useEffect(() => {
     onSaveRef.current = onSave;
   }, [onSave]);
 
-  return useEditor(
+  const yjsCtx = useYjsContext();
+  const fragment = yjsCtx?.ydoc.getXmlFragment(YJS_FIELDS.title) ?? null;
+
+  const editor = useEditor(
     {
       extensions: [
-        StarterKit,
-        Placeholder.configure({
-          placeholder: '제목을 입력하세요.',
-        }),
+        StarterKit.configure({ undoRedo: false }),
+        Placeholder.configure({ placeholder: '제목을 입력하세요.' }),
         Extension.create({
-          name: 'preventEnterRevertOnEscape',
+          name: 'titleKeyboardShortcuts',
           addKeyboardShortcuts() {
             return {
-              Enter: ({ editor }) => {
-                editor.view.dom.blur();
-                return true;
-              },
-              Escape: ({ editor }) => {
-                editor.commands.setContent(titleRef.current ?? '');
-                editor.view.dom.blur();
-                return true;
-              },
+              Enter: ({ editor: e }) => { e.view.dom.blur(); return true; },
+              Escape: ({ editor: e }) => { e.view.dom.blur(); return true; },
             };
           },
         }),
+        ...(fragment ? [Collaboration.configure({ fragment })] : []),
       ],
-      content: title ?? '새 노드',
-      onBlur({ editor }) {
-        onSaveRef.current(editor.getText());
+      content: fragment ? undefined : (title ?? '새 노드'),
+      onBlur({ editor: e }) {
+        onSaveRef.current(e.getText());
       },
       editorProps: {
-        handlePaste(view, event) {
-          const text = event.clipboardData?.getData('text/plain');
-          if (text) {
-            event.preventDefault();
-            view.dispatch(view.state.tr.insertText(text.replace(/\n/g, ' ')));
-            return true;
-          }
-          return false;
-        },
-        attributes: {
-          class: 'prose focus:outline-none text-2xl font-medium',
-        },
+        handlePaste: stripNewlinesPaste,
+        attributes: { class: 'prose focus:outline-none text-2xl font-medium' },
       },
       immediatelyRender: false,
     },
-    [title],
+    [fragment],
   );
+
+  useYjsFragmentInit(editor, fragment, title);
+
+  return editor;
 }

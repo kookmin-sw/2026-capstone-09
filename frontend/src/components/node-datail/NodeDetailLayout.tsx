@@ -12,7 +12,7 @@ import {
 } from '@wanteddev/wds-icon';
 import { useEffect } from 'react';
 
-import { AssigneeItem, GetNodeResponse, TagItem } from '@/api/Api';
+import { GetNodeResponse } from '@/api/Api';
 import { GoogleMeetIcon } from '@/assets/svgs/GoogleMeetIcon';
 import { Loading } from '@/components/commons/loading/Loading';
 import { EXAMPLE_USERS } from '@/constants/exampleConstant';
@@ -71,31 +71,8 @@ export function NodeDetailLayout({
 
   const titleEditor = useTitleEditor(nodeDetail?.title, handleTitleUpdate);
 
-  const handleStatusUpdate = (status: NodeStatusType) => {
-    updateCache((prev) => ({ ...prev, status }));
-  };
-
   const handleDescriptionUpdate = (description: string) => {
     updateCache((prev) => ({ ...prev, description }));
-  };
-
-  const handleTagAdd = (tag: TagItem) => {
-    updateCache((prev) => ({ ...prev, tags: [...(prev.tags ?? []), tag] }));
-  };
-
-  const handleTagRemove = (tagId: number) => {
-    updateCache((prev) => ({ ...prev, tags: prev.tags?.filter((t) => t.tagId !== tagId) }));
-  };
-
-  const handleAssigneeAdd = (assignee: AssigneeItem) => {
-    updateCache((prev) => ({ ...prev, assignees: [...(prev.assignees ?? []), assignee] }));
-  };
-
-  const handleAssigneeRemove = (userId: number) => {
-    updateCache((prev) => ({
-      ...prev,
-      assignees: prev.assignees?.filter((a) => a.userId !== userId),
-    }));
   };
 
   if (isLoading) return <Loading />;
@@ -129,13 +106,7 @@ export function NodeDetailLayout({
         <div className="flex flex-col gap-5">
           <MetaRow icon={<IconTag />} label="태그">
             {nodeId && (
-              <TagField
-                projectId={projectId}
-                nodeId={nodeId}
-                tags={nodeDetail?.tags ?? []}
-                onAdd={handleTagAdd}
-                onRemove={handleTagRemove}
-              />
+              <TagField projectId={projectId} nodeId={nodeId} initialTags={nodeDetail?.tags} />
             )}
           </MetaRow>
 
@@ -144,9 +115,7 @@ export function NodeDetailLayout({
               <AssigneeField
                 projectId={projectId}
                 nodeId={nodeId}
-                assignees={nodeDetail?.assignees ?? []}
-                onAdd={handleAssigneeAdd}
-                onRemove={handleAssigneeRemove}
+                initialAssignees={nodeDetail?.assignees}
               />
             )}
           </MetaRow>
@@ -163,21 +132,19 @@ export function NodeDetailLayout({
           </MetaRow>
 
           <MetaRow icon={<IconFire />} label="진행 상태">
-            {nodeId && nodeDetail?.status && (
+            {nodeId && (
               <StatusField
                 projectId={projectId}
                 nodeId={nodeId}
-                status={nodeDetail.status as NodeStatusType}
-                onUpdate={handleStatusUpdate}
+                initialStatus={nodeDetail?.status as NodeStatusType | undefined}
               />
             )}
           </MetaRow>
         </div>
 
-        {nodeDetail?.meeting?.meetingId ? (
-          // 추후 수정 필요...
+        {nodeDetail?.meeting?.meetingId && nodeDetail.meeting.status !== 'ENDED' ? (
           <a
-            href="https://meet.google.com/jne-evsa-qzn"
+            href={nodeDetail?.meeting?.meetingUrl}
             className="text-label-1-normal flex items-center justify-between rounded-lg border border-gray-200 p-3"
           >
             <div>{formatDatetoString(nodeDetail?.meeting?.startedAt)}에 회의 예정</div>

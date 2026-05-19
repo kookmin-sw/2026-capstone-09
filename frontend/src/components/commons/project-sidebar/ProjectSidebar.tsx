@@ -9,15 +9,17 @@ import {
   IconSetting,
 } from '@wanteddev/wds-icon';
 import { AnimatePresence, motion } from 'framer-motion';
-import { usePathname } from 'next/navigation';
+import { useParams, usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
+import { useModal } from '@/components/commons/modal/ModalContext';
 import {
   EXAMPLE_PROJECT_SIDEBAR_PROFILE,
   EXAMPLE_SIDEBAR_ALARM_ITEMS,
 } from '@/constants/exampleConstant';
 import { cn } from '@/utils/cn';
 
+import { SearchModalContent } from './SearchModalContent';
 import { SidebarAlarmModal } from './SidebarAlarmModal';
 import { SidebarMenuButton } from './SidebarMenuButton';
 import { UserProfileButton } from './UserProfileButton';
@@ -47,6 +49,10 @@ export const ProjectSidebar = ({
   onProfileClick,
 }: ProjectSidebarProps) => {
   const pathname = usePathname();
+  const params = useParams<{ projectId?: string }>();
+  const projectIdRaw = params?.projectId;
+  const projectId = projectIdRaw ? Number(projectIdRaw) : undefined;
+  const { openModal, closeModal } = useModal();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isCollapsedInternal, setIsCollapsedInternal] = useState(false);
   const [isAlarmModalOpen, setIsAlarmModalOpen] = useState(false);
@@ -89,6 +95,19 @@ export const ProjectSidebar = ({
   const handleAlarmModalToggle = () => {
     setIsAlarmModalOpen((prev) => !prev);
     onInboxClick?.();
+  };
+
+  const handleSearchClick = () => {
+    onSearchClick?.();
+    if (projectId === undefined || Number.isNaN(projectId)) return;
+    openModal({
+      variant: 'compact',
+      closeOnBackdrop: true,
+      closeOnEsc: true,
+      content: (
+        <SearchModalContent projectId={projectId} onResultClick={() => closeModal()} />
+      ),
+    });
   };
 
   return (
@@ -175,7 +194,7 @@ export const ProjectSidebar = ({
                   label="검색"
                   labelWidth={48}
                   labelTransitionDuration={SIDEBAR_LABEL_TRANSITION_DURATION}
-                  onClick={onSearchClick}
+                  onClick={handleSearchClick}
                 />
                 <SidebarMenuButton
                   icon={IconBell}

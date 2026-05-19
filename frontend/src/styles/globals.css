@@ -2,6 +2,7 @@
 @import "tailwindcss/utilities";
 @import "tailwindcss/theme";
 @import './variables.css';
+@import './scrollbar.css';
 @import 'pretendard/dist/web/variable/pretendardvariable.css';
 @import 'pretendard/dist/web/static/pretendard.css';
 @plugin "@tailwindcss/typography";
@@ -260,6 +261,15 @@
   --color-pink-95: var(--color---pink---95);
   --color-pink-99: var(--color---pink---99);
   --color-pink-100: var(--color---pink---100);
+
+  /* Effects */
+  --shadow-normal-xsmall: var(--shadow---normal---xsmall);
+  --shadow-normal-small: var(--shadow---normal---small);
+  --shadow-normal-medium: var(--shadow---normal---medium);
+  --shadow-normal-large: var(--shadow---normal---large);
+  --shadow-normal-xlarge: var(--shadow---normal---xlarge);
+  --shadow-spread-small: var(--shadow---spread---small);
+  --shadow-spread-medium: var(--shadow---spread---medium);
 }
 
 .text-display-1 {
@@ -358,9 +368,14 @@
   letter-spacing: var(--typography---caption2---letter-spacing);
 }
 
-/* WDS 내 primary FlowMeet 색상으로 변경 */
+/* WDS 내 primary FlowMeet 색상으로 변경.
+   WDS 내부에서 `addOpacity(theme.semantic.primary.normal, ...)` 가
+   `rgba(var(--semantic-primary-normal-rgb), α)` 로 풀리기 때문에
+   hex와 함께 -rgb 변형도 같이 잡아둬야 TextField 포커스 테두리 등이
+   FlowMeet 컬러로 그려진다. */
 :root {
   --semantic-primary-normal: #03C98F;
+  --semantic-primary-normal-rgb: 3, 201, 143;
 }
 
 body {

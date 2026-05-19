@@ -1,37 +1,61 @@
 'use client';
 
+import { useRef } from 'react';
+import { Collaboration, isChangeOrigin } from '@tiptap/extension-collaboration';
 import { Placeholder } from '@tiptap/extensions';
-import { useEditor, EditorContent } from '@tiptap/react';
+import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { Markdown } from 'tiptap-markdown';
+import { Markdown, type MarkdownStorage } from 'tiptap-markdown';
+import type { XmlFragment } from 'yjs';
+
+import { useYjsFragmentInit } from '@/hooks/useYjsFragmentInit';
+
+const SAVE_DEBOUNCE_MS = 1000;
 
 interface EditorProps {
   content: string | undefined;
+  /** Yjs XmlFragment — 전달 시 협업 편집 활성화 */
+  fragment?: XmlFragment | null;
+  /** 로컬 변경 발생 후 디바운스 저장 콜백 */
+  onUpdate?: (markdown: string) => void;
+  /** false 전달 시 읽기 전용 (기본값: true) */
+  editable?: boolean;
 }
 
-export default function Editor({ content }: EditorProps) {
+export default function Editor({ content, fragment, onUpdate, editable = true }: EditorProps) {
+  const onUpdateRef = useRef(onUpdate);
+  onUpdateRef.current = onUpdate;
+
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const editor = useEditor(
     {
       extensions: [
-        StarterKit,
+        StarterKit.configure({ undoRedo: false }),
         Markdown,
-        Placeholder.configure({
-          placeholder: '내용을 입력하세요.',
-        }),
+        Placeholder.configure({ placeholder: '내용을 입력하세요.' }),
+        ...(fragment ? [Collaboration.configure({ fragment })] : []),
       ],
+      editable,
+      content: fragment ? undefined : (content ?? ''),
+      onUpdate({ editor: e, transaction }) {
+        if (isChangeOrigin(transaction)) return;
 
-      content: content ?? '',
-
-      editorProps: {
-        attributes: {
-          class: 'prose focus:outline-none m-5 pb-40',
-        },
+        if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+        saveTimerRef.current = setTimeout(() => {
+          const mdStorage = (e.storage as unknown as Record<string, unknown>).markdown as MarkdownStorage;
+          onUpdateRef.current?.(mdStorage.getMarkdown());
+        }, SAVE_DEBOUNCE_MS);
       },
-
+      editorProps: {
+        attributes: { class: 'prose focus:outline-none m-5 pb-40' },
+      },
       immediatelyRender: false,
     },
-    [content],
+    [fragment],
   );
+
+  useYjsFragmentInit(editor, fragment ?? null, content);
 
   return (
     <div className="prose [&_.ProseMirror]:leading-[1.4] [&_.ProseMirror_p]:my-0">
