@@ -75,6 +75,18 @@ export const EXAMPLE_USERS = [
   { userId: 6, nickname: '박정은', email: 'jeongeun@kookmin.ac.kr' },
 ] as const;
 
+export const EXAMPLE_MEETING_CREATE_NODE = {
+  id: 101,
+  badge: '#1.1',
+  title: '로그인 화면 기획',
+} as const;
+
+export const EXAMPLE_MEETING_PARTICIPANTS = EXAMPLE_USERS.map((user) => ({
+  id: user.userId,
+  name: user.nickname,
+  email: user.email,
+}));
+
 export const EXAMPLE_NODE_DETAIL = {
   nodeId: 101,
   projectId: 17,
