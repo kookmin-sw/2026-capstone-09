@@ -84,6 +84,7 @@ export function NodeSidebar({ nodeId, projectId, onClose }: NodeSidebarProps) {
               meetingContent={<NodeMeetingTab nodeId={nodeId} projectId={projectId} />}
               value={value}
               onValueChange={setValue}
+              onDeleteSuccess={handleClose}
             />
           </YjsProvider>
         </div>

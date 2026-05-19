@@ -7,6 +7,17 @@ import { GetNodeResponse } from '@/api/Api';
 import { NodeStatusType } from '@/constants/nodeStatus';
 import { nodeKeys } from './keys/nodeKeys';
 
+export function useFlowchartQuery(projectId: number) {
+  return useQuery({
+    queryKey: nodeKeys.flowchart(projectId),
+    queryFn: async () => {
+      const response = await privateApi.node.getFlowchart(projectId);
+      return response.data.data ?? null;
+    },
+    enabled: !!projectId,
+  });
+}
+
 export function useNodeListQuery(projectId: number, sort: 'LATEST' | 'NAME' = 'LATEST') {
   return useQuery({
     queryKey: nodeKeys.list(projectId, sort),
@@ -44,6 +55,17 @@ export function useUpdateNodeNoteMutation(projectId: number, nodeId: number) {
   return useMutation({
     mutationFn: (noteContent: string) =>
       privateApi.node.updateNodeNote(projectId, nodeId, { noteContent }),
+  });
+}
+
+export function useCreateSubNodeMutation(projectId: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (parentId: number) =>
+      privateApi.node.createNode(projectId, { title: '새 서브 노드', type: 'SUB', parentId }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: nodeKeys.list(projectId) });
+    },
   });
 }
 
