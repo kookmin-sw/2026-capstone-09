@@ -9,7 +9,7 @@ import {
   IconSetting,
 } from '@wanteddev/wds-icon';
 import { AnimatePresence, motion } from 'framer-motion';
-import { usePathname } from 'next/navigation';
+import { useParams, usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { useModal } from '@/components/commons/modal/ModalContext';
@@ -20,6 +20,8 @@ import {
 import { cn } from '@/utils/cn';
 
 import { AccountSettingsModalContent } from './account-settings';
+import { SearchModalContent } from './SearchModalContent';
+import { SettingsModalContent } from './setting-modal';
 import { SidebarAlarmModal } from './SidebarAlarmModal';
 import { SidebarMenuButton } from './SidebarMenuButton';
 import { UserProfileButton } from './UserProfileButton';
@@ -49,6 +51,10 @@ export const ProjectSidebar = ({
   onProfileClick,
 }: ProjectSidebarProps) => {
   const pathname = usePathname();
+  const params = useParams<{ projectId?: string }>();
+  const projectIdRaw = params?.projectId;
+  const projectId = projectIdRaw ? Number(projectIdRaw) : undefined;
+  const isProjectIdValid = projectId !== undefined && !Number.isNaN(projectId);
   const { openModal, closeModal } = useModal();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isCollapsedInternal, setIsCollapsedInternal] = useState(false);
@@ -92,6 +98,30 @@ export const ProjectSidebar = ({
   const handleAlarmModalToggle = () => {
     setIsAlarmModalOpen((prev) => !prev);
     onInboxClick?.();
+  };
+
+  const handleSearchClick = () => {
+    onSearchClick?.();
+    if (!isProjectIdValid || projectId === undefined) return;
+    openModal({
+      variant: 'compact',
+      closeOnBackdrop: true,
+      closeOnEsc: true,
+      content: (
+        <SearchModalContent projectId={projectId} onResultClick={() => closeModal()} />
+      ),
+    });
+  };
+
+  const handleSettingClick = () => {
+    onSettingClick?.();
+    if (!isProjectIdValid || projectId === undefined) return;
+    openModal({
+      variant: 'default',
+      closeOnBackdrop: true,
+      closeOnEsc: true,
+      content: <SettingsModalContent projectId={projectId} onClose={closeModal} />,
+    });
   };
 
   const handleProfileClick = () => {
@@ -188,7 +218,7 @@ export const ProjectSidebar = ({
                   label="검색"
                   labelWidth={48}
                   labelTransitionDuration={SIDEBAR_LABEL_TRANSITION_DURATION}
-                  onClick={onSearchClick}
+                  onClick={handleSearchClick}
                 />
                 <SidebarMenuButton
                   icon={IconBell}
@@ -205,7 +235,7 @@ export const ProjectSidebar = ({
                   label="설정"
                   labelWidth={48}
                   labelTransitionDuration={SIDEBAR_LABEL_TRANSITION_DURATION}
-                  onClick={onSettingClick}
+                  onClick={handleSettingClick}
                 />
               </nav>
             )}

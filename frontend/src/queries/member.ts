@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { privateApi } from '@/api';
 import { memberKeys } from './keys/memberKeys';
@@ -23,7 +23,30 @@ export function useAddAssigneeMutation(projectId: number, nodeId: number) {
 
 export function useRemoveAssigneeMutation(projectId: number, nodeId: number) {
   return useMutation({
-    mutationFn: (userId: number) =>
-      privateApi.nodeAssignee.deleteAssignee(projectId, nodeId, userId),
+    mutationFn: (assigneeId: number) =>
+      privateApi.nodeAssignee.deleteAssignee(projectId, nodeId, assigneeId),
+  });
+}
+
+export function useInviteMemberMutation(projectId: number) {
+  return useMutation({
+    mutationFn: (email: string) => privateApi.project.inviteMember(projectId, { email }),
+  });
+}
+
+export function useUpdateMemberRoleMutation(projectId: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ memberId, role }: { memberId: number; role: 'VIEWER' | 'MEMBER' | 'OWNER' }) =>
+      privateApi.projectMember.updateMemberRole(projectId, memberId, { role }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: memberKeys.list(projectId) }),
+  });
+}
+
+export function useDeleteMemberMutation(projectId: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (memberId: number) => privateApi.projectMember.deleteMember(projectId, memberId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: memberKeys.list(projectId) }),
   });
 }

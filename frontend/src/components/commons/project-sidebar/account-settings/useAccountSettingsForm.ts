@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
+import { userStorage } from '@/api/userStorage';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { useCurrentUserQuery, useUpdateMeMutation, useUpdateProfileImageMutation } from '@/queries/user';
 
@@ -89,6 +90,7 @@ export const useAccountSettingsForm = ({
         try {
           await updateMe({ nickname: trimmed });
           if (cancelled) return;
+          userStorage.setNickname(trimmed);
           onNicknameSaved?.();
         } catch (caught) {
           if (cancelled) return;
