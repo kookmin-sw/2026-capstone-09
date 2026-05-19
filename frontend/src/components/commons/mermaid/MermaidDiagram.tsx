@@ -178,17 +178,11 @@ export const MermaidDiagram = ({ code }: MermaidDiagramProps) => {
           box = null;
         }
         if (!box) {
-          // 폴백: 글자 수 기반 추정. 여기도 상수 값은 px이 아니라 "글자당 em ≈ 1.0 / 높이 1.2em" 감각.
           const content = (text.textContent ?? '').trim();
           if (!content) return;
           const estWidth = content.length * 16;
           const estHeight = 20;
-          box = {
-            x: -estWidth / 2,
-            y: -estHeight / 2,
-            width: estWidth,
-            height: estHeight,
-          };
+          box = { x: -estWidth / 2, y: -estHeight / 2, width: estWidth, height: estHeight };
         }
 
         const padX = 10;
@@ -226,11 +220,10 @@ export const MermaidDiagram = ({ code }: MermaidDiagramProps) => {
     );
   }
 
-  // 세로로 너무 길어 모달에서 잘려 보이지 않도록 SVG max-h로 비율 유지한 채 완화.
   return (
     <div
       ref={ref}
-      className="mermaid-diagram flex w-full justify-center [&_svg]:!h-auto [&_svg]:!max-h-134 [&_svg]:!w-auto [&_svg]:!max-w-full"
+      className="mermaid-diagram flex w-full justify-center [&_svg]:h-auto! [&_svg]:max-h-134! [&_svg]:w-auto! [&_svg]:max-w-full!"
     />
   );
 };

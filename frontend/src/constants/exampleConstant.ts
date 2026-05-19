@@ -563,6 +563,29 @@ export const EXAMPLE_FLOWCHART_DATA = {
   ],
 };
 
+// 프로젝트 설정 모달 - 알림 탭 초기값 더미.
+// 알림 설정 관련 API가 아직 generated 되지 않아, UI는 그대로 두고 클라이언트 상태로만 동작한다.
+export const EXAMPLE_PROJECT_NOTIFICATION_SETTINGS = {
+  meetingEnabled: true,
+  nodeEnabled: false,
+  channels: {
+    desktop: false,
+    email: false,
+  },
+} as const;
+
+// 회의 삭제 컨펌 다이얼로그 테스트 페이지 전용 더미 데이터.
+// 테스트 페이지에서 `privateApi.meeting.deleteMeeting(projectId, nodeId, meetingId)`
+// 호출에 필요한 path params를 모두 들고 있다.
+export const EXAMPLE_MEETING_DELETE_TEST = {
+  projectId: 1,
+  candidates: [
+    { nodeId: 11, meetingId: 101, title: '주간 디자인 회의' },
+    { nodeId: 12, meetingId: 102, title: '발표 자료 검토 회의' },
+    { nodeId: 13, meetingId: 103, title: '스프린트 회고' },
+  ],
+} as const;
+
 // 노드 삭제 컨펌 모달 테스트 페이지 전용 더미 데이터
 // 실제 API(`privateApi.node.deleteNode(projectId: number, nodeId: number)`)에 맞춰
 // id는 number 형태로 둔다.

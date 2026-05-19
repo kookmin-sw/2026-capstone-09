@@ -1,6 +1,6 @@
 'use client';
 
-import { MermaidDiagram } from './MermaidDiagram';
+import { MermaidDiagram } from '@/components/commons/mermaid/MermaidDiagram';
 
 interface RelationDiagramSectionProps {
   code: string;
