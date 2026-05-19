@@ -109,11 +109,12 @@ public class ChatController implements ChatApi {
             @UserId Long userId,
             @PathVariable Long projectId,
             @PathVariable Long chatSessionId,
-            @RequestBody @Valid SendMessageRequest request
+            @RequestBody @Valid SendMessageRequest request,
+            @RequestHeader("Authorization") String authorization
     ) {
         return CommonResponse.ok(
                 ChatSuccessCode.SEND_MESSAGE,
-                chatFacade.sendMessage(userId, projectId, chatSessionId, request.content())
+                chatFacade.sendMessage(userId, projectId, chatSessionId, request.content(), authorization)
         );
     }
 

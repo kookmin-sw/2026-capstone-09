@@ -60,6 +60,7 @@ class Agent:
                 contents=self.conversation_history,
                 config=types.GenerateContentConfig(
                     tools=self._tools,
+                    system_instruction=f"당신은 프로젝트 {self.project_id}의 AI 어시스턴트입니다.",
                     thinking_config=types.ThinkingConfig(
                         thinking_budget=512 # 응답 너무 느리면 0으로 변경 가능
                     ),
