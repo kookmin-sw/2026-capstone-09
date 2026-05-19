@@ -321,6 +321,100 @@ export interface CreateAssigneeRequest {
   userId: number;
 }
 
+/** 드래그 노드 분석 요청 */
+export interface AnalyzeDraggedNodesRequest {
+  /**
+   * 분석할 노드 ID 목록 (최소 2개)
+   * @maxItems 2147483647
+   * @minItems 2
+   * @example [1,2,3]
+   */
+  nodeIds: number[];
+}
+
+/** 후속 업무 담당자별 분배 현황 */
+export interface ActionItemsAnalysisItem {
+  /**
+   * 전체 후속 업무 수
+   * @format int32
+   * @example 15
+   */
+  totalCount?: number;
+  /** 담당자별 업무 배분 */
+  byPerson?: Record<string, PersonAnalysisItem>;
+}
+
+/** 선택한 노드들의 회의록 기반 AI 분석 결과 */
+export interface AnalyzeDraggedNodesResponse {
+  /** 회의 간 연관 관계 (구체화, 시너지, 선행조건 등) */
+  meetingRelationships?: MeetingRelationshipItem[];
+  /** 회의에서 도출된 후속 업무의 담당자별 분배 현황 */
+  actionItemsAnalysis?: ActionItemsAnalysisItem;
+  /** 회의 내용 기반 AI 발전 아이디어 제안 (마크다운) */
+  developmentIdeas?: string;
+  /** 회의 관계 시각화 Mermaid 코드 */
+  mermaidCode?: string;
+}
+
+/** 공통 응답 형식 */
+export interface CommonResponseAnalyzeDraggedNodesResponse {
+  /**
+   * HTTP 상태 코드
+   * @format int32
+   * @example 200
+   */
+  status?: number;
+  /**
+   * 응답 코드
+   * @example "OK"
+   */
+  code?: string;
+  /**
+   * 응답 메시지
+   * @example "요청에 성공했습니다."
+   */
+  message?: string;
+  /** 응답 데이터 */
+  data?: AnalyzeDraggedNodesResponse;
+}
+
+/** 회의 간 연관 관계 */
+export interface MeetingRelationshipItem {
+  /**
+   * 기준 회의 제목
+   * @example "비즈니스 모델 전략 회의"
+   */
+  from?: string;
+  /**
+   * 연관 회의 제목
+   * @example "MVP기능 회의"
+   */
+  to?: string;
+  /**
+   * 관계 유형 (구체화/변화 발생/시너지/선행조건/대체 가능/상충)
+   * @example "구체화"
+   */
+  relation?: string;
+  /** 해당 관계로 판단한 근거 */
+  reason?: string;
+}
+
+/** 담당자별 업무 배분 */
+export interface PersonAnalysisItem {
+  /**
+   * 배정된 업무 수
+   * @format int32
+   * @example 5
+   */
+  count?: number;
+  /**
+   * 전체 대비 담당 비율 (합산 = 1.0)
+   * @format double
+   * @example "0.33"
+   */
+  rate?: number;
+}
+
 /** 프로젝트 멤버 초대 요청 */
 export interface InviteProjectMemberRequest {
   /**
@@ -4244,6 +4338,57 @@ export class Api<
         path: `/v1/projects/${projectId}/nodes/${nodeId}/summary`,
         method: "POST",
         secure: true,
+        ...params,
+      }),
+
+    /**
+     * @description 드래그로 선택한 노드들의 회의록을 기반으로 AI 분석을 수행합니다.
+     *
+     * @tags Node
+     * @name AnalyzeDraggedNodes
+     * @summary 드래그 노드 분석
+     * @request POST:/v1/projects/{projectId}/nodes/analysis
+     * @secure
+     */
+    analyzeDraggedNodes: (
+      projectId: number,
+      data: AnalyzeDraggedNodesRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "ANALYZE_DRAGGED_NODES"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "드래그 노드 분석을 완료했어요."
+           */
+          message?: object;
+          /** 선택한 노드들의 회의록 기반 AI 분석 결과 */
+          data?: AnalyzeDraggedNodesResponse;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/projects/${projectId}/nodes/analysis`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
         ...params,
       }),
 

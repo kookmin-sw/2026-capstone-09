@@ -2,22 +2,14 @@
 
 import { useState } from 'react';
 
-import { privateApi } from '@/api';
 import { useDialog } from '@/components/commons/custom-dialog/DialogContext';
 import { NodeDeleteConfirmContent } from '@/components/projects/project-detail/node-delete';
 import type { NodeDeleteConfirmPayload } from '@/components/projects/project-detail/node-delete';
 import { EXAMPLE_NODE_DELETE_TEST } from '@/constants/exampleConstant';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import { useDeleteNodeMutation } from '@/queries/nodeDelete';
 import { cn } from '@/utils/cn';
 
-/**
- * 노드 삭제 컨펌 모달 동작 확인용 임시 페이지.
- *
- * - 실제 노드플로우 컨텍스트 메뉴/툴바에는 연결하지 않는다 (4대 핵심 모달이 아니므로
- *   별도 테스트 페이지에서만 띄우도록 한다).
- * - 공통 다이얼로그(`useDialog`) 위에 도메인 컴포넌트(`NodeDeleteConfirmContent`)를
- *   올려 백드롭/ESC/외부 클릭 닫힘은 공통 컴포넌트에 위임한다.
- */
 const NodeDeleteModalTestPage = () => {
   const { openDialog, closeDialog } = useDialog();
   const showErrorToast = useErrorToast();
@@ -26,6 +18,8 @@ const NodeDeleteModalTestPage = () => {
     nodeId: number;
     payload: NodeDeleteConfirmPayload;
   } | null>(null);
+
+  const { mutateAsync: deleteNode } = useDeleteNodeMutation(EXAMPLE_NODE_DELETE_TEST.projectId);
 
   const handleOpenDialog = (node: { id: number; name: string }) => {
     openDialog({
@@ -36,7 +30,7 @@ const NodeDeleteModalTestPage = () => {
           nodeName={node.name}
           onConfirm={async (payload) => {
             try {
-              await privateApi.node.deleteNode(EXAMPLE_NODE_DELETE_TEST.projectId, node.id);
+              await deleteNode(node.id);
               setLastPayload({
                 projectId: EXAMPLE_NODE_DELETE_TEST.projectId,
                 nodeId: node.id,
