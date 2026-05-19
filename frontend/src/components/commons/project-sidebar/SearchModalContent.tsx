@@ -116,6 +116,10 @@ export const SearchModalContent = ({ projectId, onResultClick }: SearchModalCont
       {hasQuery && !isLoading && !hasError && results.length === 0 && (
         <p className="text-body-2 text-label-alternative">검색 결과가 없어요.</p>
       )}
+
+      {hasQuery && !isLoading && hasError && (
+        <p className="text-body-2 text-status-negative">검색에 실패했어요. 다시 시도해 주세요.</p>
+      )}
     </div>
   );
 };

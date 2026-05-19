@@ -7,6 +7,17 @@ import { GetNodeResponse } from '@/api/Api';
 import { NodeStatusType } from '@/constants/nodeStatus';
 import { nodeKeys } from './keys/nodeKeys';
 
+export function useNodeListQuery(projectId: number, sort: 'LATEST' | 'NAME' = 'LATEST') {
+  return useQuery({
+    queryKey: nodeKeys.list(projectId, sort),
+    queryFn: async () => {
+      const response = await privateApi.node.getNodeList(projectId, { sort });
+      return response.data.data;
+    },
+    enabled: !!projectId,
+  });
+}
+
 export function useNodeDetailQuery(projectId: number, nodeId: number | null) {
   return useQuery({
     queryKey: nodeKeys.detail(projectId, nodeId),
@@ -26,6 +37,13 @@ export function useUpdateNodeStatusMutation(projectId: number, nodeId: number) {
   return useMutation({
     mutationFn: (status: NodeStatusType) =>
       privateApi.node.updateNodeStatus(projectId, nodeId, { status }),
+  });
+}
+
+export function useUpdateNodeNoteMutation(projectId: number, nodeId: number) {
+  return useMutation({
+    mutationFn: (noteContent: string) =>
+      privateApi.node.updateNodeNote(projectId, nodeId, { noteContent }),
   });
 }
 

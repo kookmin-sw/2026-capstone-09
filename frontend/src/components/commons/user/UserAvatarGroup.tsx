@@ -19,6 +19,7 @@ interface UsersProps {
   users: readonly UserInfo[];
   maxVisible?: number;
   compact?: boolean; // true면 "+n", false면 "외 n명"
+  size?: 'xsmall' | 'small';
 }
 
 interface UserAvatarWithTooltipProps {
@@ -93,13 +94,13 @@ const AllUsersTooltip = ({ users, maxVisible = 5, compact = false }: AllUsersToo
   );
 };
 
-export const Users = ({ users, maxVisible = 5, compact = false }: UsersProps) => {
+export const Users = ({ users, maxVisible = 5, compact = false, size = 'small' }: UsersProps) => {
   const visibleUsers = users.slice(0, maxVisible);
 
   return (
     <TooltipGroup>
       <AvatarGroup
-        size="small"
+        size={size}
         trailingContent={
           users.length > maxVisible ? (
             <AllUsersTooltip users={users} maxVisible={maxVisible} compact={compact} />
