@@ -44,7 +44,7 @@ export const ReferencedNodesList = ({ items, variant = 'list' }: ReferencedNodes
               </span>
             </div>
             <p className="text-caption-1 text-label-alternative w-full truncate font-normal">
-              {item.description}
+              {item.comment}
             </p>
           </div>
         </li>
