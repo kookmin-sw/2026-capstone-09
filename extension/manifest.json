@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "FlowMeet",
+  "version": "1.0.0",
+  "description": "Google Meet 회의를 FlowMeet과 자동으로 연동합니다",
+  "permissions": ["storage", "alarms", "tabs"],
+  "host_permissions": [
+    "https://meet.google.com/*",
+    "https://api.flowmeet.kr/*",
+    "https://app.flowmeet.kr/*"
+  ],
+  "background": {
+    "service_worker": "src/background/service-worker.ts",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://meet.google.com/*"],
+      "js": ["src/content/index.ts"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://app.flowmeet.kr/*"],
+      "js": ["src/content/authBridge.ts"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "src/popup/index.html",
+    "default_icon": {
+      "16": "public/icons/icon16.png",
+      "48": "public/icons/icon48.png",
+      "128": "public/icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "public/icons/icon16.png",
+    "48": "public/icons/icon48.png",
+    "128": "public/icons/icon128.png"
+  }
+}
