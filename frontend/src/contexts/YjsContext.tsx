@@ -10,6 +10,7 @@ import { useCurrentUserQuery } from '@/queries/user';
 export interface YjsAwarenessState {
   user: {
     userId: number;
+    email: string;
     nickname: string;
     profileImageUrl: string | null;
     color: string;
@@ -89,6 +90,7 @@ function YjsInstance({ nodeId, children }: { nodeId: number; children: React.Rea
         ?.color ?? AWARENESS_COLORS[0];
     value.provider.awareness.setLocalStateField('user', {
       userId: value.provider.awareness.clientID,
+      email: currentUser.email ?? '',
       nickname: currentUser.nickname ?? '',
       profileImageUrl: currentUser.profileImageUrl ?? null,
       color: existingColor,
