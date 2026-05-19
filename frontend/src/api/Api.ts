@@ -515,6 +515,11 @@ export interface ReferencedNodeResponse {
    */
   nodeId?: number;
   /**
+   * 노드 번호
+   * @example "1.1"
+   */
+  number?: string;
+  /**
    * 노드 제목
    * @example "기획 문서 작성"
    */
@@ -573,6 +578,16 @@ export interface SendMessageRequest {
    * @example "이 노드 내용을 기반으로 일정을 정리해줘"
    */
   content: string;
+  /**
+   * 참조 노드 ID 목록
+   * @example [1,2]
+   */
+  referenceNodeIds?: number[];
+  /**
+   * 참조 사용자 ID 목록
+   * @example [3,4]
+   */
+  referenceUserIds?: number[];
 }
 
 /** 공통 응답 형식 */
@@ -842,6 +857,11 @@ export interface SignupRequest {
    */
   socialAccessToken: string;
   /**
+   * 소셜 refresh token (로그인 응답으로 받은 값, 없으면 null)
+   * @example "1//0gLY..."
+   */
+  socialRefreshToken?: string;
+  /**
    * 닉네임(최대 20자)
    * @minLength 0
    * @maxLength 20
@@ -891,6 +911,34 @@ export interface TokenResponse {
    * @example "eyJhbGciOiJIUzI1NiJ9..."
    */
   refreshToken?: string;
+}
+
+/** 회원가입 이메일 인증 코드 발송 요청 */
+export interface SendAuthEmailVerificationRequest {
+  /**
+   * 인증할 이메일
+   * @format email
+   * @minLength 1
+   * @example "flowmin@flowmeet.kr"
+   */
+  email: string;
+}
+
+/** 회원가입 이메일 인증 코드 검증 요청 */
+export interface VerifyAuthEmailRequest {
+  /**
+   * 인증할 이메일
+   * @format email
+   * @minLength 1
+   * @example "flowmin@flowmeet.kr"
+   */
+  email: string;
+  /**
+   * 인증 코드
+   * @minLength 1
+   * @example "123456"
+   */
+  code: string;
 }
 
 /** 토큰 갱신 요청 */
@@ -1946,6 +1994,11 @@ export interface ParticipantItem {
    */
   nickname?: string;
   /**
+   * 이메일
+   * @example "test@flowmeet.kr"
+   */
+  email?: string;
+  /**
    * 프로필 이미지 URL
    * @example "https://cdn.flowmit.com/profiles/10.png"
    */
@@ -2264,6 +2317,34 @@ export interface ProjectMemberInfo {
   role?: "VIEWER" | "MEMBER" | "OWNER";
 }
 
+/** 공통 응답 형식 */
+export interface CommonResponseGetEdgesResponse {
+  /**
+   * HTTP 상태 코드
+   * @format int32
+   * @example 200
+   */
+  status?: number;
+  /**
+   * 응답 코드
+   * @example "OK"
+   */
+  code?: string;
+  /**
+   * 응답 메시지
+   * @example "요청에 성공했습니다."
+   */
+  message?: string;
+  /** 응답 데이터 */
+  data?: GetEdgesResponse;
+}
+
+/** 엣지 목록 조회 응답 */
+export interface GetEdgesResponse {
+  /** 연결선 목록 */
+  edges?: EdgeItem[];
+}
+
 /** 채팅 세션 요약 응답 */
 export interface ChatSessionSummaryResponse {
   /**
@@ -2398,6 +2479,54 @@ export interface GetChatSessionResponse {
    * @example false
    */
   hasNext?: boolean;
+}
+
+/** 공통 응답 형식 */
+export interface CommonResponseGetReferenceUsersResponse {
+  /**
+   * HTTP 상태 코드
+   * @format int32
+   * @example 200
+   */
+  status?: number;
+  /**
+   * 응답 코드
+   * @example "OK"
+   */
+  code?: string;
+  /**
+   * 응답 메시지
+   * @example "요청에 성공했습니다."
+   */
+  message?: string;
+  /** 응답 데이터 */
+  data?: GetReferenceUsersResponse;
+}
+
+/** 참조 가능한 사용자 목록 응답 */
+export interface GetReferenceUsersResponse {
+  /** 사용자 목록 */
+  users?: ReferencedUserResponse[];
+}
+
+/** 참조 사용자 정보 */
+export interface ReferencedUserResponse {
+  /**
+   * 사용자 ID
+   * @format int64
+   * @example 1
+   */
+  userId?: number;
+  /**
+   * 닉네임
+   * @example "홍길동"
+   */
+  nickname?: string;
+  /**
+   * 프로필 이미지 URL
+   * @example "https://example.com/profile.png"
+   */
+  profileImageUrl?: string;
 }
 
 /** 공통 응답 형식 */
@@ -5032,6 +5161,45 @@ export class Api<
   };
   edge = {
     /**
+     * @description 프로젝트 내 모든 연결선의 ID와 시작/종료 노드를 조회합니다.
+     *
+     * @tags Edge
+     * @name GetEdges
+     * @summary 연결선 목록 조회
+     * @request GET:/v1/projects/{projectId}/edges
+     * @secure
+     */
+    getEdges: (projectId: number, params: RequestParams = {}) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "GET_EDGES"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "연결선 목록을 조회했어요."
+           */
+          message?: object;
+          /** 엣지 목록 조회 응답 */
+          data?: GetEdgesResponse;
+        },
+        any
+      >({
+        path: `/v1/projects/${projectId}/edges`,
+        method: "GET",
+        secure: true,
+        ...params,
+      }),
+
+    /**
      * @description 노드 간 연결선을 추가합니다.
      *
      * @tags Edge
@@ -5510,6 +5678,51 @@ export class Api<
      * No description
      *
      * @tags Chat
+     * @name GetReferenceUsers
+     * @summary 참조 가능한 사용자 조회
+     * @request GET:/v1/projects/{projectId}/chats/users
+     * @secure
+     */
+    getReferenceUsers: (projectId: number, params: RequestParams = {}) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "GET_REFERENCE_USERS"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "참조 가능한 사용자를 조회했어요."
+           */
+          message?: object;
+          /** 참조 가능한 사용자 목록 응답 */
+          data?: GetReferenceUsersResponse;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/projects/${projectId}/chats/users`,
+        method: "GET",
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Chat
      * @name GetReferenceNodes
      * @summary 참조 가능한 노드 조회
      * @request GET:/v1/projects/{projectId}/chats/nodes
@@ -5794,6 +6007,103 @@ export class Api<
         }
       >({
         path: `/v1/auth/signup`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description 회원가입할 이메일 주소로 6자리 인증 코드를 발송합니다. 코드 유효시간은 5분입니다.
+     *
+     * @tags Auth
+     * @name SendEmailVerification1
+     * @summary 회원가입 이메일 인증 코드 발송
+     * @request POST:/v1/auth/signup/email-verifications
+     * @secure
+     */
+    sendEmailVerification1: (
+      data: SendAuthEmailVerificationRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "SEND_EMAIL_VERIFICATION"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "인증 코드를 보냈어요. 메일함을 확인해 주세요."
+           */
+          message?: object;
+          /** 응답 데이터 */
+          data?: object;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/auth/signup/email-verifications`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description 발송된 인증 코드로 이메일 소유를 확인합니다.
+     *
+     * @tags Auth
+     * @name VerifyEmail1
+     * @summary 회원가입 이메일 인증 코드 검증
+     * @request POST:/v1/auth/signup/email-verifications/verify
+     * @secure
+     */
+    verifyEmail1: (data: VerifyAuthEmailRequest, params: RequestParams = {}) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "VERIFY_EMAIL"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "이메일 인증에 성공했어요."
+           */
+          message?: object;
+          /** 응답 데이터 */
+          data?: object;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/auth/signup/email-verifications/verify`,
         method: "POST",
         body: data,
         secure: true,
