@@ -195,6 +195,15 @@ public class MeetingService {
         meeting.saveSummary(summary, mermaidCode);
     }
 
+    @Transactional
+    public void startIfScheduled(Long meetingId) {
+        Meeting meeting = findById(meetingId);
+
+        if (meeting.isScheduled()) {
+            meeting.start();
+        }
+    }
+
     private void validateNoDuplicate(final Long nodeId) {
         if (meetingRepository.existsByNodeId(nodeId)) {
             throw new BusinessException(MeetingErrorCode.MEETING_ALREADY_EXISTS);

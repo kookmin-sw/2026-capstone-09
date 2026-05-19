@@ -123,8 +123,8 @@ public class MeetingFacade {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
         Meeting meeting = meetingService.findById(meetingId);
         nodeValidator.validateIsIn(meeting.getNodeId(), projectId);
-        validateMeetingInProgress(meeting);
 
+        meetingService.startIfScheduled(meetingId);
         meetingTranscriptService.create(meetingId, content);
     }
 
