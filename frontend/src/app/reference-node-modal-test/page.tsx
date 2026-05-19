@@ -4,7 +4,6 @@ import { Button } from '@wanteddev/wds';
 import { IconLink } from '@wanteddev/wds-icon';
 import { useState } from 'react';
 
-import { privateApi } from '@/api';
 import { useModal } from '@/components/commons/modal/ModalContext';
 import {
   ReferenceNodeModalContent,
@@ -15,6 +14,11 @@ import {
 } from '@/components/projects/project-detail/reference-node';
 import { EXAMPLE_REFERENCE_NODE_MODAL } from '@/constants/exampleConstant';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import {
+  useCreateEdgeMutation,
+  useLinkedNodesQuery,
+  useNodeListQuery,
+} from '@/queries/edge';
 
 interface SubmittedReferenceNodeRequest {
   pathParams: CreateReferenceNodePathParams;
@@ -29,9 +33,16 @@ export default function ReferenceNodeModalTestPage() {
   );
   const pathParams = { projectId: EXAMPLE_REFERENCE_NODE_MODAL.projectId };
 
+  const { data: linkedNodes } = useLinkedNodesQuery(
+    EXAMPLE_REFERENCE_NODE_MODAL.projectId,
+    EXAMPLE_REFERENCE_NODE_MODAL.startNodeId,
+  );
+  const { data: nodeList } = useNodeListQuery(EXAMPLE_REFERENCE_NODE_MODAL.projectId);
+  const { mutateAsync: createEdge } = useCreateEdgeMutation(EXAMPLE_REFERENCE_NODE_MODAL.projectId);
+
   const handleCreate = async (payload: ReferenceNodeCreatePayload) => {
     try {
-      await privateApi.edge.createEdge(pathParams.projectId, payload);
+      await createEdge(payload);
       setSubmittedRequest({ pathParams, body: payload });
     } catch (err) {
       showErrorToast(err, '참조 노드 연결에 실패했어요.');
@@ -58,29 +69,17 @@ export default function ReferenceNodeModalTestPage() {
     });
   };
 
-  const handleOpenWithApi = async () => {
-    try {
-      const [linkedRes, listRes] = await Promise.all([
-        privateApi.node.getLinkedNodes(
-          EXAMPLE_REFERENCE_NODE_MODAL.projectId,
-          EXAMPLE_REFERENCE_NODE_MODAL.startNodeId,
-        ),
-        privateApi.node.getNodeList(EXAMPLE_REFERENCE_NODE_MODAL.projectId),
-      ]);
+  const handleOpenWithApi = () => {
+    const referencedNodes = linkedNodes ?? [];
+    const nodeOptions: ReferenceNodeOption[] = (nodeList ?? [])
+      .filter((node) => node.nodeId !== EXAMPLE_REFERENCE_NODE_MODAL.startNodeId)
+      .map((node) => ({
+        nodeId: node.nodeId ?? 0,
+        nodeNumber: node.number ?? '',
+        nodeTitle: node.title ?? '',
+      }));
 
-      const referencedNodes = linkedRes.data.data?.linkedNodes ?? [];
-      const nodeOptions: ReferenceNodeOption[] = (listRes.data.data?.nodes ?? [])
-        .filter((node) => node.nodeId !== EXAMPLE_REFERENCE_NODE_MODAL.startNodeId)
-        .map((node) => ({
-          nodeId: node.nodeId ?? 0,
-          nodeNumber: node.number ?? '',
-          nodeTitle: node.title ?? '',
-        }));
-
-      openModalWith(referencedNodes, nodeOptions);
-    } catch (err) {
-      showErrorToast(err, '참조 노드 정보를 불러오지 못했어요.');
-    }
+    openModalWith(referencedNodes, nodeOptions);
   };
 
   const handleOpenWithMock = () => {
