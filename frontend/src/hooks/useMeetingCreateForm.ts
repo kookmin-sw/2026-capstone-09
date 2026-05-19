@@ -55,10 +55,10 @@ export const useMeetingCreateForm = () => {
   const buildPayload = (values: MeetingCreateFormValues): CreateMeetingRequest => {
     const date = toDate(values.date);
     const time = toDate(values.time);
-    const startedAtDate = date && time ? createStartedAt(date, time) : null;
+    if (!date || !time) throw new Error('날짜와 시간을 선택해 주세요.');
 
     return {
-      startedAt: startedAtDate ? formatDateTime(startedAtDate) : '',
+      startedAt: formatDateTime(createStartedAt(date, time)),
       isPushEnabled: values.isPushEnabled,
       participantUserIds: values.participants.map((participant) => participant.id),
     };

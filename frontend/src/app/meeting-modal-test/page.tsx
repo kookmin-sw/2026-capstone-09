@@ -3,7 +3,6 @@
 import { Button } from '@wanteddev/wds';
 import { useState } from 'react';
 
-import { privateApi } from '@/api';
 import { useModal } from '@/components/commons/modal/ModalContext';
 import {
   MeetingCreateModalContent,
@@ -15,6 +14,8 @@ import {
   EXAMPLE_MEETING_PARTICIPANTS,
 } from '@/constants/exampleConstant';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import { useCreateMeetingMutation } from '@/queries/meeting';
+import { useProjectMembersQuery } from '@/queries/member';
 
 const TEST_PROJECT_ID = 1;
 
@@ -23,13 +24,15 @@ export default function MeetingModalTestPage() {
   const showErrorToast = useErrorToast();
   const [lastPayload, setLastPayload] = useState<MeetingCreatePayload | null>(null);
 
+  const { data: membersData = [] } = useProjectMembersQuery(TEST_PROJECT_ID);
+  const createMeetingMutation = useCreateMeetingMutation(
+    TEST_PROJECT_ID,
+    EXAMPLE_MEETING_CREATE_NODE.id,
+  );
+
   const handleCreate = async (payload: MeetingCreatePayload) => {
     try {
-      await privateApi.meeting.createMeeting(
-        TEST_PROJECT_ID,
-        EXAMPLE_MEETING_CREATE_NODE.id,
-        payload,
-      );
+      await createMeetingMutation.mutateAsync(payload);
       setLastPayload(payload);
       closeModal();
     } catch (err) {
@@ -54,20 +57,13 @@ export default function MeetingModalTestPage() {
     });
   };
 
-  const handleOpenWithApi = async () => {
-    try {
-      const res = await privateApi.projectMember.getAllMembers(TEST_PROJECT_ID);
-      const participantOptions: ParticipantOption[] = (res.data.data?.members ?? []).map(
-        (member) => ({
-          id: member.userId ?? 0,
-          name: member.nickname ?? '',
-          email: member.email,
-        }),
-      );
-      openModalWith(participantOptions);
-    } catch (err) {
-      showErrorToast(err, '참여자 목록을 불러오지 못했어요.');
-    }
+  const handleOpenWithApi = () => {
+    const participantOptions: ParticipantOption[] = membersData.map((member) => ({
+      id: member.userId ?? 0,
+      name: member.nickname ?? '',
+      email: member.email,
+    }));
+    openModalWith(participantOptions);
   };
 
   const handleOpenWithMock = () => {
