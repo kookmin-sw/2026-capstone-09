@@ -225,6 +225,7 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
       selected: selectedNodeId !== null && node.id === String(selectedNodeId),
       data: {
         ...node.data,
+        projectId,
         onCreateSubNode: handleCreateSubNode,
         onSelectNode: handleSelectNode,
       },

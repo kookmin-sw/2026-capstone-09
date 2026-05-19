@@ -12,8 +12,9 @@ import { Loading } from '@/components/commons/loading/Loading';
 import { EXAMPLE_USERS } from '@/constants/exampleConstant';
 import { NodeStatusType } from '@/constants/nodeStatus';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import { useNodeMenuActions } from '@/hooks/useNodeMenuActions';
 import { nodeKeys } from '@/queries/keys/nodeKeys';
-import { useNodeDetailQuery, useUpdateNodeTitleMutation } from '@/queries/node';
+import { useCreateSubNodeMutation, useNodeDetailQuery, useUpdateNodeTitleMutation } from '@/queries/node';
 import { formatDatetoString } from '@/utils/formatData';
 import { AssigneeField } from './fields/AssigneeField';
 import { DescriptionField } from './fields/DescriptionField';
@@ -56,6 +57,7 @@ export function NodeDetailLayout({
   };
 
   const { mutate: updateTitle } = useUpdateNodeTitleMutation(projectId, nodeId);
+  const { mutate: createSubNode } = useCreateSubNodeMutation(projectId);
 
   const handleTitleUpdate = (title: string) => {
     if (!nodeId || title === (nodeDetail?.title ?? '')) return;
@@ -69,6 +71,13 @@ export function NodeDetailLayout({
   const handleDescriptionUpdate = (description: string) => {
     updateCache((prev) => ({ ...prev, description }));
   };
+
+  const menuActions = useNodeMenuActions({
+    nodeId: nodeId ?? 0,
+    projectId,
+    nodeTitle: nodeDetail?.title,
+    nodeNumber: nodeDetail?.number,
+  });
 
   if (isLoading) return <Loading />;
 
@@ -100,12 +109,13 @@ export function NodeDetailLayout({
           <NodeMenu
             variant={menuVariant}
             position="bottom-end"
-            onCreateSubNode={() => {}}
-            onCreateMeeting={() => {}}
-            onEditMeeting={() => {}}
-            onDeleteMeeting={() => {}}
-            onCreateReference={() => {}}
-            onDelete={() => {}}
+            {...menuActions}
+            onCreateSubNode={() => {
+              if (!nodeId) return;
+              createSubNode(nodeId, {
+                onError: (err) => showErrorToast(err, '서브 노드 생성에 실패했어요.'),
+              });
+            }}
           />
         </div>
       </div>

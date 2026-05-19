@@ -4,12 +4,14 @@ import { NodeProps, Handle, Position } from 'reactflow';
 import type { NodeItem } from '@/api/Api';
 import { Users } from '@/components/commons/user/UserAvatarGroup';
 import { ColorType } from '@/constants/badgeColor';
+import { useNodeMenuActions } from '@/hooks/useNodeMenuActions';
 import { getColorToken } from '@/utils/getBadgeColorInfo';
 import { formatDate, getVisibleTags } from '@/utils/nodeUtils';
 import { NodeMenu } from './NodeMenu';
 
 interface CustomNodeData extends NodeItem {
   isMainNode: boolean;
+  projectId: number;
   onCreateSubNode?: (nodeId: number) => void;
   onSelectNode?: (nodeId: number) => void;
 }
@@ -19,46 +21,21 @@ function CustomFlowNodeComponent({ data, selected }: NodeProps<CustomNodeData>) 
   const isMain = data.isMainNode;
   const nodeNumber = data.number ?? data.nodeId;
 
+  const menuActions = useNodeMenuActions({
+    nodeId: data.nodeId ?? 0,
+    projectId: data.projectId,
+    nodeTitle: data.title ?? undefined,
+    nodeNumber,
+    onBeforeAction: () => {
+      if (data.nodeId !== undefined) data.onSelectNode?.(data.nodeId);
+    },
+  });
+
   const handleCreateSubNode = () => {
     if (data.nodeId !== undefined) {
       data.onSelectNode?.(data.nodeId);
       data.onCreateSubNode?.(data.nodeId);
     }
-  };
-
-  const handleCreateMeeting = () => {
-    if (data.nodeId !== undefined) {
-      data.onSelectNode?.(data.nodeId);
-    }
-    // TODO: 회의 생성 모달 열기
-  };
-
-  const handleEditMeeting = () => {
-    if (data.nodeId !== undefined) {
-      data.onSelectNode?.(data.nodeId);
-    }
-    // TODO: 회의 수정 모달 열기
-  };
-
-  const handleDeleteMeeting = () => {
-    if (data.nodeId !== undefined) {
-      data.onSelectNode?.(data.nodeId);
-    }
-    // TODO: 회의 삭제 확인 모달 열기
-  };
-
-  const handleCreateReference = () => {
-    if (data.nodeId !== undefined) {
-      data.onSelectNode?.(data.nodeId);
-    }
-    // TODO: 참조 생성 모달 열기
-  };
-
-  const handleDelete = () => {
-    if (data.nodeId !== undefined) {
-      data.onSelectNode?.(data.nodeId);
-    }
-    // TODO: 삭제 확인 모달 열기
   };
 
   const menuVariant = isMain
@@ -157,12 +134,8 @@ function CustomFlowNodeComponent({ data, selected }: NodeProps<CustomNodeData>) 
 
           <NodeMenu
             variant={menuVariant}
+            {...menuActions}
             onCreateSubNode={handleCreateSubNode}
-            onCreateMeeting={handleCreateMeeting}
-            onEditMeeting={handleEditMeeting}
-            onDeleteMeeting={handleDeleteMeeting}
-            onCreateReference={handleCreateReference}
-            onDelete={handleDelete}
           />
         </div>
 

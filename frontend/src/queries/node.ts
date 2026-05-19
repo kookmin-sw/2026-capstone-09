@@ -47,6 +47,17 @@ export function useUpdateNodeNoteMutation(projectId: number, nodeId: number) {
   });
 }
 
+export function useCreateSubNodeMutation(projectId: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (parentId: number) =>
+      privateApi.node.createNode(projectId, { title: '새 서브 노드', type: 'SUB', parentId }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: nodeKeys.list(projectId) });
+    },
+  });
+}
+
 export function useUpdateNodeTitleMutation(projectId: number, nodeId: number | null) {
   const queryClient = useQueryClient();
   const queryKey = nodeKeys.detail(projectId, nodeId);
