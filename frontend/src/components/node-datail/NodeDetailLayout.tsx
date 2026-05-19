@@ -6,7 +6,6 @@ import { ContentBadge, Tab, TabList, TabListItem, TabPanel, Typography } from '@
 import {
   IconDocumentText,
   IconFire,
-  IconMoreVertical,
   IconPersons,
   IconTag,
 } from '@wanteddev/wds-icon';
@@ -27,6 +26,7 @@ import { StatusField } from './fields/StatusField';
 import { TagField } from './fields/TagField';
 import { useTitleEditor } from './hooks/useTitleEditor';
 import { Users } from '../commons/user/UserAvatarGroup';
+import { NodeMenu } from '../projects/node-flow/NodeMenu';
 
 interface NodeDetailLayoutProps {
   nodeId: number | null;
@@ -77,6 +77,12 @@ export function NodeDetailLayout({
 
   if (isLoading) return <Loading />;
 
+  const menuVariant = !nodeDetail?.parentId
+    ? 'main'
+    : nodeDetail?.meeting?.meetingId
+      ? 'sub-with-meeting'
+      : 'sub-without-meeting';
+
   return (
     <div className="flex h-full flex-col overflow-y-scroll [&::-webkit-scrollbar]:hidden">
       <div className="flex items-center justify-between">
@@ -96,7 +102,16 @@ export function NodeDetailLayout({
 
         <div className="flex items-center gap-1 py-0.5">
           <Users users={EXAMPLE_USERS} />
-          <IconMoreVertical />
+          <NodeMenu
+            variant={menuVariant}
+            position="bottom-end"
+            onCreateSubNode={() => {}}
+            onCreateMeeting={() => {}}
+            onEditMeeting={() => {}}
+            onDeleteMeeting={() => {}}
+            onCreateReference={() => {}}
+            onDelete={() => {}}
+          />
         </div>
       </div>
 
