@@ -3,23 +3,25 @@
 import { ContentBadge, ThemeColorsToken, Typography } from '@wanteddev/wds';
 import { useRef, useState } from 'react';
 
-import { NodeStatusType, NODE_STATUS_INFO } from '@/constants/nodeStatus';
+import { NODE_STATUS_INFO, NodeStatusType } from '@/constants/nodeStatus';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { useUpdateNodeStatusMutation } from '@/queries/node';
 import { getNodeStatusColor, getNodeStatusIcon, getNodeStatusLabel } from '@/utils/getNodeStatus';
+import { useYjsMeta } from '../hooks/useYjsMeta';
 
 interface StatusFieldProps {
   projectId: number;
   nodeId: number;
-  status: NodeStatusType | undefined;
-  onUpdate: (status: NodeStatusType) => void;
+  initialStatus: NodeStatusType | undefined;
 }
 
-export function StatusField({ projectId, nodeId, status, onUpdate }: StatusFieldProps) {
+export function StatusField({ projectId, nodeId, initialStatus }: StatusFieldProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const showErrorToast = useErrorToast();
+
+  const { status, ySetStatus } = useYjsMeta(initialStatus);
   const { mutate: updateStatus } = useUpdateNodeStatusMutation(projectId, nodeId);
 
   useClickOutside(containerRef, isOpen, () => setIsOpen(false));
@@ -27,10 +29,10 @@ export function StatusField({ projectId, nodeId, status, onUpdate }: StatusField
   const handleSelect = (newStatus: NodeStatusType) => {
     setIsOpen(false);
     const previous = status;
-    onUpdate(newStatus);
+    ySetStatus(newStatus);
     updateStatus(newStatus, {
       onError: (err) => {
-        if (previous) onUpdate(previous);
+        if (previous) ySetStatus(previous);
         showErrorToast(err, '상태 업데이트에 실패했어요.');
       },
     });

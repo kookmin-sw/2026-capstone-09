@@ -23,7 +23,7 @@ import { Loading } from '@/components/commons/loading/Loading';
 import { NodeSidebar } from '@/components/node-datail/NodeSidebar';
 import { convertToReactFlow } from '@/utils/flowchartToReactFlow';
 import { CustomNode } from './CustomNode';
-import NodeButton from './NodeButton';
+import { NodeButton } from './NodeButton';
 import { ReferenceEdge } from './ReferenceEdge';
 
 interface NodeFlowViewProps {
@@ -47,6 +47,7 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
   const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
   const [sidebarNodeId, setSidebarNodeId] = useState<number | null>(null);
   const [showDashedLines, setShowDashedLines] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -156,12 +157,13 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
   // 서브 노드 생성
   const handleCreateSubNode = useCallback(
     async (parentNodeId: number) => {
-      if (!flowChart?.nodes) return;
+      if (!flowChart?.nodes || isCreating) return;
 
       const parentNode = flowChart.nodes.find((n) => n.nodeId === parentNodeId);
       if (!parentNode) return;
 
       try {
+        setIsCreating(true);
         await privateApi.node.createNode(projectId, {
           title: '새 서브 노드',
           type: 'SUB',
@@ -181,16 +183,19 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
         }
       } catch (error) {
         console.error('Failed to create sub node:', error);
+      } finally {
+        setIsCreating(false);
       }
     },
-    [flowChart, updateFlowAndMoveToNode, projectId]
+    [flowChart, updateFlowAndMoveToNode, projectId, isCreating]
   );
 
   // 메인 노드 생성
   const handleCreateMainNode = useCallback(async () => {
-    if (!flowChart?.nodes) return;
+    if (!flowChart?.nodes || isCreating) return;
 
     try {
+      setIsCreating(true);
       await privateApi.node.createNode(projectId, {
         title: '새 메인 노드',
         type: 'MAIN',
@@ -209,8 +214,10 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
       }
     } catch (error) {
       console.error('Failed to create main node:', error);
+    } finally {
+      setIsCreating(false);
     }
-  }, [flowChart, updateFlowAndMoveToNode, projectId]);
+  }, [flowChart, updateFlowAndMoveToNode, projectId, isCreating]);
 
   const nodesWithHandlers = useMemo(() => {
     return nodes.map((node) => ({
@@ -254,10 +261,6 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
         zoomOnScroll={false}
         zoomOnPinch={true}
         zoomOnDoubleClick={false}
-        translateExtent={[
-          [-2000, -2000],
-          [5000, 3000],
-        ]}
         fitView={false}
         minZoom={0.1}
         maxZoom={3}
@@ -283,6 +286,7 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
             }
             showDashedLines={showDashedLines}
             onToggleDashedLines={setShowDashedLines}
+            isCreating={isCreating}
           />
         </Panel>
       </ReactFlow>

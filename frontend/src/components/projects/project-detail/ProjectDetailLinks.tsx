@@ -99,6 +99,21 @@ export const ProjectDetailLinks = () => {
     });
   };
 
+  const handleDeleteLink = async (urlId: number, onSuccess?: () => void) => {
+    try {
+      await deleteUrl(urlId);
+      onSuccess?.();
+      toast({
+        content: '링크를 삭제했어요',
+        variant: 'normal',
+        placement: 'bottom-left',
+        duration: 'short',
+      });
+    } catch (caught) {
+      showErrorToast(caught, 'URL 삭제에 실패했어요.');
+    }
+  };
+
   const handleEditDialogOpen = (link: LinkItem) => {
     if (!isProjectIdValid || projectId === undefined) return;
     openDialog({
@@ -117,20 +132,7 @@ export const ProjectDetailLinks = () => {
               showErrorToast(caught, 'URL 수정에 실패했어요.');
             }
           }}
-          onDelete={async () => {
-            try {
-              await deleteUrl(link.urlId);
-              closeDialog();
-              toast({
-                content: '링크를 삭제했어요',
-                variant: 'normal',
-                placement: 'bottom-left',
-                duration: 'short',
-              });
-            } catch (caught) {
-              showErrorToast(caught, 'URL 삭제에 실패했어요.');
-            }
-          }}
+          onDelete={() => handleDeleteLink(link.urlId, closeDialog)}
           onClose={closeDialog}
         />
       ),
@@ -153,17 +155,7 @@ export const ProjectDetailLinks = () => {
     const link = contextMenu?.link;
     setContextMenu(null);
     if (!link || !isProjectIdValid || projectId === undefined) return;
-    try {
-      await deleteUrl(link.urlId);
-      toast({
-        content: '링크를 삭제했어요',
-        variant: 'normal',
-        placement: 'bottom-left',
-        duration: 'short',
-      });
-    } catch (caught) {
-      showErrorToast(caught, 'URL 삭제에 실패했어요.');
-    }
+    await handleDeleteLink(link.urlId);
   };
 
   return (

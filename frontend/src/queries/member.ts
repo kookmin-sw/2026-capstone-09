@@ -23,7 +23,7 @@ export function useAddAssigneeMutation(projectId: number, nodeId: number) {
 
 export function useRemoveAssigneeMutation(projectId: number, nodeId: number) {
   return useMutation({
-    mutationFn: (userId: number) =>
-      privateApi.nodeAssignee.deleteAssignee(projectId, nodeId, userId),
+    mutationFn: (assigneeId: number) =>
+      privateApi.nodeAssignee.deleteAssignee(projectId, nodeId, assigneeId),
   });
 }
