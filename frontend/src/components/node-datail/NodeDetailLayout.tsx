@@ -14,7 +14,11 @@ import { NodeStatusType } from '@/constants/nodeStatus';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { useNodeMenuActions } from '@/hooks/useNodeMenuActions';
 import { nodeKeys } from '@/queries/keys/nodeKeys';
-import { useCreateSubNodeMutation, useNodeDetailQuery, useUpdateNodeTitleMutation } from '@/queries/node';
+import {
+  useCreateSubNodeMutation,
+  useNodeDetailQuery,
+  useUpdateNodeTitleMutation,
+} from '@/queries/node';
 import { formatDatetoString } from '@/utils/formatData';
 import { AssigneeField } from './fields/AssigneeField';
 import { DescriptionField } from './fields/DescriptionField';
@@ -77,7 +81,6 @@ export function NodeDetailLayout({
   const menuActions = useNodeMenuActions({
     nodeId: nodeId ?? 0,
     projectId,
-    meetingId: nodeDetail?.meeting?.meetingId,
     nodeTitle: nodeDetail?.title,
     nodeNumber: nodeDetail?.number,
     onDeleteSuccess,
