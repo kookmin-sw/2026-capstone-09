@@ -33,10 +33,10 @@ public class NodeTools {
                 .body(String.class);
     }
 
-    @Tool(name = "get_flowchart", description = "프로젝트의 플로우차트를 조회합니다. 전체 노드 목록과 노드 간 연결선(엣지) 목록을 반환합니다. 엣지에는 edgeId, startNodeId, endNodeId가 포함되어 있어 연결선 삭제 시 edgeId를 찾는 데 사용하세요.")
-    public String getFlowchart(Long projectId) {
+    @Tool(name = "get_edges", description = "프로젝트 내 연결선 목록을 조회합니다. 각 연결선의 edgeId, startNodeId, endNodeId를 반환합니다. 연결선 삭제 시 edgeId를 찾는 데 사용하세요.")
+    public String getEdges(Long projectId) {
         return backendRestClient.get()
-                .uri("/v1/projects/{projectId}/nodes", projectId)
+                .uri("/v1/projects/{projectId}/edges", projectId)
                 .header("Authorization", ToolAuthExtractor.extractAuth())
                 .retrieve()
                 .body(String.class);

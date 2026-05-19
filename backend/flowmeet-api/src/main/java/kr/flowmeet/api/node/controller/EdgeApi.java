@@ -10,6 +10,7 @@ import kr.flowmeet.api.common.swagger.ApiErrorCode;
 import kr.flowmeet.api.common.swagger.ApiSuccessCode;
 import kr.flowmeet.api.node.dto.request.CreateEdgeRequest;
 import kr.flowmeet.api.node.dto.request.UpdateEdgeRequest;
+import kr.flowmeet.api.node.dto.response.GetEdgesResponse;
 import kr.flowmeet.api.node.success.EdgeSuccessCode;
 import kr.flowmeet.auth.annotation.UserId;
 import kr.flowmeet.domain.node.exception.EdgeErrorCode;
@@ -17,6 +18,13 @@ import kr.flowmeet.domain.node.exception.NodeErrorCode;
 
 @Tag(name = "Edge", description = "연결선")
 public interface EdgeApi {
+
+    @Operation(summary = "연결선 목록 조회", description = "프로젝트 내 모든 연결선의 ID와 시작/종료 노드를 조회합니다.")
+    @ApiSuccessCode(code = EdgeSuccessCode.class, name = "GET_EDGES")
+    CommonResponse<GetEdgesResponse> getEdges(
+            @UserId Long userId,
+            @PathVariable Long projectId
+    );
 
     @Operation(summary = "연결선 생성", description = "노드 간 연결선을 추가합니다.")
     @ApiSuccessCode(code = EdgeSuccessCode.class, name = "CREATE_EDGE")
