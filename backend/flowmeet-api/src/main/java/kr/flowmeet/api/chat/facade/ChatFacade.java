@@ -1,7 +1,9 @@
 package kr.flowmeet.api.chat.facade;
 
+import java.util.ArrayList;
 import java.util.List;
 import kr.flowmeet.api.chat.dto.request.CreateChatSessionRequest;
+import kr.flowmeet.api.chat.dto.request.SendMessageRequest;
 import kr.flowmeet.api.chat.dto.response.AddChatNodeResponse;
 import kr.flowmeet.api.chat.dto.response.ChatMessageResponse;
 import kr.flowmeet.api.chat.dto.response.ChatSessionSummaryResponse;
@@ -17,6 +19,7 @@ import kr.flowmeet.domain.chat.entity.ChatSession;
 import kr.flowmeet.domain.chat.service.ChatMessageService;
 import kr.flowmeet.domain.chat.service.ChatSessionNodeService;
 import kr.flowmeet.domain.chat.service.ChatSessionService;
+import kr.flowmeet.domain.chat.service.ChatSessionUserService;
 import kr.flowmeet.domain.node.entity.Node;
 import kr.flowmeet.domain.node.service.NodeService;
 import kr.flowmeet.domain.project.entity.ProjectMember;
@@ -35,6 +38,7 @@ public class ChatFacade {
     private final ChatSessionService chatSessionService;
     private final ChatMessageService chatMessageService;
     private final ChatSessionNodeService chatSessionNodeService;
+    private final ChatSessionUserService chatSessionUserService;
     private final NodeService nodeService;
     private final ProjectMemberService projectMemberService;
     private final ProjectPermissionValidator projectPermissionValidator;
@@ -127,6 +131,7 @@ public class ChatFacade {
         ChatSession session = chatSessionService.findByIdAndProjectId(chatSessionId, projectId);
         chatSessionService.validateCreatedBy(session, userId);
         chatSessionNodeService.deleteAllByChatSessionId(chatSessionId);
+        chatSessionUserService.deleteAllByChatSessionId(chatSessionId);
         chatMessageService.softDeleteAllByChatSessionId(chatSessionId);
         chatSessionService.delete(session);
     }
@@ -136,7 +141,7 @@ public class ChatFacade {
             final Long userId,
             final Long projectId,
             final Long chatSessionId,
-            final String content,
+            final SendMessageRequest request,
             final String authorization
     ) {
         projectPermissionValidator.validate(projectId, userId);
@@ -144,12 +149,40 @@ public class ChatFacade {
         ChatSession session = chatSessionService.findByIdAndProjectId(chatSessionId, projectId);
         chatSessionService.validateCreatedBy(session, userId);
 
-        chatMessageService.create(chatSessionId, content);
+        registerReferenceNodes(chatSessionId, request.referenceNodeIds());
+        registerReferenceUsers(chatSessionId, request.referenceUserIds());
 
-        String aiResponse = aiAgentClient.chat(content, chatSessionId.toString(), projectId, authorization);
+        String messageWithHint = buildMessageWithHint(request);
+        chatMessageService.create(chatSessionId, request.content());
+
+        String aiResponse = aiAgentClient.chat(messageWithHint, chatSessionId.toString(), projectId, authorization);
         ChatMessage aiMessage = chatMessageService.createAiResponse(chatSessionId, aiResponse);
 
         return SendMessageResponse.from(aiMessage);
+    }
+
+    private void registerReferenceNodes(final Long chatSessionId, final List<Long> nodeIds) {
+        if (nodeIds == null) return;
+        nodeIds.forEach(nodeId -> chatSessionNodeService.register(chatSessionId, nodeId));
+    }
+
+    private void registerReferenceUsers(final Long chatSessionId, final List<Long> userIds) {
+        if (userIds == null) return;
+        userIds.forEach(userId -> chatSessionUserService.register(chatSessionId, userId));
+    }
+
+    private String buildMessageWithHint(final SendMessageRequest request) {
+        List<String> hints = new ArrayList<>();
+        if (request.referenceNodeIds() != null && !request.referenceNodeIds().isEmpty()) {
+            hints.add("[참조 노드 ID: " + request.referenceNodeIds() + "]");
+        }
+        if (request.referenceUserIds() != null && !request.referenceUserIds().isEmpty()) {
+            hints.add("[참조 유저 ID: " + request.referenceUserIds() + "]");
+        }
+        if (hints.isEmpty()) {
+            return request.content();
+        }
+        return String.join(" ", hints) + " " + request.content();
     }
 
     public GetReferenceNodesResponse getReferenceNodes(final Long userId, final Long projectId) {
