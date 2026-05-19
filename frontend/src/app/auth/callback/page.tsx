@@ -2,11 +2,13 @@
 
 import { Loading } from '@wanteddev/wds';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useRef } from 'react';
-import { authStorage } from '@/api/authStorage';
+import { useEffect, useRef, Suspense } from 'react';
 import { toastStore } from '@/components/commons/custom-toast/toastStore';
+import { useAuth } from '@/contexts/AuthContext';
 import { verifyOAuthState } from '@/lib/oauth';
 import { useLoginGoogleMutation } from '@/queries/auth';
+
+export const dynamic = 'force-dynamic';
 
 let toastCount = 0;
 function showToast(content: string, variant: 'positive' | 'negative' = 'negative') {
@@ -18,10 +20,11 @@ function showToast(content: string, variant: 'positive' | 'negative' = 'negative
   });
 }
 
-export default function AuthCallbackPage() {
+function CallbackContent() {
   const params = useSearchParams();
   const router = useRouter();
   const hasProcessed = useRef(false);
+  const { login } = useAuth();
   const loginMutation = useLoginGoogleMutation();
 
   useEffect(() => {
@@ -50,7 +53,7 @@ export default function AuthCallbackPage() {
           if (data.code === 'LOGIN') {
             // 가입된 유저
             if (data.data?.accessToken && data.data?.refreshToken) {
-              authStorage.setTokens(data.data.accessToken, data.data.refreshToken);
+              login(data.data.accessToken, data.data.refreshToken);
               router.replace('/projects');
             } else {
               showToast(data.message);
@@ -71,11 +74,19 @@ export default function AuthCallbackPage() {
         },
       },
     );
-  }, [params, router, loginMutation]);
+  }, [params, router, loginMutation, login]);
 
   return (
     <div className="flex min-h-screen items-center justify-center">
       <Loading />
     </div>
+  );
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <CallbackContent />
+    </Suspense>
   );
 }

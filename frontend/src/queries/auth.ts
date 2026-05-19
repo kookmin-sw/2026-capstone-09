@@ -12,6 +12,7 @@ interface LoginGoogleRequest {
 interface SignupRequest {
   socialProvider: string;
   socialAccessToken: string;
+  socialRefreshToken: string;
   nickname: string;
   email: string;
 }
@@ -25,6 +26,7 @@ interface AuthResponse {
     refreshToken?: string;
     socialProvider?: string;
     socialAccessToken?: string;
+    socialRefreshToken?: string;
     name?: string;
     email?: string;
   } | null;

@@ -1,6 +1,6 @@
 /* 공통 스크롤바 — 콘텐츠 위에 얇게 얹히는 형태.
-   `overflow-y-auto` 나 컨테이너 패딩은 호출부에서 제어할 수 있도록 빼두고,
-   여기서는 스크롤바 색·두께·라운드 처리만 담는다.
+   `overflow-y-auto`나 컨테이너 패딩은 호출부에서 제어할 수 있도록 빼두고,
+   여기서는 스크롤바 색/두께/라운드 처리만 담는다.
    사용 예) <ul className="custom-scrollbar overflow-y-auto pr-2" />
 */
 @layer components {

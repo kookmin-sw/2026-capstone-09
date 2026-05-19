@@ -19,6 +19,7 @@ import {
 } from '@/constants/exampleConstant';
 import { cn } from '@/utils/cn';
 
+import { SearchModalContent } from './SearchModalContent';
 import { SettingsModalContent } from './setting-modal';
 import { SidebarAlarmModal } from './SidebarAlarmModal';
 import { SidebarMenuButton } from './SidebarMenuButton';
@@ -96,6 +97,19 @@ export const ProjectSidebar = ({
   const handleAlarmModalToggle = () => {
     setIsAlarmModalOpen((prev) => !prev);
     onInboxClick?.();
+  };
+
+  const handleSearchClick = () => {
+    onSearchClick?.();
+    if (!isProjectIdValid || projectId === undefined) return;
+    openModal({
+      variant: 'compact',
+      closeOnBackdrop: true,
+      closeOnEsc: true,
+      content: (
+        <SearchModalContent projectId={projectId} onResultClick={() => closeModal()} />
+      ),
+    });
   };
 
   const handleSettingClick = () => {
@@ -193,7 +207,7 @@ export const ProjectSidebar = ({
                   label="검색"
                   labelWidth={48}
                   labelTransitionDuration={SIDEBAR_LABEL_TRANSITION_DURATION}
-                  onClick={onSearchClick}
+                  onClick={handleSearchClick}
                 />
                 <SidebarMenuButton
                   icon={IconBell}

@@ -261,6 +261,15 @@
   --color-pink-95: var(--color---pink---95);
   --color-pink-99: var(--color---pink---99);
   --color-pink-100: var(--color---pink---100);
+
+  /* Effects */
+  --shadow-normal-xsmall: var(--shadow---normal---xsmall);
+  --shadow-normal-small: var(--shadow---normal---small);
+  --shadow-normal-medium: var(--shadow---normal---medium);
+  --shadow-normal-large: var(--shadow---normal---large);
+  --shadow-normal-xlarge: var(--shadow---normal---xlarge);
+  --shadow-spread-small: var(--shadow---spread---small);
+  --shadow-spread-medium: var(--shadow---spread---medium);
 }
 
 .text-display-1 {

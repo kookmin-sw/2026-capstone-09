@@ -227,11 +227,13 @@ export function TagField({ projectId, nodeId, initialTags }: TagFieldProps) {
           ) : (
             <>
               {filteredTags.map((tag, i) => (
-                <button
+                <div
                   key={tag.tagId}
-                  type="button"
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleAdd(tag)}
-                  className={`flex w-full items-center justify-between gap-2 px-3 py-2 ${selectedIndex === i ? 'bg-gray-100' : 'bg-white hover:bg-gray-50'}`}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleAdd(tag); }}
+                  className={`flex w-full cursor-pointer items-center justify-between gap-2 px-3 py-2 ${selectedIndex === i ? 'bg-gray-100' : 'bg-white hover:bg-gray-50'}`}
                 >
                   <ContentBadge
                     color="accent"
@@ -248,7 +250,7 @@ export function TagField({ projectId, nodeId, initialTags }: TagFieldProps) {
                       onOpenChange={setOutsideCloseDisabled}
                     />
                   </div>
-                </button>
+                </div>
               ))}
               {canCreate && (
                 <button
