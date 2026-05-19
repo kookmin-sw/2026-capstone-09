@@ -11,6 +11,7 @@ import kr.flowmeet.api.chat.dto.response.ChatSessionSummaryResponse;
 import kr.flowmeet.api.chat.dto.response.CreateChatSessionResponse;
 import kr.flowmeet.api.chat.dto.response.GetChatSessionResponse;
 import kr.flowmeet.api.chat.dto.response.GetReferenceNodesResponse;
+import kr.flowmeet.api.chat.dto.response.GetReferenceUsersResponse;
 import kr.flowmeet.api.chat.dto.response.SendMessageResponse;
 import kr.flowmeet.api.chat.dto.response.UpdateChatSessionResponse;
 import kr.flowmeet.api.chat.success.ChatSuccessCode;
@@ -86,6 +87,13 @@ public interface ChatApi {
     @ApiSuccessCode(code = ChatSuccessCode.class, name = "GET_REFERENCE_NODES")
     @ApiErrorCode(code = ProjectErrorCode.class, names = {"PROJECT_ACCESS_DENIED"})
     CommonResponse<GetReferenceNodesResponse> getReferenceNodes(
+            @UserId Long userId,
+            Long projectId);
+
+    @Operation(summary = "참조 가능한 사용자 조회")
+    @ApiSuccessCode(code = ChatSuccessCode.class, name = "GET_REFERENCE_USERS")
+    @ApiErrorCode(code = ProjectErrorCode.class, names = {"PROJECT_ACCESS_DENIED"})
+    CommonResponse<GetReferenceUsersResponse> getReferenceUsers(
             @UserId Long userId,
             Long projectId);
 

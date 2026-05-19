@@ -10,6 +10,7 @@ import kr.flowmeet.api.chat.dto.response.ChatSessionSummaryResponse;
 import kr.flowmeet.api.chat.dto.response.CreateChatSessionResponse;
 import kr.flowmeet.api.chat.dto.response.GetChatSessionResponse;
 import kr.flowmeet.api.chat.dto.response.GetReferenceNodesResponse;
+import kr.flowmeet.api.chat.dto.response.GetReferenceUsersResponse;
 import kr.flowmeet.api.chat.dto.response.SendMessageResponse;
 import kr.flowmeet.api.chat.dto.response.UpdateChatSessionResponse;
 import kr.flowmeet.api.chat.facade.ChatFacade;
@@ -115,7 +116,7 @@ public class ChatController implements ChatApi {
     ) {
         return CommonResponse.ok(
                 ChatSuccessCode.SEND_MESSAGE,
-                chatFacade.sendMessage(userId, projectId, chatSessionId, request.content(), authorization)
+                chatFacade.sendMessage(userId, projectId, chatSessionId, request, authorization)
         );
     }
 
@@ -128,6 +129,18 @@ public class ChatController implements ChatApi {
         return CommonResponse.ok(
                 ChatSuccessCode.GET_REFERENCE_NODES,
                 chatFacade.getReferenceNodes(userId, projectId)
+        );
+    }
+
+    @Override
+    @GetMapping("/users")
+    public CommonResponse<GetReferenceUsersResponse> getReferenceUsers(
+            @UserId Long userId,
+            @PathVariable Long projectId
+    ) {
+        return CommonResponse.ok(
+                ChatSuccessCode.GET_REFERENCE_USERS,
+                chatFacade.getReferenceUsers(userId, projectId)
         );
     }
 

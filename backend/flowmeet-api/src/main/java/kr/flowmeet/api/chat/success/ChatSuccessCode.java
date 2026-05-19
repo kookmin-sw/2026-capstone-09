@@ -14,6 +14,7 @@ public enum ChatSuccessCode implements SuccessCode {
     DELETE_CHAT_SESSION("채팅을 삭제했어요."),
     SEND_MESSAGE("메시지를 전송했어요."),
     GET_REFERENCE_NODES("참조 가능한 노드를 조회했어요."),
+    GET_REFERENCE_USERS("참조 가능한 사용자를 조회했어요."),
     ADD_CHAT_NODE("참조 노드를 추가했어요."),
     REMOVE_CHAT_NODE("참조 노드를 제거했어요.");
 
