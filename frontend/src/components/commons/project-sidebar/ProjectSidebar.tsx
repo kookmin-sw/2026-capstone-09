@@ -19,7 +19,9 @@ import {
 } from '@/constants/exampleConstant';
 import { cn } from '@/utils/cn';
 
+import { AccountSettingsModalContent } from './account-settings';
 import { SearchModalContent } from './SearchModalContent';
+import { SettingsModalContent } from './setting-modal';
 import { SidebarAlarmModal } from './SidebarAlarmModal';
 import { SidebarMenuButton } from './SidebarMenuButton';
 import { UserProfileButton } from './UserProfileButton';
@@ -52,6 +54,7 @@ export const ProjectSidebar = ({
   const params = useParams<{ projectId?: string }>();
   const projectIdRaw = params?.projectId;
   const projectId = projectIdRaw ? Number(projectIdRaw) : undefined;
+  const isProjectIdValid = projectId !== undefined && !Number.isNaN(projectId);
   const { openModal, closeModal } = useModal();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isCollapsedInternal, setIsCollapsedInternal] = useState(false);
@@ -99,7 +102,7 @@ export const ProjectSidebar = ({
 
   const handleSearchClick = () => {
     onSearchClick?.();
-    if (projectId === undefined || Number.isNaN(projectId)) return;
+    if (!isProjectIdValid || projectId === undefined) return;
     openModal({
       variant: 'compact',
       closeOnBackdrop: true,
@@ -107,6 +110,27 @@ export const ProjectSidebar = ({
       content: (
         <SearchModalContent projectId={projectId} onResultClick={() => closeModal()} />
       ),
+    });
+  };
+
+  const handleSettingClick = () => {
+    onSettingClick?.();
+    if (!isProjectIdValid || projectId === undefined) return;
+    openModal({
+      variant: 'default',
+      closeOnBackdrop: true,
+      closeOnEsc: true,
+      content: <SettingsModalContent projectId={projectId} onClose={closeModal} />,
+    });
+  };
+
+  const handleProfileClick = () => {
+    onProfileClick?.();
+    openModal({
+      variant: 'default',
+      closeOnBackdrop: true,
+      closeOnEsc: true,
+      content: <AccountSettingsModalContent onClose={closeModal} />,
     });
   };
 
@@ -211,7 +235,7 @@ export const ProjectSidebar = ({
                   label="설정"
                   labelWidth={48}
                   labelTransitionDuration={SIDEBAR_LABEL_TRANSITION_DURATION}
-                  onClick={onSettingClick}
+                  onClick={handleSettingClick}
                 />
               </nav>
             )}
@@ -222,7 +246,7 @@ export const ProjectSidebar = ({
               isCollapsed={isCollapsed}
               userName={userName}
               userEmail={userEmail}
-              onClick={onProfileClick}
+              onClick={handleProfileClick}
             />
           </div>
         </div>

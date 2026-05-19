@@ -371,9 +371,14 @@
 /* WDS 내 primary FlowMeet 색상으로 변경.
    WDS 내부에서 `addOpacity(theme.semantic.primary.normal, ...)` 가
    `rgba(var(--semantic-primary-normal-rgb), α)` 로 풀리기 때문에
-   hex와 함께 -rgb 변형도 같이 잡아둬야 TextField 포커스 테두리 등이
-   FlowMeet 컬러로 그려진다. */
-:root {
+   hex와 함께 -rgb 변형도 같이 잡아둬야 TextField 포커스 테두리·Switch 활성 등이
+   FlowMeet 컬러로 그려진다.
+
+   주의: WDS `global.css` 가 같은 `:root` 셀렉터로 자체 `--semantic-primary-normal`(=#0066FF)을
+   먼저 등록한다. Tailwind v4 cascade layer에서 우리 user CSS 가 layered, WDS CSS 가 unlayered
+   상태로 처리되면 unlayered 가 우선해 단순 `:root` 로는 덮이지 않는다.
+   `html:root` 로 specificity 를 한 단계 올려 확실히 덮는다. */
+html:root {
   --semantic-primary-normal: #03C98F;
   --semantic-primary-normal-rgb: 3, 201, 143;
 }
