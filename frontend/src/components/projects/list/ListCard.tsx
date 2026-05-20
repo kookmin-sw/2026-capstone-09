@@ -3,6 +3,7 @@ import { Users } from '@/components/commons/user/UserAvatarGroup';
 import { NodeMenu } from '@/components/projects/node-flow/NodeMenu';
 import { ColorType } from '@/constants/badgeColor';
 import { NodeStatusType } from '@/constants/nodeStatus';
+import { useNodeMenuActions } from '@/hooks/useNodeMenuActions';
 import { getColorToken } from '@/utils/getBadgeColorInfo';
 import { getNodeStatusColor, getNodeStatusIcon, getNodeStatusLabel } from '@/utils/getNodeStatus';
 import { getVisibleTags } from '@/utils/nodeUtils';
@@ -20,6 +21,8 @@ interface ListCardAssignee {
 }
 
 interface ListCardProps {
+  nodeId: number;
+  projectId: number;
   nodeNumber: string;
   status: NodeStatusType;
   date: string;
@@ -32,6 +35,8 @@ interface ListCardProps {
 }
 
 export function ListCard({
+  nodeId,
+  projectId,
   nodeNumber,
   status,
   date,
@@ -50,24 +55,7 @@ export function ListCard({
       ? 'sub-with-meeting'
       : 'sub-without-meeting';
 
-  const handleCreateSubNode = () => {
-    // TODO: 서브 노드 생성 모달
-  };
-  const handleCreateMeeting = () => {
-    // TODO: 회의 생성 모달
-  };
-  const handleEditMeeting = () => {
-    // TODO: 회의 수정 모달
-  };
-  const handleDeleteMeeting = () => {
-    // TODO: 회의 삭제 모달
-  };
-  const handleCreateReference = () => {
-    // TODO: 참조 노드 모달
-  };
-  const handleDelete = () => {
-    // TODO: 삭제 모달
-  };
+  const menuActions = useNodeMenuActions({ nodeId, projectId, nodeTitle: title, nodeNumber });
 
   return (
     <div
@@ -105,16 +93,7 @@ export function ListCard({
           </div>
 
           <div className="relative z-10">
-            <NodeMenu
-              variant={menuVariant}
-              position="bottom-end"
-              onCreateSubNode={handleCreateSubNode}
-              onCreateMeeting={handleCreateMeeting}
-              onEditMeeting={handleEditMeeting}
-              onDeleteMeeting={handleDeleteMeeting}
-              onCreateReference={handleCreateReference}
-              onDelete={handleDelete}
-            />
+            <NodeMenu variant={menuVariant} position="bottom-end" {...menuActions} />
           </div>
         </div>
       </div>

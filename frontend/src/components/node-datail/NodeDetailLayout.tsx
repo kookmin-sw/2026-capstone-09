@@ -3,13 +3,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { EditorContent } from '@tiptap/react';
 import { ContentBadge, Tab, TabList, TabListItem, TabPanel, Typography } from '@wanteddev/wds';
-import {
-  IconDocumentText,
-  IconFire,
-  IconMoreVertical,
-  IconPersons,
-  IconTag,
-} from '@wanteddev/wds-icon';
+import { IconDocumentText, IconFire, IconPersons, IconTag } from '@wanteddev/wds-icon';
 import { useEffect } from 'react';
 
 import { GetNodeResponse } from '@/api/Api';
@@ -18,8 +12,13 @@ import { Loading } from '@/components/commons/loading/Loading';
 import { EXAMPLE_USERS } from '@/constants/exampleConstant';
 import { NodeStatusType } from '@/constants/nodeStatus';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import { useNodeMenuActions } from '@/hooks/useNodeMenuActions';
 import { nodeKeys } from '@/queries/keys/nodeKeys';
-import { useNodeDetailQuery, useUpdateNodeTitleMutation } from '@/queries/node';
+import {
+  useCreateSubNodeMutation,
+  useNodeDetailQuery,
+  useUpdateNodeTitleMutation,
+} from '@/queries/node';
 import { formatDatetoString } from '@/utils/formatData';
 import { AssigneeField } from './fields/AssigneeField';
 import { DescriptionField } from './fields/DescriptionField';
@@ -27,6 +26,7 @@ import { StatusField } from './fields/StatusField';
 import { TagField } from './fields/TagField';
 import { useTitleEditor } from './hooks/useTitleEditor';
 import { Users } from '../commons/user/UserAvatarGroup';
+import { NodeMenu } from '../projects/node-flow/NodeMenu';
 
 interface NodeDetailLayoutProps {
   nodeId: number | null;
@@ -35,6 +35,7 @@ interface NodeDetailLayoutProps {
   meetingContent: React.ReactNode;
   value?: string;
   onValueChange?: (tab: string) => void;
+  onDeleteSuccess?: () => void;
 }
 
 export function NodeDetailLayout({
@@ -44,6 +45,7 @@ export function NodeDetailLayout({
   meetingContent,
   value,
   onValueChange,
+  onDeleteSuccess,
 }: NodeDetailLayoutProps) {
   const queryClient = useQueryClient();
   const { data: nodeDetail, error, isLoading } = useNodeDetailQuery(projectId, nodeId);
@@ -61,6 +63,7 @@ export function NodeDetailLayout({
   };
 
   const { mutate: updateTitle } = useUpdateNodeTitleMutation(projectId, nodeId);
+  const { mutate: createSubNode } = useCreateSubNodeMutation(projectId);
 
   const handleTitleUpdate = (title: string) => {
     if (!nodeId || title === (nodeDetail?.title ?? '')) return;
@@ -75,7 +78,21 @@ export function NodeDetailLayout({
     updateCache((prev) => ({ ...prev, description }));
   };
 
+  const menuActions = useNodeMenuActions({
+    nodeId: nodeId ?? 0,
+    projectId,
+    nodeTitle: nodeDetail?.title,
+    nodeNumber: nodeDetail?.number,
+    onDeleteSuccess,
+  });
+
   if (isLoading) return <Loading />;
+
+  const menuVariant = !nodeDetail?.parentId
+    ? 'main'
+    : nodeDetail?.meeting?.meetingId
+      ? 'sub-with-meeting'
+      : 'sub-without-meeting';
 
   return (
     <div className="flex h-full flex-col overflow-y-scroll [&::-webkit-scrollbar]:hidden">
@@ -96,7 +113,17 @@ export function NodeDetailLayout({
 
         <div className="flex items-center gap-1 py-0.5">
           <Users users={EXAMPLE_USERS} />
-          <IconMoreVertical />
+          <NodeMenu
+            variant={menuVariant}
+            position="bottom-end"
+            {...menuActions}
+            onCreateSubNode={() => {
+              if (!nodeId) return;
+              createSubNode(nodeId, {
+                onError: (err) => showErrorToast(err, '서브 노드 생성에 실패했어요.'),
+              });
+            }}
+          />
         </div>
       </div>
 
@@ -157,8 +184,12 @@ export function NodeDetailLayout({
 
       <Tab value={value} onValueChange={onValueChange} defaultValue="note">
         <TabList size="medium" resize="fill">
-          <TabListItem value="note">노트</TabListItem>
-          {nodeDetail?.parentId && <TabListItem value="meeting">회의</TabListItem>}
+          {nodeDetail?.parentId && (
+            <>
+              <TabListItem value="note">노트</TabListItem>
+              <TabListItem value="meeting">회의</TabListItem>
+            </>
+          )}
         </TabList>
         <TabPanel value="note">{noteContent}</TabPanel>
         <TabPanel value="meeting" sx={{ flex: 1 }}>

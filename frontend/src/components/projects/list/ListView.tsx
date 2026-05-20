@@ -102,6 +102,8 @@ export function ListView({ projectId }: ListViewProps) {
             {filteredNodes.map((node) => (
               <ListCard
                 key={node.nodeId}
+                nodeId={node.nodeId ?? 0}
+                projectId={projectId}
                 nodeNumber={node.number || ''}
                 status={node.status || 'WAITING'}
                 date={node.updatedAt ? formatDate(node.updatedAt) : ''}

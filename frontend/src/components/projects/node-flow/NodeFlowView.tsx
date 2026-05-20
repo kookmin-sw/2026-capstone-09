@@ -1,5 +1,6 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState, useMemo } from 'react';
 import ReactFlow, {
   Node,
@@ -18,9 +19,10 @@ import 'reactflow/dist/style.css';
 
 import { privateApi } from '@/api';
 import { GetFlowchartResponse } from '@/api/Api';
-import { usePositionedToast } from '@/components/commons/custom-toast/usePositionedToast';
 import { Loading } from '@/components/commons/loading/Loading';
 import { NodeSidebar } from '@/components/node-datail/NodeSidebar';
+import { useFlowchartQuery } from '@/queries/node';
+import { nodeKeys } from '@/queries/keys/nodeKeys';
 import { convertToReactFlow } from '@/utils/flowchartToReactFlow';
 import { CustomNode } from './CustomNode';
 import { NodeButton } from './NodeButton';
@@ -41,9 +43,8 @@ const edgeTypes: EdgeTypes = {
 
 function NodeFlowContent({ projectId }: NodeFlowViewProps) {
   const { setViewport, getViewport } = useReactFlow();
-  const toast = usePositionedToast();
-  const [flowChart, setFlowChart] = useState<GetFlowchartResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const { data: flowChart, isLoading: loading } = useFlowchartQuery(projectId);
   const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
   const [sidebarNodeId, setSidebarNodeId] = useState<number | null>(null);
   const [showDashedLines, setShowDashedLines] = useState(false);
@@ -67,34 +68,13 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
     localStorage.setItem('showDashedLines', JSON.stringify(showDashedLines));
   }, [showDashedLines]);
 
+  // 쿼리 데이터가 바뀌면 ReactFlow 상태 동기화
   useEffect(() => {
-    const loadFlowChart = async () => {
-      try {
-        setLoading(true);
-
-        const data = await privateApi.node.getFlowchart(projectId);
-        const chartData = data.data.data ?? null;
-        setFlowChart(chartData);
-
-        if (chartData) {
-          const { nodes: convertedNodes, edges: convertedEdges } = convertToReactFlow(chartData);
-          setNodes(convertedNodes);
-          setEdges(convertedEdges);
-        }
-      } catch (error) {
-        console.error('Failed to load flowchart:', error);
-        const errorMessage = error instanceof Error ? error.message : '플로우차트를 불러오는데 실패했습니다.';
-        toast({
-          content: errorMessage,
-          variant: 'negative',
-          placement: 'top-center',
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-    void loadFlowChart();
-  }, [projectId, setNodes, setEdges, toast]);
+    if (!flowChart) return;
+    const { nodes: convertedNodes, edges: convertedEdges } = convertToReactFlow(flowChart);
+    setNodes(convertedNodes);
+    setEdges(convertedEdges);
+  }, [flowChart, setNodes, setEdges]);
 
   // 노드 단일 클릭 - 선택/해제만
   const onNodeClick = useCallback(
@@ -172,7 +152,7 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
         const data = await privateApi.node.getFlowchart(projectId);
         const chartData = data.data.data ?? null;
 
-        setFlowChart(chartData);
+        queryClient.setQueryData(nodeKeys.flowchart(projectId), chartData);
 
         if (chartData) {
           const newNodes = chartData.nodes?.filter((n) => n.parentId === parentNodeId) ?? [];
@@ -187,7 +167,7 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
         setIsCreating(false);
       }
     },
-    [flowChart, updateFlowAndMoveToNode, projectId, isCreating]
+    [flowChart, updateFlowAndMoveToNode, projectId, isCreating, queryClient]
   );
 
   // 메인 노드 생성
@@ -203,7 +183,7 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
       const data = await privateApi.node.getFlowchart(projectId);
       const chartData = data.data.data ?? null;
 
-      setFlowChart(chartData);
+      queryClient.setQueryData(nodeKeys.flowchart(projectId), chartData);
 
       if (chartData) {
         const mainNodes = chartData.nodes?.filter((n) => !n.parentId) ?? [];
@@ -217,7 +197,7 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
     } finally {
       setIsCreating(false);
     }
-  }, [flowChart, updateFlowAndMoveToNode, projectId, isCreating]);
+  }, [flowChart, updateFlowAndMoveToNode, projectId, isCreating, queryClient]);
 
   const nodesWithHandlers = useMemo(() => {
     return nodes.map((node) => ({
@@ -225,6 +205,7 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
       selected: selectedNodeId !== null && node.id === String(selectedNodeId),
       data: {
         ...node.data,
+        projectId,
         onCreateSubNode: handleCreateSubNode,
         onSelectNode: handleSelectNode,
       },
