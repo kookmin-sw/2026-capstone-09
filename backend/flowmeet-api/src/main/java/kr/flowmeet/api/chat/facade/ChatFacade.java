@@ -2,16 +2,16 @@ package kr.flowmeet.api.chat.facade;
 
 import java.util.ArrayList;
 import java.util.List;
-import kr.flowmeet.api.chat.dto.request.CreateChatSessionRequest;
 import kr.flowmeet.api.chat.dto.request.SendMessageRequest;
+import kr.flowmeet.api.chat.dto.request.StartChatRequest;
 import kr.flowmeet.api.chat.dto.response.AddChatNodeResponse;
 import kr.flowmeet.api.chat.dto.response.ChatMessageResponse;
 import kr.flowmeet.api.chat.dto.response.ChatSessionSummaryResponse;
-import kr.flowmeet.api.chat.dto.response.CreateChatSessionResponse;
 import kr.flowmeet.api.chat.dto.response.GetChatSessionResponse;
 import kr.flowmeet.api.chat.dto.response.GetReferenceNodesResponse;
 import kr.flowmeet.api.chat.dto.response.GetReferenceUsersResponse;
 import kr.flowmeet.api.chat.dto.response.SendMessageResponse;
+import kr.flowmeet.api.chat.dto.response.StartChatResponse;
 import kr.flowmeet.api.chat.dto.response.UpdateChatSessionResponse;
 import kr.flowmeet.api.common.dto.CursorSliceResponse;
 import kr.flowmeet.domain.chat.entity.ChatMessage;
@@ -26,6 +26,7 @@ import kr.flowmeet.domain.project.entity.ProjectMember;
 import kr.flowmeet.domain.project.service.ProjectMemberService;
 import kr.flowmeet.domain.project.service.ProjectPermissionValidator;
 import kr.flowmeet.external.ai.AiAgentClient;
+import kr.flowmeet.external.ai.dto.AiChatResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -88,24 +89,36 @@ public class ChatFacade {
     }
 
     @Transactional
-    public CreateChatSessionResponse createChatSession(
+    public StartChatResponse startChat(
             final Long userId,
             final Long projectId,
-            final CreateChatSessionRequest request
+            final StartChatRequest request,
+            final String authorization
     ) {
         projectPermissionValidator.validate(projectId, userId);
 
-        ChatSession session = chatSessionService.create(projectId, userId, request.title());
+        ChatSession session = chatSessionService.create(projectId, userId, "새 채팅");
 
-        List<Node> nodes = List.of();
-        if (request.nodeIds() != null && !request.nodeIds().isEmpty()) {
-            nodes = nodeService.findAllByIdsAndProjectId(request.nodeIds(), projectId);
-            for (Long nodeId : request.nodeIds()) {
-                chatSessionNodeService.add(session.getId(), nodeId);
-            }
+        if (request.nodeIds() != null) {
+            request.nodeIds().forEach(nodeId -> chatSessionNodeService.add(session.getId(), nodeId));
+        }
+        if (request.referenceUserIds() != null) {
+            request.referenceUserIds().forEach(uid -> chatSessionUserService.register(session.getId(), uid));
         }
 
-        return CreateChatSessionResponse.of(session, nodes);
+        String messageWithHint = buildStartMessageWithHint(request);
+        chatMessageService.create(session.getId(), request.content());
+
+        AiChatResponse aiResponse = aiAgentClient.chat(
+                messageWithHint, session.getId().toString(), projectId, authorization
+        );
+
+        if (aiResponse.sessionName() != null) {
+            session.updateTitle(aiResponse.sessionName());
+        }
+
+        ChatMessage aiMessage = chatMessageService.createAiResponse(session.getId(), aiResponse.response());
+        return StartChatResponse.of(session, aiMessage);
     }
 
     @Transactional
@@ -155,8 +168,8 @@ public class ChatFacade {
         String messageWithHint = buildMessageWithHint(request);
         chatMessageService.create(chatSessionId, request.content());
 
-        String aiResponse = aiAgentClient.chat(messageWithHint, chatSessionId.toString(), projectId, authorization);
-        ChatMessage aiMessage = chatMessageService.createAiResponse(chatSessionId, aiResponse);
+        AiChatResponse aiResponse = aiAgentClient.chat(messageWithHint, chatSessionId.toString(), projectId, authorization);
+        ChatMessage aiMessage = chatMessageService.createAiResponse(chatSessionId, aiResponse.response());
 
         return SendMessageResponse.from(aiMessage);
     }
@@ -169,6 +182,17 @@ public class ChatFacade {
     private void registerReferenceUsers(final Long chatSessionId, final List<Long> userIds) {
         if (userIds == null) return;
         userIds.forEach(userId -> chatSessionUserService.register(chatSessionId, userId));
+    }
+
+    private String buildStartMessageWithHint(final StartChatRequest request) {
+        List<String> hints = new ArrayList<>();
+        if (request.nodeIds() != null && !request.nodeIds().isEmpty()) {
+            hints.add("[참조 노드 ID: " + request.nodeIds() + "]");
+        }
+        if (request.referenceUserIds() != null && !request.referenceUserIds().isEmpty()) {
+            hints.add("[참조 유저 ID: " + request.referenceUserIds() + "]");
+        }
+        return hints.isEmpty() ? request.content() : String.join(" ", hints) + " " + request.content();
     }
 
     private String buildMessageWithHint(final SendMessageRequest request) {

@@ -2,16 +2,16 @@ package kr.flowmeet.api.chat.controller;
 
 import jakarta.validation.Valid;
 import kr.flowmeet.api.chat.dto.request.AddChatNodeRequest;
-import kr.flowmeet.api.chat.dto.request.CreateChatSessionRequest;
 import kr.flowmeet.api.chat.dto.request.SendMessageRequest;
+import kr.flowmeet.api.chat.dto.request.StartChatRequest;
 import kr.flowmeet.api.chat.dto.request.UpdateChatSessionRequest;
 import kr.flowmeet.api.chat.dto.response.AddChatNodeResponse;
 import kr.flowmeet.api.chat.dto.response.ChatSessionSummaryResponse;
-import kr.flowmeet.api.chat.dto.response.CreateChatSessionResponse;
 import kr.flowmeet.api.chat.dto.response.GetChatSessionResponse;
 import kr.flowmeet.api.chat.dto.response.GetReferenceNodesResponse;
 import kr.flowmeet.api.chat.dto.response.GetReferenceUsersResponse;
 import kr.flowmeet.api.chat.dto.response.SendMessageResponse;
+import kr.flowmeet.api.chat.dto.response.StartChatResponse;
 import kr.flowmeet.api.chat.dto.response.UpdateChatSessionResponse;
 import kr.flowmeet.api.chat.facade.ChatFacade;
 import kr.flowmeet.api.chat.success.ChatSuccessCode;
@@ -68,15 +68,16 @@ public class ChatController implements ChatApi {
     }
 
     @Override
-    @PostMapping
-    public CommonResponse<CreateChatSessionResponse> createChatSession(
+    @PostMapping("/new")
+    public CommonResponse<StartChatResponse> startChat(
             @UserId Long userId,
             @PathVariable Long projectId,
-            @RequestBody @Valid CreateChatSessionRequest request
+            @RequestBody @Valid StartChatRequest request,
+            @RequestHeader("Authorization") String authorization
     ) {
         return CommonResponse.ok(
-                ChatSuccessCode.CREATE_CHAT_SESSION,
-                chatFacade.createChatSession(userId, projectId, request)
+                ChatSuccessCode.START_CHAT,
+                chatFacade.startChat(userId, projectId, request, authorization)
         );
     }
 
