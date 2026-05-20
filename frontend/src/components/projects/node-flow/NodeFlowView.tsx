@@ -14,15 +14,20 @@ import ReactFlow, {
   Panel,
   useReactFlow,
   ReactFlowProvider,
+  SelectionMode,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
 import { privateApi } from '@/api';
 import { GetFlowchartResponse } from '@/api/Api';
 import { Loading } from '@/components/commons/loading/Loading';
+import { useModal } from '@/components/commons/modal/ModalContext';
 import { NodeSidebar } from '@/components/node-datail/NodeSidebar';
-import { useFlowchartQuery } from '@/queries/node';
+import { MultiNodeSummaryModalContent } from '@/components/projects/project-detail/multi-node-summary/MultiNodeSummaryModalContent';
+import type { MultiNodeSummaryNode } from '@/components/projects/project-detail/multi-node-summary/types';
+import { useMultiNodeSummaryRequest } from '@/components/projects/project-detail/multi-node-summary/useMultiNodeSummaryRequest';
 import { nodeKeys } from '@/queries/keys/nodeKeys';
+import { useFlowchartQuery } from '@/queries/node';
 import { convertToReactFlow } from '@/utils/flowchartToReactFlow';
 import { CustomNode } from './CustomNode';
 import { NodeButton } from './NodeButton';
@@ -41,14 +46,47 @@ const edgeTypes: EdgeTypes = {
   reference: ReferenceEdge,
 };
 
+// AI 다중 노드 요약 모달 래퍼 컴포넌트
+function ConnectedMultiNodeSummary({
+  projectId,
+  nodes,
+  onClose,
+}: {
+  projectId: number;
+  nodes: readonly MultiNodeSummaryNode[];
+  onClose: () => void;
+}) {
+  const { handleSubmit, isPending } = useMultiNodeSummaryRequest({ projectId, nodes });
+  const [result, setResult] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    void handleSubmit()
+      .then((data) => setResult(data))
+      .catch(() => setError('요약을 불러오는데 실패했습니다.'));
+  }, [handleSubmit]);
+
+  if (isPending || !result) {
+    return <Loading />;
+  }
+
+  if (error) {
+    return <div className="p-4 text-center">{error}</div>;
+  }
+
+  return <MultiNodeSummaryModalContent nodes={nodes} result={result} onClose={onClose} />;
+}
+
 function NodeFlowContent({ projectId }: NodeFlowViewProps) {
   const { setViewport, getViewport } = useReactFlow();
   const queryClient = useQueryClient();
+  const { openModal, closeModal } = useModal();
   const { data: flowChart, isLoading: loading } = useFlowchartQuery(projectId);
   const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
   const [sidebarNodeId, setSidebarNodeId] = useState<number | null>(null);
   const [showDashedLines, setShowDashedLines] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [selectedNodes, setSelectedNodes] = useState<Node[]>([]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -82,15 +120,8 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
       const nodeId = parseInt(node.id, 10);
       const newSelectedId = selectedNodeId === nodeId ? null : nodeId;
       setSelectedNodeId(newSelectedId);
-
-      setNodes((nds) =>
-        nds.map((n) => ({
-          ...n,
-          selected: n.id === String(newSelectedId),
-        }))
-      );
     },
-    [selectedNodeId, setNodes]
+    [selectedNodeId]
   );
 
   // 노드 더블 클릭 - 사이드바 열기
@@ -103,6 +134,30 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
   const handleSelectNode = useCallback((nodeId: number) => {
     setSelectedNodeId(nodeId);
   }, []);
+
+  // 다중 선택 핸들러
+  const onSelectionChange = useCallback(({ nodes: selectedNodes }: { nodes: Node[] }) => {
+    setSelectedNodes(selectedNodes);
+  }, []);
+
+  // AI 요약 모달 열기
+  const handleAISummary = useCallback(() => {
+    const summaryNodes: MultiNodeSummaryNode[] = selectedNodes.map((node) => ({
+      id: parseInt(node.id, 10),
+      label: node.data?.title || `노드 ${node.id}`,
+    }));
+
+    openModal({
+      closeOnBackdrop: true,
+      content: (
+        <ConnectedMultiNodeSummary
+          projectId={projectId}
+          nodes={summaryNodes}
+          onClose={closeModal}
+        />
+      ),
+    });
+  }, [selectedNodes, projectId, openModal, closeModal]);
 
   // 플로우 업데이트 및 새 노드로 뷰 이동
   const updateFlowAndMoveToNode = useCallback(
@@ -202,7 +257,6 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
   const nodesWithHandlers = useMemo(() => {
     return nodes.map((node) => ({
       ...node,
-      selected: selectedNodeId !== null && node.id === String(selectedNodeId),
       data: {
         ...node.data,
         projectId,
@@ -210,7 +264,7 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
         onSelectNode: handleSelectNode,
       },
     }));
-  }, [nodes, selectedNodeId, handleCreateSubNode, handleSelectNode]);
+  }, [nodes, handleCreateSubNode, handleSelectNode, projectId]);
 
   const visibleEdges = useMemo(() => {
     if (showDashedLines) {
@@ -232,11 +286,15 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
         onEdgesChange={onEdgesChange}
         onNodeClick={onNodeClick}
         onNodeDoubleClick={onNodeDoubleClick}
+        onSelectionChange={onSelectionChange}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={true}
+        selectionOnDrag={true}
+        selectionMode={SelectionMode.Partial}
+        panOnDrag={false}
         panOnScroll={true}
         panOnScrollSpeed={1}
         zoomOnScroll={false}
@@ -265,6 +323,7 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
                   }
                 : undefined
             }
+            onAISummary={selectedNodes.length > 1 ? handleAISummary : undefined}
             showDashedLines={showDashedLines}
             onToggleDashedLines={setShowDashedLines}
             isCreating={isCreating}
