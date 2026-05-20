@@ -13,6 +13,7 @@ export interface UserInfo {
   email?: string;
   nickname?: string;
   profileImageUrl?: string | null;
+  color?: string;
 }
 
 interface UsersProps {
@@ -28,10 +29,15 @@ interface UserAvatarWithTooltipProps {
 }
 
 const UserAvatarWithTooltip = ({ user, position }: UserAvatarWithTooltipProps) => {
+  const borderStyle =
+    !user.profileImageUrl && user.color
+      ? { outline: `2.5px solid ${user.color}`, borderRadius: '50%' }
+      : undefined;
+
   return (
     <Tooltip>
       <TooltipTrigger>
-        <div>
+        <div style={borderStyle}>
           <Avatar variant="person" size="xsmall" src={user.profileImageUrl ?? undefined} />
         </div>
       </TooltipTrigger>
@@ -40,7 +46,9 @@ const UserAvatarWithTooltip = ({ user, position }: UserAvatarWithTooltipProps) =
         <div className="flex min-w-35 items-center gap-2 px-1 py-1.5">
           <Avatar variant="person" size="xsmall" />
           <div className="flex flex-col">
-            <span className="text-caption-1 font-medium text-neutral-100">{user.nickname ?? ''}</span>
+            <span className="text-caption-1 font-medium text-neutral-100">
+              {user.nickname ?? ''}
+            </span>
             <span className="text-caption-2 font-normal text-neutral-100">{user.email ?? ''}</span>
           </div>
         </div>
@@ -83,8 +91,12 @@ const AllUsersTooltip = ({ users, maxVisible = 5, compact = false }: AllUsersToo
             <div key={user.email ?? idx} className="flex items-center gap-2">
               <Avatar variant="person" size="xsmall" />
               <div className="flex flex-col">
-                <span className="text-caption-1 font-medium text-neutral-100">{user.nickname ?? ''}</span>
-                <span className="text-caption-2 font-normal text-neutral-100">{user.email ?? ''}</span>
+                <span className="text-caption-1 font-medium text-neutral-100">
+                  {user.nickname ?? ''}
+                </span>
+                <span className="text-caption-2 font-normal text-neutral-100">
+                  {user.email ?? ''}
+                </span>
               </div>
             </div>
           ))}

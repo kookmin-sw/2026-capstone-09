@@ -1390,6 +1390,11 @@ export interface ProjectSummaryResponse {
    */
   projectId?: number;
   /**
+   * 프로젝트 프로필 이미지 URL
+   * @example "https://static.flowmeet.kr/projects/1.png"
+   */
+  profileImageUrl?: string;
+  /**
    * 프로젝트 이름
    * @example "FlowMeet 리뉴얼"
    */

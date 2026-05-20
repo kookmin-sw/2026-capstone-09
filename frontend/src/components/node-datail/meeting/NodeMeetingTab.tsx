@@ -15,7 +15,7 @@ export const NodeMeetingTab = ({ nodeId, projectId }: NodeMeetingTabProps) => {
   const meeting = nodeDetail?.meeting;
 
   if (!meeting) return <CreateMeeting />;
-  if (!meeting.summary) return <HasMeeting />;
+  if (meeting?.status == 'IN_PROGRESS' || !meeting?.summary) return <HasMeeting />;
 
   return (
     <MeetingSummary

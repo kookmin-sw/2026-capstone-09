@@ -9,7 +9,7 @@ import { useEffect } from 'react';
 import { GetNodeResponse } from '@/api/Api';
 import { GoogleMeetIcon } from '@/assets/svgs/GoogleMeetIcon';
 import { Loading } from '@/components/commons/loading/Loading';
-import { EXAMPLE_USERS } from '@/constants/exampleConstant';
+import { useAwarenessUsers } from '@/contexts/YjsContext';
 import { NodeStatusType } from '@/constants/nodeStatus';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { useNodeMenuActions } from '@/hooks/useNodeMenuActions';
@@ -49,6 +49,7 @@ export function NodeDetailLayout({
 }: NodeDetailLayoutProps) {
   const queryClient = useQueryClient();
   const { data: nodeDetail, error, isLoading } = useNodeDetailQuery(projectId, nodeId);
+  const activeUsers = useAwarenessUsers();
   const showErrorToast = useErrorToast();
 
   useEffect(() => {
@@ -96,7 +97,7 @@ export function NodeDetailLayout({
 
   return (
     <div className="flex h-full flex-col overflow-y-scroll [&::-webkit-scrollbar]:hidden">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between pt-1">
         {nodeDetail?.parentId ? (
           <ContentBadge color="neutral" size="xsmall" variant="outlined">
             #{nodeDetail?.number}
@@ -112,7 +113,7 @@ export function NodeDetailLayout({
         )}
 
         <div className="flex items-center gap-1 py-0.5">
-          <Users users={EXAMPLE_USERS} />
+          <Users users={activeUsers} />
           <NodeMenu
             variant={menuVariant}
             position="bottom-end"

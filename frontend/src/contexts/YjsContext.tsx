@@ -4,10 +4,13 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { WebsocketProvider } from 'y-websocket';
 import * as Y from 'yjs';
 
+import { useCurrentUserQuery } from '@/queries/user';
+
 /** awareness에 저장하는 현재 유저 상태 */
 export interface YjsAwarenessState {
   user: {
     userId: number;
+    email: string;
     nickname: string;
     profileImageUrl: string | null;
     color: string;
@@ -67,6 +70,7 @@ function createYjsState(nodeId: number): YjsContextValue | null {
 // YjsProvider의 key prop으로 nodeId 변경 시 리마운트된다.
 function YjsInstance({ nodeId, children }: { nodeId: number; children: React.ReactNode }) {
   const [value, setValue] = useState<YjsContextValue | null>(null);
+  const { data: currentUser } = useCurrentUserQuery();
 
   useEffect(() => {
     const yjsValue = createYjsState(nodeId);
@@ -79,7 +83,53 @@ function YjsInstance({ nodeId, children }: { nodeId: number; children: React.Rea
     };
   }, [nodeId]);
 
+  useEffect(() => {
+    if (!value || !currentUser) return;
+    const existingColor =
+      (value.provider.awareness.getLocalState() as Partial<YjsAwarenessState> | null)?.user
+        ?.color ?? AWARENESS_COLORS[0];
+    value.provider.awareness.setLocalStateField('user', {
+      userId: value.provider.awareness.clientID,
+      email: currentUser.email ?? '',
+      nickname: currentUser.nickname ?? '',
+      profileImageUrl: currentUser.profileImageUrl ?? null,
+      color: existingColor,
+    });
+  }, [value, currentUser]);
+
   return <YjsContext.Provider value={value}>{children}</YjsContext.Provider>;
+}
+
+export function useAwarenessUsers(): YjsAwarenessState['user'][] {
+  const yjsCtx = useYjsContext();
+  const [users, setUsers] = useState<YjsAwarenessState['user'][]>([]);
+
+  useEffect(() => {
+    if (!yjsCtx) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setUsers([]);
+      return;
+    }
+
+    const { provider } = yjsCtx;
+
+    const updateUsers = () => {
+      const result: YjsAwarenessState['user'][] = [];
+      provider.awareness.getStates().forEach((state, clientId) => {
+        const s = state as Partial<YjsAwarenessState>;
+        if (s.user?.nickname) {
+          result.push({ ...s.user, userId: clientId });
+        }
+      });
+      setUsers(result);
+    };
+
+    updateUsers();
+    provider.awareness.on('change', updateUsers);
+    return () => provider.awareness.off('change', updateUsers);
+  }, [yjsCtx]);
+
+  return users;
 }
 
 /**
