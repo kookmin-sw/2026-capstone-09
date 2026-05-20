@@ -515,6 +515,11 @@ export interface ReferencedNodeResponse {
    */
   nodeId?: number;
   /**
+   * 노드 번호
+   * @example "1.1"
+   */
+  number?: string;
+  /**
    * 노드 제목
    * @example "기획 문서 작성"
    */
@@ -573,6 +578,16 @@ export interface SendMessageRequest {
    * @example "이 노드 내용을 기반으로 일정을 정리해줘"
    */
   content: string;
+  /**
+   * 참조 노드 ID 목록
+   * @example [1,2]
+   */
+  referenceNodeIds?: number[];
+  /**
+   * 참조 사용자 ID 목록
+   * @example [3,4]
+   */
+  referenceUserIds?: number[];
 }
 
 /** 공통 응답 형식 */
@@ -1374,6 +1389,11 @@ export interface ProjectSummaryResponse {
    * @example 17
    */
   projectId?: number;
+  /**
+   * 프로젝트 프로필 이미지 URL
+   * @example "https://static.flowmeet.kr/projects/1.png"
+   */
+  profileImageUrl?: string;
   /**
    * 프로젝트 이름
    * @example "FlowMeet 리뉴얼"
@@ -2302,6 +2322,34 @@ export interface ProjectMemberInfo {
   role?: "VIEWER" | "MEMBER" | "OWNER";
 }
 
+/** 공통 응답 형식 */
+export interface CommonResponseGetEdgesResponse {
+  /**
+   * HTTP 상태 코드
+   * @format int32
+   * @example 200
+   */
+  status?: number;
+  /**
+   * 응답 코드
+   * @example "OK"
+   */
+  code?: string;
+  /**
+   * 응답 메시지
+   * @example "요청에 성공했습니다."
+   */
+  message?: string;
+  /** 응답 데이터 */
+  data?: GetEdgesResponse;
+}
+
+/** 엣지 목록 조회 응답 */
+export interface GetEdgesResponse {
+  /** 연결선 목록 */
+  edges?: EdgeItem[];
+}
+
 /** 채팅 세션 요약 응답 */
 export interface ChatSessionSummaryResponse {
   /**
@@ -2436,6 +2484,54 @@ export interface GetChatSessionResponse {
    * @example false
    */
   hasNext?: boolean;
+}
+
+/** 공통 응답 형식 */
+export interface CommonResponseGetReferenceUsersResponse {
+  /**
+   * HTTP 상태 코드
+   * @format int32
+   * @example 200
+   */
+  status?: number;
+  /**
+   * 응답 코드
+   * @example "OK"
+   */
+  code?: string;
+  /**
+   * 응답 메시지
+   * @example "요청에 성공했습니다."
+   */
+  message?: string;
+  /** 응답 데이터 */
+  data?: GetReferenceUsersResponse;
+}
+
+/** 참조 가능한 사용자 목록 응답 */
+export interface GetReferenceUsersResponse {
+  /** 사용자 목록 */
+  users?: ReferencedUserResponse[];
+}
+
+/** 참조 사용자 정보 */
+export interface ReferencedUserResponse {
+  /**
+   * 사용자 ID
+   * @format int64
+   * @example 1
+   */
+  userId?: number;
+  /**
+   * 닉네임
+   * @example "홍길동"
+   */
+  nickname?: string;
+  /**
+   * 프로필 이미지 URL
+   * @example "https://example.com/profile.png"
+   */
+  profileImageUrl?: string;
 }
 
 /** 공통 응답 형식 */
@@ -5070,6 +5166,45 @@ export class Api<
   };
   edge = {
     /**
+     * @description 프로젝트 내 모든 연결선의 ID와 시작/종료 노드를 조회합니다.
+     *
+     * @tags Edge
+     * @name GetEdges
+     * @summary 연결선 목록 조회
+     * @request GET:/v1/projects/{projectId}/edges
+     * @secure
+     */
+    getEdges: (projectId: number, params: RequestParams = {}) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "GET_EDGES"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "연결선 목록을 조회했어요."
+           */
+          message?: object;
+          /** 엣지 목록 조회 응답 */
+          data?: GetEdgesResponse;
+        },
+        any
+      >({
+        path: `/v1/projects/${projectId}/edges`,
+        method: "GET",
+        secure: true,
+        ...params,
+      }),
+
+    /**
      * @description 노드 간 연결선을 추가합니다.
      *
      * @tags Edge
@@ -5541,6 +5676,51 @@ export class Api<
         body: data,
         secure: true,
         type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Chat
+     * @name GetReferenceUsers
+     * @summary 참조 가능한 사용자 조회
+     * @request GET:/v1/projects/{projectId}/chats/users
+     * @secure
+     */
+    getReferenceUsers: (projectId: number, params: RequestParams = {}) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "GET_REFERENCE_USERS"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "참조 가능한 사용자를 조회했어요."
+           */
+          message?: object;
+          /** 참조 가능한 사용자 목록 응답 */
+          data?: GetReferenceUsersResponse;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/projects/${projectId}/chats/users`,
+        method: "GET",
+        secure: true,
         ...params,
       }),
 

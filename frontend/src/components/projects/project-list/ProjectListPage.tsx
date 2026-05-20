@@ -13,7 +13,7 @@ import {
   TextFieldContent,
   Typography,
 } from '@wanteddev/wds';
-import { IconChevronDownThickSmall, IconCompany, IconSearchThick } from '@wanteddev/wds-icon';
+import { IconChevronDownThickSmall, IconSearchThick } from '@wanteddev/wds-icon';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -26,6 +26,12 @@ const SORT_OPTIONS: { label: string; value: SortType }[] = [
   { label: '최신순', value: 'LATEST' },
   { label: '가나다순', value: 'NAME' },
 ];
+
+const normalizeImageUrl = (raw?: string): string | undefined => {
+  if (!raw) return undefined;
+  if (/^(https?:)?\/\//i.test(raw)) return raw;
+  return `https://${raw}`;
+};
 
 const formatDate = (dateStr?: string): string => {
   if (!dateStr) return '';
@@ -152,8 +158,13 @@ export const ProjectListPage = () => {
                       className="hover:bg-fill-alternative flex w-full items-center gap-4 px-6 py-5 text-left transition-colors"
                     >
                       {/* Project icon */}
-                      <div className="bg-fill-alternative border-line-normal-neutral flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border">
-                        <IconCompany className="text-label-assistive h-6 w-6" aria-hidden="true" />
+                      <div className="shrink-0 overflow-hidden rounded-xl">
+                        <Avatar
+                          variant="company"
+                          size={48}
+                          src={normalizeImageUrl(project.profileImageUrl)}
+                          alt={project.name ?? '프로젝트'}
+                        />
                       </div>
 
                       {/* Name & date */}
