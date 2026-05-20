@@ -13,8 +13,10 @@ export function useCreateMeetingMutation(projectId: number, nodeId: number) {
   return useMutation({
     mutationFn: (data: CreateMeetingRequest) =>
       privateApi.meeting.createMeeting(projectId, nodeId, data),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: meetingKeys.list(projectId, nodeId) }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: meetingKeys.list(projectId, nodeId) });
+      void queryClient.invalidateQueries({ queryKey: nodeKeys.detail(projectId, nodeId) });
+    },
   });
 }
 
