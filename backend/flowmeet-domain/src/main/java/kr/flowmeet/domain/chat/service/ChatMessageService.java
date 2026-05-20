@@ -31,6 +31,17 @@ public class ChatMessageService {
     }
 
     @Transactional
+    public ChatMessage createAiResponse(final Long chatSessionId, final String content) {
+        return chatMessageRepository.save(
+                ChatMessage.builder()
+                        .chatSessionId(chatSessionId)
+                        .content(content)
+                        .messageType(ChatMessageType.AI_RESPONSE)
+                        .build()
+        );
+    }
+
+    @Transactional
     public void softDeleteAllByChatSessionId(final Long chatSessionId) {
         chatMessageRepository.softDeleteAllByChatSessionId(chatSessionId);
     }

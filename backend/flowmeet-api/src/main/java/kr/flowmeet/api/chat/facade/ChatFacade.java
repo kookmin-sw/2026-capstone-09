@@ -19,6 +19,7 @@ import kr.flowmeet.domain.chat.service.ChatSessionService;
 import kr.flowmeet.domain.node.entity.Node;
 import kr.flowmeet.domain.node.service.NodeService;
 import kr.flowmeet.domain.project.service.ProjectPermissionValidator;
+import kr.flowmeet.external.ai.AiAgentClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +34,7 @@ public class ChatFacade {
     private final ChatSessionNodeService chatSessionNodeService;
     private final NodeService nodeService;
     private final ProjectPermissionValidator projectPermissionValidator;
+    private final AiAgentClient aiAgentClient;
 
     public CursorSliceResponse<ChatSessionSummaryResponse> getAllChatSessions(
             final Long userId,
@@ -130,16 +132,20 @@ public class ChatFacade {
             final Long userId,
             final Long projectId,
             final Long chatSessionId,
-            final String content
+            final String content,
+            final String authorization
     ) {
         projectPermissionValidator.validate(projectId, userId);
 
         ChatSession session = chatSessionService.findByIdAndProjectId(chatSessionId, projectId);
         chatSessionService.validateCreatedBy(session, userId);
 
-        ChatMessage message = chatMessageService.create(chatSessionId, content);
+        chatMessageService.create(chatSessionId, content);
 
-        return SendMessageResponse.from(message);
+        String aiResponse = aiAgentClient.chat(content, chatSessionId.toString(), projectId, authorization);
+        ChatMessage aiMessage = chatMessageService.createAiResponse(chatSessionId, aiResponse);
+
+        return SendMessageResponse.from(aiMessage);
     }
 
     public GetReferenceNodesResponse getReferenceNodes(final Long userId, final Long projectId) {

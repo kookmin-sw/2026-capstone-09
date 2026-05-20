@@ -21,6 +21,7 @@ import kr.flowmeet.api.common.swagger.ApiSuccessCode;
 import kr.flowmeet.auth.annotation.UserId;
 import kr.flowmeet.domain.chat.exception.ChatErrorCode;
 import kr.flowmeet.domain.project.exception.ProjectErrorCode;
+import kr.flowmeet.external.ai.AiAgentErrorCode;
 
 @Tag(name = "Chat", description = "채팅")
 public interface ChatApi {
@@ -73,11 +74,13 @@ public interface ChatApi {
     @Operation(summary = "메시지 전송")
     @ApiSuccessCode(code = ChatSuccessCode.class, name = "SEND_MESSAGE")
     @ApiErrorCode(code = ChatErrorCode.class, names = {"CHAT_SESSION_NOT_FOUND"})
+    @ApiErrorCode(code = AiAgentErrorCode.class, names = {"AI_AGENT_UNAVAILABLE"})
     CommonResponse<SendMessageResponse> sendMessage(
             @UserId Long userId,
             Long projectId,
             Long chatSessionId,
-            SendMessageRequest request);
+            SendMessageRequest request,
+            String authorization);
 
     @Operation(summary = "참조 가능한 노드 조회")
     @ApiSuccessCode(code = ChatSuccessCode.class, name = "GET_REFERENCE_NODES")
