@@ -55,18 +55,22 @@ export interface NodeSummary {
 export interface MeetingDetail {
   meetingId: number;
   meetingUrl?: string;
-  status?: 'SCHEDULED' | 'IN_PROGRESS' | 'ENDED';
+  status?: "SCHEDULED" | "IN_PROGRESS" | "ENDED";
 }
 
 // chrome.runtime.sendMessage 메시지 타입
 export type Message =
-  | { type: 'CAPTIONS_CAPTURED'; captions: string[] }
-  | { type: 'MEETING_ENDED' }
-  | { type: 'MEETING_STARTED' }
-  | { type: 'GET_STATUS' }
-  | { type: 'SET_MEETING_CONTEXT'; context: MeetingContext }
-  | { type: 'START_CAPTURE' }
-  | { type: 'STOP_CAPTURE' }
-  | { type: 'ABORT_CAPTURE' }
-  | { type: 'SYNC_TOKENS'; accessToken: string | null; refreshToken: string | null }
-  | { type: 'LOGOUT' };
+  | { type: "CAPTIONS_CAPTURED"; captions: string[] }
+  | { type: "MEETING_ENDED" }
+  | { type: "MEETING_STARTED" }
+  | { type: "GET_STATUS" }
+  | { type: "SET_MEETING_CONTEXT"; context: MeetingContext }
+  | { type: "START_CAPTURE" }
+  | { type: "STOP_CAPTURE" }
+  | { type: "ABORT_CAPTURE" }
+  | {
+      type: "SYNC_TOKENS";
+      accessToken: string | null;
+      refreshToken: string | null;
+    }
+  | { type: "LOGOUT" };
