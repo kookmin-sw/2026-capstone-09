@@ -53,7 +53,7 @@ public class ChatFacade {
     ) {
         projectPermissionValidator.validate(projectId, userId);
 
-        List<ChatSession> sessions = chatSessionService.findAllByProjectId(projectId, search, cursorId, size);
+        List<ChatSession> sessions = chatSessionService.findAllByProjectId(userId, projectId, search, cursorId, size);
 
         return CursorSliceResponse.of(
                 sessions,

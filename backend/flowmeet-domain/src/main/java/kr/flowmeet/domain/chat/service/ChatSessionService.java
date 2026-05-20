@@ -29,9 +29,9 @@ public class ChatSessionService {
         }
     }
 
-    public List<ChatSession> findAllByProjectId(final Long projectId, final String search,
+    public List<ChatSession> findAllByProjectId(final Long userId, final Long projectId, final String search,
                                                     final Long cursorId, final int size) {
-        return chatSessionRepository.findAllByProjectId(projectId, search, cursorId, size);
+        return chatSessionRepository.findAllByUserIdAndProjectId(userId, projectId, search, cursorId, size);
     }
 
     @Transactional
