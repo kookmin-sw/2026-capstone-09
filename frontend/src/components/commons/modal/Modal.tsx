@@ -8,12 +8,14 @@ const variantWidth: Record<ModalVariant, string> = {
   default: 'w-200',
   compact: 'w-230',
   sidebar: 'w-200',
+  small: 'w-100',
 };
 
 const contentPadding: Record<ModalVariant, string> = {
   default: 'p-12',
   compact: 'py-6 px-9',
   sidebar: 'py-6',
+  small: 'p-8',
 };
 
 // Variant: default — 상하좌우 패딩 48px
@@ -32,6 +34,17 @@ function CompactModal({ content }: { content: ReactNode }) {
   return (
     <div className="relative w-full overflow-hidden rounded-4xl bg-white">
       <div className={contentPadding.compact}>
+        <div>{content}</div>
+      </div>
+    </div>
+  );
+}
+
+// Variant: small — 소형 확인/삭제 다이얼로그
+function SmallModal({ content }: { content: ReactNode }) {
+  return (
+    <div className="relative w-full overflow-hidden rounded-3xl bg-white">
+      <div className={contentPadding.small}>
         <div>{content}</div>
       </div>
     </div>
@@ -104,6 +117,7 @@ export default function Modal() {
         {variant === 'default' && <DefaultModal content={content!} />}
         {variant === 'compact' && <CompactModal content={content!} />}
         {variant === 'sidebar' && <SidebarModal sidebar={sidebar} content={content!} />}
+        {variant === 'small' && <SmallModal content={content!} />}
       </div>
     </div>
   );

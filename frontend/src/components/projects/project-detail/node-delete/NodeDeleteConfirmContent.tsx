@@ -46,7 +46,7 @@ export const NodeDeleteConfirmContent = ({
   };
 
   return (
-    <div className="flex w-90 flex-col gap-4 pb-2">
+    <div className="flex w-full flex-col gap-4 pb-2">
       <div className="flex items-start justify-between gap-4">
         <h3 className="text-heading-2 text-label-normal flex-1 font-medium">
           노드를 삭제하시겠어요?

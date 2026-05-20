@@ -12,6 +12,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useParams, usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
+import { authStorage } from '@/api/authStorage';
 import { userStorage } from '@/api/userStorage';
 import { useModal } from '@/components/commons/modal/ModalContext';
 import { useUnreadCountQuery } from '@/queries/notification';
@@ -75,8 +76,51 @@ export const ProjectSidebar = ({
   const { data: currentUser } = useCurrentUserQuery();
   const storedUser = userStorage.get();
 
-  // 읽지 않은 알림 개수 — Tanstack Query
-  const { data: unreadCount = 0 } = useUnreadCountQuery();
+  // 읽지 않은 알림 개수 — 최초 1회 fetch + SSE로 +1씩 누적
+  const { data: initialUnreadCount = 0 } = useUnreadCountQuery();
+  const [sseExtra, setSseExtra] = useState(0);
+  const unreadCount = initialUnreadCount + sseExtra;
+
+  useEffect(() => {
+    const token = authStorage.getAccess();
+    if (!token) return;
+
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
+    const controller = new AbortController();
+
+    const connect = async () => {
+      try {
+        const response = await fetch(`${baseUrl}/v1/notifications/subscribe`, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
+        });
+
+        if (!response.ok || !response.body) return;
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() ?? '';
+          for (const line of lines) {
+            if (line.startsWith('data:')) {
+              setSseExtra((prev) => prev + 1);
+            }
+          }
+        }
+      } catch {
+        // SSE 연결 종료 또는 오류 — 무시
+      }
+    };
+
+    void connect();
+    return () => { controller.abort(); };
+  }, []);
 
   // prop > query > storage > 빈 문자열 우선순위로 합성
   const projectName = projectNameProp ?? projectData?.name ?? '';

@@ -67,6 +67,7 @@ function ConnectedMeetingDeleteModal({
   const { mutate: deleteMeeting } = useDeleteMeetingMutation(projectId);
   const showErrorToast = useErrorToast();
   const meetingId = nodeDetail?.meeting?.meetingId;
+  const isInProgress = nodeDetail?.meeting?.status === 'IN_PROGRESS';
 
   useEffect(() => {
     if (!isLoading && !meetingId) onClose();
@@ -76,6 +77,7 @@ function ConnectedMeetingDeleteModal({
 
   return (
     <MeetingDeleteConfirmContent
+      isInProgress={isInProgress}
       onConfirm={() => {
         deleteMeeting(
           { nodeId, meetingId },
@@ -175,6 +177,7 @@ export function useNodeMenuActions({
     onDeleteMeeting: () => {
       before();
       openModal({
+        variant: 'small',
         closeOnBackdrop: true,
         content: (
           <ConnectedMeetingDeleteModal projectId={projectId} nodeId={nodeId} onClose={closeModal} />
@@ -193,6 +196,7 @@ export function useNodeMenuActions({
     onDelete: () => {
       before();
       openModal({
+        variant: 'small',
         closeOnBackdrop: true,
         content: (
           <NodeDeleteConfirmContent
