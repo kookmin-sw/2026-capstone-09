@@ -75,6 +75,20 @@ function CustomFlowNodeComponent({ data, selected }: NodeProps<CustomNodeData>) 
             position={Position.Right}
             style={{ opacity: 0, pointerEvents: 'none', right: '0px', top: '60px' }}
           />
+          {/* 참조 관계용 - 왼쪽 */}
+          <Handle
+            id="ref-source"
+            type="source"
+            position={Position.Left}
+            style={{ opacity: 0, pointerEvents: 'none', left: '0px', top: '60px' }}
+          />
+          {/* 참조 관계용 - 오른쪽 */}
+          <Handle
+            id="ref-target"
+            type="target"
+            position={Position.Right}
+            style={{ opacity: 0, pointerEvents: 'none', right: '0px', top: '60px' }}
+          />
           {/* 아래 방향으로 서브 노드 (왼쪽에서 20px) */}
           <Handle
             id="child-source"
@@ -102,6 +116,20 @@ function CustomFlowNodeComponent({ data, selected }: NodeProps<CustomNodeData>) 
           <Handle
             id="source"
             type="source"
+            position={Position.Right}
+            style={{ opacity: 0, pointerEvents: 'none', right: '0px', top: '48px' }}
+          />
+          {/* 참조 관계용 - 왼쪽 */}
+          <Handle
+            id="ref-source"
+            type="source"
+            position={Position.Left}
+            style={{ opacity: 0, pointerEvents: 'none', left: '0px', top: '48px' }}
+          />
+          {/* 참조 관계용 - 오른쪽 */}
+          <Handle
+            id="ref-target"
+            type="target"
             position={Position.Right}
             style={{ opacity: 0, pointerEvents: 'none', right: '0px', top: '48px' }}
           />

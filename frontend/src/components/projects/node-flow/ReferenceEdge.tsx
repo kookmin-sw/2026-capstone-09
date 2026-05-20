@@ -1,4 +1,4 @@
-import { EdgeProps, getBezierPath, EdgeLabelRenderer, BaseEdge, Position, useNodes } from 'reactflow';
+import { EdgeProps, getBezierPath, EdgeLabelRenderer, BaseEdge, useNodes, Position } from 'reactflow';
 import type { Edge as FlowChartEdge } from '@/types/FlowChartTypes';
 import { DashedComment } from './DashedComment';
 
@@ -12,6 +12,8 @@ export function ReferenceEdge({
   sourceY,
   targetX,
   targetY,
+  sourcePosition,
+  targetPosition,
   data,
 }: EdgeProps) {
   const edgeData = data?.edgeData as FlowChartEdge | undefined;
@@ -22,9 +24,9 @@ export function ReferenceEdge({
 
   // 노드들과 겹치지 않는 위치 찾기
   const NODE_WIDTH = 280;
-  const NODE_HEIGHT = 100;
+  const NODE_HEIGHT = 120;
   const COMMENT_WIDTH = 250;
-  const COMMENT_HEIGHT = 80;
+  const COMMENT_HEIGHT = 90;
   const MIN_OFFSET = 120;
   const OFFSET_STEP = 80;
 
@@ -63,23 +65,30 @@ export function ReferenceEdge({
     }
   }
 
+  const getOppositePosition = (pos: Position) => {
+    if (pos === Position.Left) return Position.Right;
+    if (pos === Position.Right) return Position.Left;
+    if (pos === Position.Top) return Position.Bottom;
+    return Position.Top;
+  };
+
   const [path1] = getBezierPath({
     sourceX,
     sourceY,
-    sourcePosition: Position.Right,
+    sourcePosition,
     targetX: referenceNodeX,
     targetY: referenceNodeY,
-    targetPosition: Position.Left,
+    targetPosition: getOppositePosition(sourcePosition),
     curvature: 0.25,
   });
 
   const [path2] = getBezierPath({
     sourceX: referenceNodeX,
     sourceY: referenceNodeY,
-    sourcePosition: Position.Right,
+    sourcePosition: getOppositePosition(targetPosition),
     targetX,
     targetY,
-    targetPosition: Position.Left,
+    targetPosition,
     curvature: 0.25,
   });
 

@@ -195,13 +195,23 @@ export function convertToReactFlow(flowchart: GetFlowchartResponse | null): {
   if (flowchart.edges) {
     flowchart.edges.forEach((edge) => {
       if (edge.startNodeId && edge.endNodeId) {
+        const startNode = nodeMap.get(edge.startNodeId);
+        const endNode = nodeMap.get(edge.endNodeId);
+
+        // 메인 노드가 포함되어 있는지 확인
+        const isStartMain = startNode && !startNode.parentId;
+        const isEndMain = endNode && !endNode.parentId;
+        const hasMainNode = isStartMain || isEndMain;
+
         edges.push({
           id: `edge-${edge.edgeId}`,
           source: String(edge.startNodeId),
           target: String(edge.endNodeId),
           type: 'reference',
-          sourceHandle: 'source', // 시작 노드의 오른쪽
-          targetHandle: 'target', // 끝 노드의 왼쪽
+          // 메인 노드 포함: ref handle 사용 (왼쪽→오른쪽)
+          // 서브 노드끼리: 일반 handle 사용 (오른쪽→왼쪽)
+          sourceHandle: hasMainNode ? 'ref-source' : 'source',
+          targetHandle: hasMainNode ? 'ref-target' : 'target',
           data: { edgeData: edge },
         });
       }
