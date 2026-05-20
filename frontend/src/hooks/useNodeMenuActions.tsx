@@ -5,11 +5,12 @@ import { useEffect } from 'react';
 import { useModal } from '@/components/commons/modal/ModalContext';
 import { Loading } from '@/components/commons/loading/Loading';
 import { MeetingCreateModalContent } from '@/components/projects/node-flow/MeetingCreateModalContent';
+import { MeetingEditModalContent } from '@/components/projects/node-flow/MeetingEditModalContent';
 import { MeetingDeleteConfirmContent } from '@/components/projects/project-detail/meeting-delete/MeetingDeleteConfirmContent';
 import { NodeDeleteConfirmContent } from '@/components/projects/project-detail/node-delete/NodeDeleteConfirmContent';
 import { ReferenceNodeModalContent } from '@/components/projects/project-detail/reference-node/ReferenceNodeModalContent';
 import { useCreateEdgeMutation, useLinkedNodesQuery, useNodeListQuery } from '@/queries/edge';
-import { useCreateMeetingMutation } from '@/queries/meeting';
+import { useCreateMeetingMutation, useUpdateMeetingMutation } from '@/queries/meeting';
 import { useDeleteMeetingMutation } from '@/queries/meetingDelete';
 import { useProjectMembersQuery } from '@/queries/member';
 import { useNodeDetailQuery } from '@/queries/node';
@@ -88,6 +89,60 @@ function ConnectedMeetingDeleteModal({
         );
       }}
       onCancel={onClose}
+    />
+  );
+}
+
+function ConnectedMeetingEditModal({
+  projectId,
+  nodeId,
+  onClose,
+}: {
+  projectId: number;
+  nodeId: number;
+  onClose: () => void;
+}) {
+  const { data: nodeDetail, isLoading } = useNodeDetailQuery(projectId, nodeId);
+  const { data: members = [] } = useProjectMembersQuery(projectId);
+  const showErrorToast = useErrorToast();
+  const meeting = nodeDetail?.meeting;
+  const meetingId = meeting?.meetingId;
+
+  const { mutate: updateMeeting } = useUpdateMeetingMutation(
+    projectId,
+    nodeId,
+    meetingId ?? 0,
+  );
+
+  useEffect(() => {
+    if (!isLoading && !meetingId) onClose();
+  }, [isLoading, meetingId, onClose]);
+
+  if (isLoading || !meetingId) return <Loading />;
+
+  const initialValues = {
+    startedAt: meeting?.startedAt,
+    isPushEnabled: meeting?.isPushEnabled,
+    participants: meeting?.participants ?? [],
+  };
+
+  return (
+    <MeetingEditModalContent
+      nodeBadge={`#${nodeDetail?.number ?? nodeId}`}
+      nodeTitle={nodeDetail?.title ?? ''}
+      participantOptions={members.map((m) => ({
+        id: m.userId ?? 0,
+        name: m.nickname ?? '',
+        email: m.email ?? '',
+      }))}
+      initialValues={initialValues}
+      onClose={onClose}
+      onEdit={(payload) => {
+        updateMeeting(payload, {
+          onSuccess: onClose,
+          onError: (err) => showErrorToast(err, '회의 수정에 실패했어요.'),
+        });
+      }}
     />
   );
 }
@@ -172,7 +227,12 @@ export function useNodeMenuActions({
     },
     onEditMeeting: () => {
       before();
-      // 회의 수정 모달 -> 훅 외부에서 주입
+      openModal({
+        closeOnBackdrop: true,
+        content: (
+          <ConnectedMeetingEditModal projectId={projectId} nodeId={nodeId} onClose={closeModal} />
+        ),
+      });
     },
     onDeleteMeeting: () => {
       before();
