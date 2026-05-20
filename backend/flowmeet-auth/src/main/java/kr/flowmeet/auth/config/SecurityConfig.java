@@ -2,6 +2,7 @@ package kr.flowmeet.auth.config;
 
 import java.util.Arrays;
 import java.util.List;
+import jakarta.servlet.DispatcherType;
 import kr.flowmeet.auth.jwt.JwtAuthenticationFilter;
 import kr.flowmeet.auth.properties.CorsProperties;
 import kr.flowmeet.auth.security.SecurityWhiteList;
@@ -35,7 +36,8 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(
                         auth ->
-                        auth.requestMatchers(SecurityWhiteList.PUBLIC_WHITE_LIST).permitAll()
+                        auth.dispatcherTypeMatchers(DispatcherType.ASYNC, DispatcherType.ERROR).permitAll()
+                                .requestMatchers(SecurityWhiteList.PUBLIC_WHITE_LIST).permitAll()
                                 .requestMatchers(SecurityWhiteList.SWAGGER_WHITE_LIST).permitAll()
                                 .anyRequest().authenticated()
                 )
