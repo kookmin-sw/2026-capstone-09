@@ -3,9 +3,12 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { ListCell, Menu, MenuTrigger, MenuContent, MenuList, IconButton } from '@wanteddev/wds';
 import { IconMoreHorizontal } from '@wanteddev/wds-icon';
+import { useDialog } from '@/components/commons/custom-dialog/DialogContext';
 import { CustomMenuItem } from '@/components/commons/custom-menu/CustomMemuItem';
 import { useUpdateChatSession, useDeleteChatSession } from '@/queries/chat';
 import { chatKeys } from '@/queries/keys/chatKeys';
+import { ChatDeleteDialog } from './ChatDeleteDialog';
+import { ChatRenameDialog } from './ChatRenameDialog';
 
 interface ChatListItemProps {
   chat: {
@@ -36,6 +39,7 @@ export function ChatListItem({
   onCurrentChatClear,
 }: ChatListItemProps) {
   const queryClient = useQueryClient();
+  const { openDialog, closeDialog } = useDialog();
   const updateChatSessionMutation = useUpdateChatSession();
   const deleteChatSessionMutation = useDeleteChatSession();
 
@@ -48,51 +52,72 @@ export function ChatListItem({
     e.stopPropagation();
     onMenuOpenChange(null);
 
-    const newTitle = prompt('새로운 채팅 제목을 입력하세요:', chat.title || '');
-    if (newTitle && newTitle.trim() && newTitle !== chat.title) {
-      updateChatSessionMutation.mutate(
-        {
-          projectId,
-          chatSessionId: chat.chatSessionId || 0,
-          title: newTitle.trim(),
-        },
-        {
-          onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: chatKeys.lists() });
-          },
-        }
-      );
-    }
+    openDialog({
+      content: (
+        <ChatRenameDialog
+          currentTitle={chat.title || ''}
+          onConfirm={(newTitle) => {
+            closeDialog();
+            updateChatSessionMutation.mutate(
+              {
+                projectId,
+                chatSessionId: chat.chatSessionId || 0,
+                title: newTitle,
+              },
+              {
+                onSuccess: () => {
+                  queryClient.invalidateQueries({ queryKey: chatKeys.lists() });
+                },
+              }
+            );
+          }}
+          onCancel={closeDialog}
+        />
+      ),
+      closeOnBackdrop: true,
+      closeOnEsc: true,
+    });
   };
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     onMenuOpenChange(null);
 
-    if (confirm(`"${chat.title}" 채팅을 삭제하시겠습니까?`)) {
-      deleteChatSessionMutation.mutate(
-        {
-          projectId,
-          chatSessionId: chat.chatSessionId || 0,
-        },
-        {
-          onSuccess: async () => {
-            if (selectedChatId === chat.chatSessionId) {
-              onSelect(null);
-            }
-            if (currentChatSessionId === chat.chatSessionId) {
-              onCurrentChatClear();
-            }
+    openDialog({
+      content: (
+        <ChatDeleteDialog
+          chatTitle={chat.title || ''}
+          onConfirm={() => {
+            closeDialog();
+            deleteChatSessionMutation.mutate(
+              {
+                projectId,
+                chatSessionId: chat.chatSessionId || 0,
+              },
+              {
+                onSuccess: async () => {
+                  if (selectedChatId === chat.chatSessionId) {
+                    onSelect(null);
+                  }
+                  if (currentChatSessionId === chat.chatSessionId) {
+                    onCurrentChatClear();
+                  }
 
-            await queryClient.refetchQueries({
-              queryKey: chatKeys.lists(),
-              exact: false,
-              type: 'active'
-            });
-          },
-        }
-      );
-    }
+                  await queryClient.refetchQueries({
+                    queryKey: chatKeys.lists(),
+                    exact: false,
+                    type: 'active'
+                  });
+                },
+              }
+            );
+          }}
+          onCancel={closeDialog}
+        />
+      ),
+      closeOnBackdrop: true,
+      closeOnEsc: true,
+    });
   };
 
   return (
@@ -120,6 +145,7 @@ export function ChatListItem({
           : {}),
       }}
       trailingContent={
+        (menuOpenChatId === null || menuOpenChatId === chat.chatSessionId) &&
         (hoveredChatId === chat.chatSessionId || menuOpenChatId === chat.chatSessionId) ? (
           <div
             style={{
@@ -142,6 +168,9 @@ export function ChatListItem({
                   aria-label="채팅 메뉴"
                   onClick={(e) => {
                     e.stopPropagation();
+                    if (menuOpenChatId && menuOpenChatId !== chat.chatSessionId) {
+                      return;
+                    }
                     onMenuOpenChange(
                       menuOpenChatId === chat.chatSessionId ? null : chat.chatSessionId || null
                     );
