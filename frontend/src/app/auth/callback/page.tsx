@@ -54,7 +54,13 @@ function CallbackContent() {
             // 가입된 유저
             if (data.data?.accessToken && data.data?.refreshToken) {
               login(data.data.accessToken, data.data.refreshToken);
-              router.replace('/projects');
+              const pendingRedirect = sessionStorage.getItem('pending_redirect');
+              if (pendingRedirect) {
+                sessionStorage.removeItem('pending_redirect');
+                router.replace(pendingRedirect);
+              } else {
+                router.replace('/projects');
+              }
             } else {
               showToast(data.message);
               router.replace('/auth/login');
