@@ -342,7 +342,7 @@ export const AccountSettingsModalContent = ({ onClose }: AccountSettingsModalCon
             </a>
             <div className="bg-label-alternative h-3 w-px" aria-hidden="true" />
             <a
-              href="https://aerial-mule-b93.notion.site/flowMeet-361733adb1cf809dbe54c089d11702e1?source=copy_link"
+              href="https://aerial-mule-b93.notion.site/Flowmeet-361733adb1cf805999edff2825aebe05?source=copy_link"
               target="_blank"
               rel="noopener noreferrer"
               className="text-label-2 text-label-alternative hover:text-label-neutral focus-visible:ring-primary-40 rounded-md bg-transparent font-normal outline-none transition-colors focus-visible:ring-2 focus-visible:ring-offset-2"

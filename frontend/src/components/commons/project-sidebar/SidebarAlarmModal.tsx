@@ -1,6 +1,6 @@
 'use client';
 
-import { IconChevronDoubleLeft } from '@wanteddev/wds-icon';
+import { IconChevronDoubleLeft, IconInbox } from '@wanteddev/wds-icon';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
@@ -131,26 +131,38 @@ export const SidebarAlarmModal = ({ onClose }: SidebarAlarmModalProps) => {
             aria-hidden="true"
           />
           <div className="min-h-0 flex-1 overflow-hidden px-2">
-            <div
-              className="sidebar-alarm-scroll h-full overflow-y-auto pr-2"
-              onScroll={handleScroll}
-            >
-              <div className="flex flex-col gap-1 pr-1">
-                {notifications.map((item) => {
-                  const typeLabel = item.type ? NOTIFICATION_TYPE_LABELS[item.type] : '';
-                  const description = [item.projectName, item.content].filter(Boolean).join(' · ');
-                  return (
-                    <SidebarAlarmModalItem
-                      key={item.notificationId}
-                      title={typeLabel || item.title || ''}
-                      description={description}
-                      timeText={formatNotificationTime(item.createdAt)}
-                      isUnread={item.isRead === false}
-                    />
-                  );
-                })}
+            {notifications.length === 0 ? (
+              <div className="text-label-alternative flex h-full flex-col items-center justify-start gap-2 pt-40">
+                <IconInbox className="text-label-disable h-10 w-10" aria-hidden="true" />
+                <p className="text-body-2 font-medium">받은 알림이 없어요</p>
+                <p className="text-caption-1 text-label-assistive">
+                  새로운 알림이 오면 여기에 표시돼요
+                </p>
               </div>
-            </div>
+            ) : (
+              <div
+                className="sidebar-alarm-scroll h-full overflow-y-auto pr-2"
+                onScroll={handleScroll}
+              >
+                <div className="flex flex-col gap-1 pr-1">
+                  {notifications.map((item) => {
+                    const typeLabel = item.type ? NOTIFICATION_TYPE_LABELS[item.type] : '';
+                    const description = [item.projectName, item.content]
+                      .filter(Boolean)
+                      .join(' · ');
+                    return (
+                      <SidebarAlarmModalItem
+                        key={item.notificationId}
+                        title={typeLabel || item.title || ''}
+                        description={description}
+                        timeText={formatNotificationTime(item.createdAt)}
+                        isUnread={item.isRead === false}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </motion.div>

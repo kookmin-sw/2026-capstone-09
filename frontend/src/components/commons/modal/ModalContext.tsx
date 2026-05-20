@@ -11,7 +11,8 @@ import { createContext, useContext, useState, useCallback, ReactNode } from 'rea
 export type ModalVariant =
   | 'default' // 기본 모달
   | 'compact' // 좌우 36px / 상하 24px (초기 기준 검색 모달)
-  | 'sidebar'; // 좌측 사이드바(설정) 모달
+  | 'sidebar' // 좌측 사이드바(설정) 모달
+  | 'small'; // 소형 확인/삭제 다이얼로그
 
 /**
  * 모달을 열 때 사용할 수 있는 옵션들입니다.

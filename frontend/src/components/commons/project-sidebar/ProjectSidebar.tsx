@@ -12,11 +12,12 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useParams, usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
+import { authStorage } from '@/api/authStorage';
+import { userStorage } from '@/api/userStorage';
 import { useModal } from '@/components/commons/modal/ModalContext';
-import {
-  EXAMPLE_PROJECT_SIDEBAR_PROFILE,
-  EXAMPLE_SIDEBAR_ALARM_ITEMS,
-} from '@/constants/exampleConstant';
+import { useUnreadCountQuery } from '@/queries/notification';
+import { useProjectQuery } from '@/queries/project';
+import { useCurrentUserQuery } from '@/queries/user';
 import { cn } from '@/utils/cn';
 
 import { AccountSettingsModalContent } from './account-settings';
@@ -31,6 +32,12 @@ const SIDEBAR_COLLAPSED_WIDTH = 56;
 const SIDEBAR_TRANSITION_DURATION = 0.24;
 const SIDEBAR_LABEL_TRANSITION_DURATION = 0.16;
 
+const normalizeImageUrl = (raw?: string): string | undefined => {
+  if (!raw) return undefined;
+  if (/^(https?:)?\/\//i.test(raw)) return raw;
+  return `https://${raw}`;
+};
+
 interface ProjectSidebarProps {
   projectName?: string;
   userName?: string;
@@ -42,9 +49,9 @@ interface ProjectSidebarProps {
 }
 
 export const ProjectSidebar = ({
-  projectName = EXAMPLE_PROJECT_SIDEBAR_PROFILE.projectName,
-  userName = EXAMPLE_PROJECT_SIDEBAR_PROFILE.userName,
-  userEmail = EXAMPLE_PROJECT_SIDEBAR_PROFILE.userEmail,
+  projectName: projectNameProp,
+  userName: userNameProp,
+  userEmail: userEmailProp,
   onSearchClick,
   onInboxClick,
   onSettingClick,
@@ -59,8 +66,70 @@ export const ProjectSidebar = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [isCollapsedInternal, setIsCollapsedInternal] = useState(false);
   const [isAlarmModalOpen, setIsAlarmModalOpen] = useState(false);
-  const { unreadCount } = EXAMPLE_SIDEBAR_ALARM_ITEMS.data;
+  const [projectImgError, setProjectImgError] = useState(false);
   const isProjectSelectionPage = pathname === '/projects';
+
+  // 프로젝트 정보 — Tanstack Query
+  const { data: projectData } = useProjectQuery(isProjectIdValid ? (projectId as number) : 0);
+
+  // 사용자 정보 — API(getMe) 우선, localStorage 폴백
+  const { data: currentUser } = useCurrentUserQuery();
+  const storedUser = userStorage.get();
+
+  // 읽지 않은 알림 개수 — 최초 1회 fetch + SSE로 +1씩 누적
+  const { data: initialUnreadCount = 0 } = useUnreadCountQuery();
+  const [sseExtra, setSseExtra] = useState(0);
+  const unreadCount = initialUnreadCount + sseExtra;
+
+  useEffect(() => {
+    const token = authStorage.getAccess();
+    if (!token) return;
+
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
+    const controller = new AbortController();
+
+    const connect = async () => {
+      try {
+        const response = await fetch(`${baseUrl}/v1/notifications/subscribe`, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
+        });
+
+        if (!response.ok || !response.body) return;
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() ?? '';
+          for (const line of lines) {
+            if (line.startsWith('data:')) {
+              setSseExtra((prev) => prev + 1);
+            }
+          }
+        }
+      } catch {
+        // SSE 연결 종료 또는 오류 — 무시
+      }
+    };
+
+    void connect();
+    return () => { controller.abort(); };
+  }, []);
+
+  // prop > query > storage > 빈 문자열 우선순위로 합성
+  const projectName = projectNameProp ?? projectData?.name ?? '';
+  const projectImageUrl = normalizeImageUrl(projectData?.profileImageUrl);
+  const userName = userNameProp ?? currentUser?.nickname ?? storedUser?.nickname ?? '';
+  const userEmail = userEmailProp ?? currentUser?.email ?? storedUser?.email ?? '';
+  const profileImageUrl = normalizeImageUrl(
+    currentUser?.profileImageUrl ?? storedUser?.profileImageUrl,
+  );
   const isCollapsed = isProjectSelectionPage || isCollapsedInternal;
   const [isCollapseSettled, setIsCollapseSettled] = useState(true);
   const shouldUseCollapsedLayout = isCollapsed && isCollapseSettled;
@@ -167,7 +236,16 @@ export const ProjectSidebar = ({
               >
                 <div className="relative flex items-center justify-center">
                   <div className="border-line-solid-normal bg-cool-neutral-96 relative flex aspect-square h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-md border">
-                    <IconCompany className="text-static-white h-4 w-4" aria-hidden="true" />
+                    {projectImageUrl && !projectImgError ? (
+                      <img
+                        src={projectImageUrl}
+                        alt={projectName}
+                        className="h-full w-full object-cover"
+                        onError={() => setProjectImgError(true)}
+                      />
+                    ) : (
+                      <IconCompany className="text-static-white h-4 w-4" aria-hidden="true" />
+                    )}
                   </div>
                 </div>
                 {projectName && (
@@ -246,6 +324,7 @@ export const ProjectSidebar = ({
               isCollapsed={isCollapsed}
               userName={userName}
               userEmail={userEmail}
+              profileImageUrl={profileImageUrl}
               onClick={handleProfileClick}
             />
           </div>

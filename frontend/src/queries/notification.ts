@@ -12,6 +12,14 @@ const extractErrorCode = (caught: unknown): string | undefined => {
   return obj.error?.code ?? obj.code;
 };
 
+export function useUnreadCountQuery() {
+  return useQuery({
+    queryKey: notificationKeys.unreadCount(),
+    queryFn: () =>
+      privateApi.notification.getUnreadCount().then((res) => res.data.data?.unreadCount ?? 0),
+  });
+}
+
 export function useNotificationSettingQuery(projectId: number) {
   return useQuery({
     queryKey: notificationKeys.setting(projectId),
