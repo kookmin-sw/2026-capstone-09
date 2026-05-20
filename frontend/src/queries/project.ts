@@ -61,3 +61,10 @@ export function useLeaveProjectMutation(projectId: number) {
     mutationFn: () => privateApi.projectMember.leaveProject(projectId),
   });
 }
+
+export function useAcceptInvitationMutation() {
+  return useMutation({
+    mutationFn: (token: string) =>
+      privateApi.project.acceptInvitation({ token }).then((res) => res.data),
+  });
+}
