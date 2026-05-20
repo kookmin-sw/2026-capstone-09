@@ -3,6 +3,7 @@ package kr.flowmeet.external.ai.config;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.web.client.RestClient;
 
 @Configuration
@@ -10,9 +11,13 @@ import org.springframework.web.client.RestClient;
 public class AiAgentConfig {
 
     @Bean
-    public RestClient aiAgentRestClient(final RestClient.Builder builder, final AiAgentProperties properties) {
-        return builder
+    public RestClient aiAgentRestClient(final AiAgentProperties properties) {
+        return RestClient.builder()
                 .baseUrl(properties.getUrl())
+                .messageConverters(converters -> {
+                    converters.clear();
+                    converters.add(new JacksonJsonHttpMessageConverter());
+                })
                 .build();
     }
 }
