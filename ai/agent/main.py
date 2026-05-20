@@ -61,6 +61,7 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     response: str
     session_id: str
+    session_name: str | None = None
 
 
 @app.get("/health")
@@ -80,6 +81,14 @@ async def chat(body: ChatRequest, authorization: str = Header(None)):
     session = await get_or_create_session(session_id, token, body.project_id)
 
     async with session["lock"]:
-        response = await session["agent"].run(body.message)
+        is_new_session = len(session["agent"].conversation_history) == 0
+        if is_new_session:
+            response_text, session_name = await asyncio.gather(
+                session["agent"].run(body.message),
+                session["agent"].generate_session_name(body.message)
+            )
+        else:
+            response_text = await session["agent"].run(body.message)
+            session_name = None
 
-    return ChatResponse(response=response, session_id=session_id)
+    return ChatResponse(response=response_text, session_id=session_id, session_name=session_name)

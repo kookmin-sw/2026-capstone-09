@@ -19,6 +19,18 @@ class Agent:
     async def close(self):
         pass
 
+    async def generate_session_name(self, first_message: str) -> str:
+        response = await self.client.aio.models.generate_content(
+            model=self.model,
+            contents=[
+                types.Content(role="user", parts=[types.Part(text=(
+                    f"다음 메시지를 보고 채팅 세션 이름을 한국어로 10자 이내로 만들어줘. "
+                    f"이름만 출력하고 다른 말은 하지 마.\n\n메시지: {first_message}"
+                ))])
+            ],
+        )
+        return response.text.strip()
+
     async def _get_gemini_tools(self) -> list[types.Tool]:
         mcp_tools = await self.mcp_client.list_tools()
  
