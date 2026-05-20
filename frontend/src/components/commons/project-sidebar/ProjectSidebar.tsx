@@ -14,8 +14,9 @@ import { useEffect, useRef, useState } from 'react';
 
 import { userStorage } from '@/api/userStorage';
 import { useModal } from '@/components/commons/modal/ModalContext';
-import { useProjectQuery } from '@/queries/project';
 import { useUnreadCountQuery } from '@/queries/notification';
+import { useProjectQuery } from '@/queries/project';
+import { useCurrentUserQuery } from '@/queries/user';
 import { cn } from '@/utils/cn';
 
 import { AccountSettingsModalContent } from './account-settings';
@@ -64,24 +65,27 @@ export const ProjectSidebar = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [isCollapsedInternal, setIsCollapsedInternal] = useState(false);
   const [isAlarmModalOpen, setIsAlarmModalOpen] = useState(false);
+  const [projectImgError, setProjectImgError] = useState(false);
   const isProjectSelectionPage = pathname === '/projects';
 
-  // 프로젝트 이름 — Tanstack Query
+  // 프로젝트 정보 — Tanstack Query
   const { data: projectData } = useProjectQuery(isProjectIdValid ? (projectId as number) : 0);
 
-  // 사용자 정보 — localStorage (로그인 시 저장된 값)
+  // 사용자 정보 — API(getMe) 우선, localStorage 폴백
+  const { data: currentUser } = useCurrentUserQuery();
   const storedUser = userStorage.get();
 
   // 읽지 않은 알림 개수 — Tanstack Query
   const { data: unreadCount = 0 } = useUnreadCountQuery();
 
-  // prop > query/storage > 빈 문자열 우선순위로 합성.
+  // prop > query > storage > 빈 문자열 우선순위로 합성
   const projectName = projectNameProp ?? projectData?.name ?? '';
-  const userName = userNameProp ?? storedUser?.nickname ?? '';
-  const userEmail = userEmailProp ?? storedUser?.email ?? '';
-  const profileImageUrl = storedUser?.profileImageUrl
-    ? normalizeImageUrl(storedUser.profileImageUrl)
-    : undefined;
+  const projectImageUrl = normalizeImageUrl(projectData?.profileImageUrl);
+  const userName = userNameProp ?? currentUser?.nickname ?? storedUser?.nickname ?? '';
+  const userEmail = userEmailProp ?? currentUser?.email ?? storedUser?.email ?? '';
+  const profileImageUrl = normalizeImageUrl(
+    currentUser?.profileImageUrl ?? storedUser?.profileImageUrl,
+  );
   const isCollapsed = isProjectSelectionPage || isCollapsedInternal;
   const [isCollapseSettled, setIsCollapseSettled] = useState(true);
   const shouldUseCollapsedLayout = isCollapsed && isCollapseSettled;
@@ -188,7 +192,16 @@ export const ProjectSidebar = ({
               >
                 <div className="relative flex items-center justify-center">
                   <div className="border-line-solid-normal bg-cool-neutral-96 relative flex aspect-square h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-md border">
-                    <IconCompany className="text-static-white h-4 w-4" aria-hidden="true" />
+                    {projectImageUrl && !projectImgError ? (
+                      <img
+                        src={projectImageUrl}
+                        alt={projectName}
+                        className="h-full w-full object-cover"
+                        onError={() => setProjectImgError(true)}
+                      />
+                    ) : (
+                      <IconCompany className="text-static-white h-4 w-4" aria-hidden="true" />
+                    )}
                   </div>
                 </div>
                 {projectName && (

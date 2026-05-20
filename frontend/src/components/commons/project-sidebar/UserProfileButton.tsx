@@ -1,3 +1,7 @@
+'use client';
+
+import { useState } from 'react';
+
 import { IconPersonFill } from '@wanteddev/wds-icon';
 
 import { cn } from '@/utils/cn';
@@ -17,7 +21,9 @@ export const UserProfileButton = ({
   profileImageUrl,
   onClick,
 }: UserProfileButtonProps) => {
+  const [imgError, setImgError] = useState(false);
   const shouldShowUserInfo = !isCollapsed && Boolean(userName || userEmail);
+  const showImage = Boolean(profileImageUrl) && !imgError;
 
   return (
     <button
@@ -29,11 +35,12 @@ export const UserProfileButton = ({
       )}
     >
       <div className="border-line-solid-normal bg-cool-neutral-96 relative flex aspect-square h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full border">
-        {profileImageUrl ? (
+        {showImage ? (
           <img
             src={profileImageUrl}
             alt={userName ?? '프로필'}
             className="h-full w-full object-cover"
+            onError={() => setImgError(true)}
           />
         ) : (
           <IconPersonFill className="text-static-white h-4 w-4" aria-hidden="true" />
