@@ -16,7 +16,7 @@ public class AiAgentClient {
 
     private final RestClient aiAgentRestClient;
 
-    public String chat(final String message, final String sessionId, final Long projectId, final String authorization) {
+    public AiChatResponse chat(final String message, final String sessionId, final Long projectId, final String authorization) {
         Map<String, String> requestBody = Map.of(
                 "message", message,
                 "session_id", sessionId,
@@ -26,15 +26,13 @@ public class AiAgentClient {
         log.info("AI Agent 호출 - sessionId: {}", sessionId);
 
         try {
-            AiChatResponse response = aiAgentRestClient.post()
+            return aiAgentRestClient.post()
                     .uri("/chat")
                     .header("Authorization", authorization)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(requestBody)
                     .retrieve()
                     .body(AiChatResponse.class);
-
-            return response.response();
         } catch (Exception e) {
             log.error("AI Agent 호출 실패 - sessionId: {}", sessionId, e);
             throw new ExternalException(AiAgentErrorCode.AI_AGENT_UNAVAILABLE);
