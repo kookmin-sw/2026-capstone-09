@@ -1,6 +1,6 @@
 package kr.flowmeet.external.ai;
 
-import kr.flowmeet.external.ai.dto.AiChatRequest;
+import java.util.Map;
 import kr.flowmeet.external.ai.dto.AiChatResponse;
 import kr.flowmeet.external.exception.ExternalException;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,11 @@ public class AiAgentClient {
     private final RestClient aiAgentRestClient;
 
     public String chat(final String message, final String sessionId, final Long projectId, final String authorization) {
-        AiChatRequest request = new AiChatRequest(message, sessionId, String.valueOf(projectId));
+        Map<String, String> requestBody = Map.of(
+                "message", message,
+                "session_id", sessionId,
+                "project_id", String.valueOf(projectId)
+        );
 
         log.info("AI Agent 호출 - sessionId: {}", sessionId);
 
@@ -26,7 +30,7 @@ public class AiAgentClient {
                     .uri("/chat")
                     .header("Authorization", authorization)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(request)
+                    .body(requestBody)
                     .retrieve()
                     .body(AiChatResponse.class);
 
