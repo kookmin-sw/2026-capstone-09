@@ -91,7 +91,7 @@ class Agent:
 
                 all_args = {
                     **dict(fc.args),
-                    "project_id": self.project_id,
+                    "projectId": int(self.project_id),
                 }
 
                 print(f"[Agent] 툴 호출: {fc.name}({all_args})")
