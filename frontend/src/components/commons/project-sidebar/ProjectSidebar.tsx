@@ -281,7 +281,7 @@ export const ProjectSidebar = ({
               userName={userName}
               userEmail={userEmail}
               profileImageUrl={profileImageUrl}
-              onClick={onProfileClick}
+              onClick={handleProfileClick}
             />
           </div>
         </div>
