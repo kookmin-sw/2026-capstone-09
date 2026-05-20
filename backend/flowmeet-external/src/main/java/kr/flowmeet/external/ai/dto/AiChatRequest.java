@@ -1,10 +1,12 @@
 package kr.flowmeet.external.ai.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.annotation.JsonNaming;
 
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public record AiChatRequest(
         String message,
-        @JsonProperty("session_id") String sessionId,
-        @JsonProperty("project_id") Long projectId
+        String sessionId,
+        String projectId
 ) {
 }

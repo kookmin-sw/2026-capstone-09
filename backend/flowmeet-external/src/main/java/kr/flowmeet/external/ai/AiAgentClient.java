@@ -17,7 +17,7 @@ public class AiAgentClient {
     private final RestClient aiAgentRestClient;
 
     public String chat(final String message, final String sessionId, final Long projectId, final String authorization) {
-        AiChatRequest request = new AiChatRequest(message, sessionId, projectId);
+        AiChatRequest request = new AiChatRequest(message, sessionId, String.valueOf(projectId));
 
         log.info("AI Agent 호출 - sessionId: {}", sessionId);
 
