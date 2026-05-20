@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { ChatWidget } from '@/components/chat/ChatWidget';
 import { ProjectDetailHeader } from '@/components/projects/project-detail/ProjectDetailHeader';
 import { ProjectDetailLinks } from '@/components/projects/project-detail/ProjectDetailLinks';
 import { EXAMPLE_USERS } from '@/constants/exampleConstant';
@@ -54,6 +55,7 @@ export default function ProjectDetailLayout({ children }: ProjectDetailLayoutPro
         />
         <ProjectDetailLinks />
         {children}
+        <ChatWidget />
       </div>
     </ProjectDetailLayoutContext.Provider>
   );

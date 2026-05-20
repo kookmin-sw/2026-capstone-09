@@ -4,13 +4,14 @@ import { IconButton } from '@wanteddev/wds';
 import { IconFull } from '@wanteddev/wds-icon';
 import Link from 'next/link';
 import { useEffect, useState, useCallback, useSyncExternalStore } from 'react';
+import { YjsProvider } from '@/contexts/YjsContext';
 import {
   getServerSnapshot,
   getSessionSnapshot,
   SESSION_KEY,
   subscribeToSession,
+  setSidebarState,
 } from '@/utils/sidebarSnapshot';
-import { YjsProvider } from '@/contexts/YjsContext';
 import NodeMeetingTab from './meeting/NodeMeetingTab';
 import { NodeDetailLayout } from './NodeDetailLayout';
 import NodeNoteTab from './note/NodeNoteTab';
@@ -33,6 +34,7 @@ export function NodeSidebar({ nodeId, projectId, onClose }: NodeSidebarProps) {
   useEffect(() => {
     if (nodeId) {
       sessionStorage.setItem(SESSION_KEY, nodeId.toString());
+      setSidebarState(true);
     }
   }, [nodeId]);
 
@@ -42,6 +44,7 @@ export function NodeSidebar({ nodeId, projectId, onClose }: NodeSidebarProps) {
 
   const handleClose = useCallback(() => {
     sessionStorage.removeItem(SESSION_KEY);
+    setSidebarState(false);
     onClose();
   }, [onClose]);
 

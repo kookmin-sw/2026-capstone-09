@@ -1,6 +1,6 @@
 'use client';
 
-import { FormField, List, ListCell } from '@wanteddev/wds';
+import { FormField, List, ListCell, ContentBadge } from '@wanteddev/wds';
 import { Box } from '@wanteddev/wds-engine';
 import type { Theme } from '@wanteddev/wds-engine';
 import { IconCheck, IconPerson, IconFolder, IconSend, IconChevronDownThickSmall, IconChevronUpThickSmall } from '@wanteddev/wds-icon';
@@ -9,14 +9,15 @@ import {ReactNode, useEffect, useState, useRef, useCallback, useMemo } from 'rea
 export interface UserOption {
   id: string;
   label: string;
-  leadingContent?: ReactNode;
+  profileImageUrl?: string;
   trailingContent?: ReactNode;
 }
 
 export interface NodeOption {
   id: string;
   label: string;
-  leadingContent?: ReactNode;
+  nodeId: number;
+  number?: string;
   trailingContent?: ReactNode;
 }
 
@@ -40,6 +41,7 @@ export interface MultiSelectInputProps {
   onChange?: (value: MultiSelectInputValue) => void;
   onSubmit?: (value: MultiSelectInputValue) => void;
   className?: string;
+  autoFocus?: boolean;
 }
 
 type MenuStage = 'category' | 'user-list' | 'node-list' | 'combined-list' | null;
@@ -55,6 +57,39 @@ const MENU_ITEM_STYLES = {
   textAlign: 'left' as const,
 };
 
+// leadingContent 생성 헬퍼 함수
+const createUserLeadingContent = (user: UserOption): ReactNode => {
+  if (user.profileImageUrl) {
+    return (
+      <img
+        src={user.profileImageUrl}
+        alt={user.label}
+        className="w-6 h-6 rounded-full object-cover"
+      />
+    );
+  }
+  return (
+    <div className="w-6 h-6 rounded-full bg-fill-alternative flex items-center justify-center">
+      <IconPerson width={16} height={16} />
+    </div>
+  );
+};
+
+const createNodeLeadingContent = (node: NodeOption): ReactNode => {
+  const isSubNode = node.number?.includes('.');
+
+  return (
+    <ContentBadge
+      size="xsmall"
+      variant={isSubNode ? 'outlined' : 'solid'}
+      color={isSubNode ? 'neutral' : undefined}
+      className={isSubNode ? undefined : '!bg-primary-40/10 !text-primary-40'}
+    >
+      #{node.number}
+    </ContentBadge>
+  );
+};
+
 export const MultiSelectInput = ({
   placeholder,
   userOptions,
@@ -63,6 +98,7 @@ export const MultiSelectInput = ({
   onChange,
   onSubmit,
   className,
+  autoFocus = false,
 }: MultiSelectInputProps) => {
   const [inputText, setInputText] = useState(value.text);
   const [menuStage, setMenuStage] = useState<MenuStage>(null);
@@ -75,6 +111,13 @@ export const MultiSelectInput = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // autoFocus 처리
+  useEffect(() => {
+    if (autoFocus && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [autoFocus]);
+
   const selectedItems: SelectedItem[] = useMemo(() => value.mentions.map((mention) => {
     if (mention.type === 'user') {
       const user = userOptions.find((u) => u.id === mention.id);
@@ -82,7 +125,7 @@ export const MultiSelectInput = ({
         type: 'user',
         id: mention.id,
         label: user?.label || '',
-        leadingContent: user?.leadingContent,
+        leadingContent: user ? createUserLeadingContent(user) : undefined,
       };
     } else {
       const node = nodeOptions.find((n) => n.id === mention.id);
@@ -90,7 +133,7 @@ export const MultiSelectInput = ({
         type: 'node',
         id: mention.id,
         label: node?.label || '',
-        leadingContent: node?.leadingContent,
+        leadingContent: node ? createNodeLeadingContent(node) : undefined,
       };
     }
   }), [value.mentions, userOptions, nodeOptions]);
@@ -633,6 +676,7 @@ export const MultiSelectInput = ({
                 <Box sx={{ maxHeight: '12.5rem', overflowY: 'auto' }}>
                   {(() => {
                     const options = menuStage === 'user-list' ? filteredUserOptions : filteredNodeOptions;
+                    const isUserList = menuStage === 'user-list';
                     return options.length > 0 ? (
                       options.map((item, index) => {
                         const isSelected = tempSelectedIds.includes(item.id);
@@ -653,10 +697,10 @@ export const MultiSelectInput = ({
                               },
                             })}
                           >
-                            {item.leadingContent}
+                            {isUserList ? createUserLeadingContent(item as UserOption) : createNodeLeadingContent(item as NodeOption)}
                             <Box sx={{ flex: 1 }}>{item.label}</Box>
                             {item.trailingContent}
-                            {isSelected && <IconCheck width={16} height={16} style={{ color: '#33EBC3' }} />}
+                            {isSelected && <IconCheck width={16} height={16} style={{ color: '#04E6A2' }} />}
                           </Box>
                         );
                       })
@@ -715,10 +759,10 @@ export const MultiSelectInput = ({
                               },
                             })}
                           >
-                            {item.leadingContent}
+                            {createUserLeadingContent(item)}
                             <Box sx={{ flex: 1 }}>{item.label}</Box>
                             {item.trailingContent}
-                            {isSelected && <IconCheck width={16} height={16} style={{ color: '#33EBC3' }} />}
+                            {isSelected && <IconCheck width={16} height={16} style={{ color: '#04E6A2' }} />}
                           </Box>
                         );
                       })}
@@ -770,10 +814,10 @@ export const MultiSelectInput = ({
                               },
                             })}
                           >
-                            {item.leadingContent}
+                            {createNodeLeadingContent(item)}
                             <Box sx={{ flex: 1 }}>{item.label}</Box>
                             {item.trailingContent}
-                            {isSelected && <IconCheck width={16} height={16} style={{ color: '#33EBC3' }} />}
+                            {isSelected && <IconCheck width={16} height={16} style={{ color: '#04E6A2' }} />}
                           </Box>
                         );
                       })}
