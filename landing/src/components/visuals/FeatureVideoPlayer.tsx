@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { asset } from '../../lib/asset';
 
 export function FeatureVideoPlayer({ src }: { src: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -31,7 +32,7 @@ export function FeatureVideoPlayer({ src }: { src: string }) {
     <div className="relative w-full overflow-hidden rounded-2xl border border-white/[0.10] bg-black">
       <video
         ref={videoRef}
-        src={src}
+        src={asset(src)}
         autoPlay
         muted
         playsInline
