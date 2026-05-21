@@ -84,9 +84,14 @@ export function KanbanView({ projectId }: KanbanViewProps) {
   }
 
   return (
-    <DndContext sensors={sensors} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
-      <div className="flex-1 h-full w-full p-10 bg-surface-canvas">
-        <div className="flex gap-2.5 h-full">
+    <DndContext
+      sensors={sensors}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
+      autoScroll={{ threshold: { x: 0, y: 0.2 } }}
+    >
+      <div className="bg-surface-canvas h-full w-full flex-1 overflow-hidden p-10">
+        <div className="flex h-full gap-2.5 overflow-hidden">
           {KANBAN_STATUSES.map((status) => (
             <KanbanColumn
               key={status}

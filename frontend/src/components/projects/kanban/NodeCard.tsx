@@ -40,7 +40,7 @@ export function NodeCard({
   });
 
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: CSS.Translate.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
   };
@@ -49,12 +49,12 @@ export function NodeCard({
     <div
       ref={setNodeRef}
       style={style}
-      className="self-stretch p-4 bg-white rounded-lg border border-neutral-200 flex flex-col cursor-pointer hover:shadow-sm transition-shadow select-none"
+      className="flex min-w-0 cursor-pointer select-none flex-col self-stretch rounded-lg border border-neutral-200 bg-white p-4 transition-shadow hover:shadow-sm"
       onClick={onClick}
       onDoubleClick={onDoubleClick}
     >
-      <div className="self-stretch flex justify-between items-center">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between self-stretch">
+        <div className="flex min-w-0 items-center gap-2">
           {isMainNode ? (
             <ContentBadge
               className="!bg-primary-40/10 !text-primary-40"
@@ -90,7 +90,7 @@ export function NodeCard({
               </span>
             </ContentBadge>
           )}
-          <div className="text-caption-2 text-label-alternative font-normal">
+          <div className="text-caption-2 text-label-alternative shrink-0 font-normal">
             {date}
           </div>
         </div>
@@ -104,12 +104,12 @@ export function NodeCard({
         </div>
       </div>
 
-      <div className="self-stretch mt-1">
-        <div className="text-body-1 font-medium">{title}</div>
+      <div className="mt-1 min-w-0 self-stretch">
+        <div className="text-body-1 truncate font-medium">{title}</div>
       </div>
 
       {tags.length > 0 && (
-        <div className="self-stretch flex flex-wrap gap-1 mt-3">
+        <div className="mt-3 flex min-w-0 flex-wrap gap-1 self-stretch overflow-hidden">
           {visibleTags.map((tag) => (
             <ContentBadge
               key={tag.tagId}

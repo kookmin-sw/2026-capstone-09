@@ -421,7 +421,7 @@ body {
 @theme {
   /* 애니메이션 변수 정의 */
   --animate-slide-in: slide-in 0.22s cubic-bezier(0.32, 0.72, 0, 1);
-  --animate-slide-out: slide-out 0.22s cubic-bezier(0.32, 0.72, 0, 1);
+  --animate-slide-out: slide-out 0.22s cubic-bezier(0.32, 0.72, 0, 1) forwards;
 
   /* 키프레임 정의 */
   @keyframes slide-in {

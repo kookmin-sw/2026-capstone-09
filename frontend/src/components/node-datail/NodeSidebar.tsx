@@ -1,7 +1,7 @@
 'use client';
 
 import { IconButton } from '@wanteddev/wds';
-import { IconFull } from '@wanteddev/wds-icon';
+import { IconChevronDoubleRight, IconFull } from '@wanteddev/wds-icon';
 import Link from 'next/link';
 import { useEffect, useState, useCallback, useSyncExternalStore } from 'react';
 import { YjsProvider, useSetActiveAwarenessNode } from '@/contexts/YjsContext';
@@ -30,9 +30,11 @@ export function NodeSidebar({ nodeId, projectId, onClose }: NodeSidebarProps) {
   );
 
   const [value, setValue] = useState('note');
+  const [isClosing, setIsClosing] = useState(false);
 
   useEffect(() => {
     if (nodeId) {
+      setIsClosing(false);
       sessionStorage.setItem(SESSION_KEY, nodeId.toString());
       setSidebarState(true);
     }
@@ -46,10 +48,16 @@ export function NodeSidebar({ nodeId, projectId, onClose }: NodeSidebarProps) {
   useSetActiveAwarenessNode(awarenessNodeId);
 
   const handleClose = useCallback(() => {
-    sessionStorage.removeItem(SESSION_KEY);
-    setSidebarState(false);
-    onClose();
-  }, [onClose]);
+    setIsClosing(true);
+  }, []);
+
+  const handleAnimationEnd = useCallback(() => {
+    if (isClosing) {
+      sessionStorage.removeItem(SESSION_KEY);
+      setSidebarState(false);
+      onClose();
+    }
+  }, [isClosing, onClose]);
 
   if (!isOpen || !activeNodeId || !Number.isFinite(numericNodeId)) return null;
 
@@ -60,20 +68,28 @@ export function NodeSidebar({ nodeId, projectId, onClose }: NodeSidebarProps) {
       <div className="fixed inset-0 z-30" onClick={handleClose} aria-hidden="true" />
 
       {/* 사이드바 */}
-      {/* TODO : 지금 열릴 때만 애니메이션 적용됨 - 추후 닫힐 때 애니메이션 구현 */}
       {/* TODO : z-index 한 번에 관리할 수 있도록 정리 */}
       <aside
-        className="animate-slide-in fixed top-0 right-0 z-90 flex h-full w-2/5 flex-col border-l border-white bg-white"
+        className={`fixed top-0 right-0 z-90 flex h-full w-2/5 flex-col border-l border-white bg-white ${isClosing ? 'animate-slide-out' : 'animate-slide-in'}`}
         onClick={(e) => e.stopPropagation()}
+        onAnimationEnd={handleAnimationEnd}
       >
         {/* TODO : 전체 페이지의 경우 페이지 닫는 아이콘으로 변경 필요 */}
         {/* TODO : 사이드바 닫는 아이콘 필요 */}
-        <div className="absolute -scale-x-100 p-3">
+        <div className="absolute left-3 top-3 flex items-center gap-3">
+          <IconButton
+            color="semantic.label.alternative"
+            onClick={handleClose}
+            size={20}
+            aria-label="사이드바 접기"
+          >
+            <IconChevronDoubleRight />
+          </IconButton>
           <IconButton
             color="semantic.label.alternative"
             href={`/projects/${projectId}/nodes/${activeNodeId}/${value}`}
             onClick={handleClose}
-            size={16}
+            size={20}
             aria-label="전체화면 보기"
             as={Link}
           >
