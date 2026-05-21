@@ -10,6 +10,9 @@ import kr.flowmeet.api.ai.handler.NodeSummaryTextMerger;
 import kr.flowmeet.api.node.dto.response.AnalyzeDraggedNodesResponse;
 import kr.flowmeet.api.node.dto.response.RequestNodeSummaryResponse;
 import kr.flowmeet.api.node.event.NodeSummaryRequestEvent;
+import kr.flowmeet.domain.node.event.NodeCreatedEvent;
+import kr.flowmeet.domain.node.event.NodeDeletedEvent;
+import kr.flowmeet.domain.node.event.NodeUpdatedEvent;
 import kr.flowmeet.domain.ai.entity.AiTask;
 import kr.flowmeet.domain.ai.entity.AiTaskType;
 import kr.flowmeet.domain.ai.service.AiTaskService;
@@ -128,6 +131,7 @@ public class NodeFacade {
         }
 
         nodeService.create(projectId, number, request.toCommand());
+        eventPublisher.publishEvent(NodeCreatedEvent.of(projectId));
     }
 
     @Transactional
@@ -140,6 +144,7 @@ public class NodeFacade {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         nodeService.updateNodeTitle(projectId, nodeId, title);
+        eventPublisher.publishEvent(NodeUpdatedEvent.of(projectId));
     }
 
     @Transactional
@@ -152,6 +157,7 @@ public class NodeFacade {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         nodeService.updateNodeDescription(projectId, nodeId, description);
+        eventPublisher.publishEvent(NodeUpdatedEvent.of(projectId));
     }
 
     @Transactional
@@ -164,6 +170,7 @@ public class NodeFacade {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         nodeService.updateNodeNote(projectId, nodeId, noteContent);
+        eventPublisher.publishEvent(NodeUpdatedEvent.of(projectId));
     }
 
     @Transactional
@@ -180,6 +187,7 @@ public class NodeFacade {
 
         edgeService.deleteAllByNodeIds(allNodeIds);
         nodeService.deleteWithAllDescendants(node);
+        eventPublisher.publishEvent(NodeDeletedEvent.of(projectId));
     }
 
     public GetNodeListResponse getNodeList(
@@ -225,6 +233,7 @@ public class NodeFacade {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         nodeService.updateNodeKanban(projectId, nodeId, request.toCommand());
+        eventPublisher.publishEvent(NodeUpdatedEvent.of(projectId));
     }
 
     @Transactional
@@ -237,6 +246,7 @@ public class NodeFacade {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
 
         nodeService.updateNodeStatus(projectId, nodeId, request.toCommand());
+        eventPublisher.publishEvent(NodeUpdatedEvent.of(projectId));
     }
 
     public GetLinkedNodesResponse getLinkedNodes(

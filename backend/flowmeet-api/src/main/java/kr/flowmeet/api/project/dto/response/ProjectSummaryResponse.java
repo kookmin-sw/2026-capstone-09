@@ -15,8 +15,8 @@ public record ProjectSummaryResponse(
         String name,
         @Schema(description = "프로젝트 멤버 수", example = "8")
         int memberCount,
-        @Schema(description = "마지막 수정 시각", example = "2026-04-19T10:15:30")
-        LocalDateTime updatedAt
+        @Schema(description = "마지막 활동 시각", example = "2026-04-19T10:15:30")
+        LocalDateTime lastActivityAt
 ) {
     public static ProjectSummaryResponse from(final ProjectWithMemberCountProjection projection) {
         Project project = projection.project();
@@ -25,7 +25,7 @@ public record ProjectSummaryResponse(
                 project.getProfileImageUrl(),
                 project.getName(),
                 projection.memberCount().intValue(),
-                project.getUpdatedAt()
+                project.getLastActivityAt()
         );
     }
 }
