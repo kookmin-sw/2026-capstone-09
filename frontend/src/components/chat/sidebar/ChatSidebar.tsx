@@ -2,7 +2,9 @@
 
 import { List, ListCell, ScrollArea } from '@wanteddev/wds';
 import { IconTemplate, IconChat, IconSearch } from '@wanteddev/wds-icon';
+import { useModal } from '@/components/commons/modal/ModalContext';
 import { ChatListItem } from './ChatListItem';
+import { ChatSearchModalContent } from '../search/ChatSearchModalContent';
 
 interface ChatSession {
   chatSessionId?: number | null;
@@ -40,6 +42,25 @@ export function ChatSidebar({
   onMenuOpenChange,
   onCurrentChatClear,
 }: ChatSidebarProps) {
+  const { openModal, closeModal } = useModal();
+
+  const handleSearchClick = () => {
+    openModal({
+      variant: 'compact',
+      closeOnBackdrop: true,
+      closeOnEsc: true,
+      content: (
+        <ChatSearchModalContent
+          projectId={projectId}
+          onResultClick={(item) => {
+            onSelectChat(item.chatSessionId);
+            closeModal();
+          }}
+        />
+      ),
+    });
+  };
+
   return (
     <div
       className={`absolute right-full top-0 w-44 h-full px-4 bg-white rounded-l-xl border-r border-line-normal-normal flex flex-col gap-1 transition-transform duration-300 ${
@@ -66,6 +87,7 @@ export function ChatSidebar({
           <span className="text-caption-1 font-regular">새 채팅</span>
         </ListCell>
         <ListCell
+          onClick={handleSearchClick}
           leadingContent={<IconSearch width={16} height={16} />}
           verticalPadding="small"
           sx={{ cursor: 'pointer', alignItems: 'center' }}

@@ -7,8 +7,8 @@ import { useDialog } from '@/components/commons/custom-dialog/DialogContext';
 import { CustomMenuItem } from '@/components/commons/custom-menu/CustomMemuItem';
 import { useUpdateChatSession, useDeleteChatSession } from '@/queries/chat';
 import { chatKeys } from '@/queries/keys/chatKeys';
-import { ChatDeleteDialog } from './ChatDeleteDialog';
-import { ChatRenameDialog } from './ChatRenameDialog';
+import { ChatDeleteDialog } from '../dialogs/ChatDeleteDialog';
+import { ChatRenameDialog } from '../dialogs/ChatRenameDialog';
 
 interface ChatListItemProps {
   chat: {

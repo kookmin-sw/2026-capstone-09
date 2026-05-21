@@ -4,16 +4,18 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { privateApi } from '@/api';
 import { chatKeys } from './keys/chatKeys';
 
-interface CreateChatSessionParams {
-  projectId: number;
-  title: string;
-}
-
 interface SendMessageParams {
   projectId: number;
   chatSessionId: number;
   content: string;
   referenceNodeIds?: number[];
+  referenceUserIds?: number[];
+}
+
+interface StartChatParams {
+  projectId: number;
+  content: string;
+  nodeIds?: number[];
   referenceUserIds?: number[];
 }
 
@@ -90,12 +92,28 @@ export function useGetReferenceNodes(projectId: number) {
   });
 }
 
+// 참조 가능한 사용자 조회
+export function useGetReferenceUsers(projectId: number) {
+  return useQuery({
+    queryKey: chatKeys.referenceUsers(projectId),
+    queryFn: async () => {
+      const response = await privateApi.chat.getReferenceUsers(projectId);
+      return response.data;
+    },
+    enabled: !!projectId,
+  });
+}
 
-// 채팅 세션 생성
-export function useCreateChatSession() {
+
+// 새 채팅 시작 (세션 생성 + 첫 메시지 전송)
+export function useStartChat() {
   return useMutation({
-    mutationFn: async ({ projectId, title }: CreateChatSessionParams) => {
-      const response = await privateApi.chat.createChatSession(projectId, { title });
+    mutationFn: async ({ projectId, content, nodeIds, referenceUserIds }: StartChatParams) => {
+      const response = await privateApi.chat.startChat(projectId, {
+        content,
+        nodeIds,
+        referenceUserIds,
+      });
       return response.data;
     },
   });
