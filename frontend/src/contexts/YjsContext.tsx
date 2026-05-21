@@ -49,7 +49,7 @@ const YjsContext = createContext<YjsContextValue | null>(null);
  * 브라우저 환경에서만 Y.Doc과 WebsocketProvider를 생성한다.
  * SSR(typeof window === 'undefined') 시에는 null을 반환한다.
  */
-function createYjsState(nodeId: number): YjsContextValue | null {
+function createYjsState(room: string): YjsContextValue | null {
   if (typeof window === 'undefined') return null;
 
   const serverUrl = process.env.NEXT_PUBLIC_YJS_WS_URL ?? 'ws://localhost:1234';
@@ -57,8 +57,8 @@ function createYjsState(nodeId: number): YjsContextValue | null {
 
   // 서버용 인증 토큰 로컬 서버에서 임시로 제거
   // const token = authStorage.getAccess();
-  // const provider = new WebsocketProvider(serverUrl, `node-${nodeId}`, ydoc, {token && {params: {token}}});
-  const provider = new WebsocketProvider(serverUrl, `node-${nodeId}`, ydoc);
+  // const provider = new WebsocketProvider(serverUrl, room, ydoc, {token && {params: {token}}});
+  const provider = new WebsocketProvider(serverUrl, room, ydoc);
 
   // 세션 랜덤 색 설정
   const color = AWARENESS_COLORS[Math.floor(Math.random() * AWARENESS_COLORS.length)];
@@ -67,21 +67,21 @@ function createYjsState(nodeId: number): YjsContextValue | null {
   return { ydoc, provider };
 }
 
-// YjsProvider의 key prop으로 nodeId 변경 시 리마운트된다.
-function YjsInstance({ nodeId, children }: { nodeId: number; children: React.ReactNode }) {
+// 상위 Provider의 key prop으로 room 변경 시 리마운트된다.
+function YjsInstance({ room, children }: { room: string; children: React.ReactNode }) {
   const [value, setValue] = useState<YjsContextValue | null>(null);
   const { data: currentUser } = useCurrentUserQuery();
 
   useEffect(() => {
-    const yjsValue = createYjsState(nodeId);
-    // nodeId가 바뀌지 않는 한 effect가 재실행되지 않으므로 cascading render 없으므로 lint 무시 가능...?
+    const yjsValue = createYjsState(room);
+    // room이 바뀌지 않는 한 effect가 재실행되지 않으므로 cascading render 없으므로 lint 무시 가능...?
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setValue(yjsValue);
     return () => {
       yjsValue?.provider.destroy();
       yjsValue?.ydoc.destroy();
     };
-  }, [nodeId]);
+  }, [room]);
 
   useEffect(() => {
     if (!value || !currentUser) return;
@@ -133,12 +133,33 @@ export function useAwarenessUsers(): YjsAwarenessState['user'][] {
 }
 
 /**
- * nodeId별로 Yjs 연결 관리용 프로바이더
+ * nodeId별로 Yjs 연결 관리용 프로바이더 (노드 상세용)
  * nodeId가 바뀌면 key 교체로 YjsInstance를 리마운트해 WebSocket 연결 재설정
  */
 export function YjsProvider({ nodeId, children }: { nodeId: number; children: React.ReactNode }) {
+  const room = `node-${nodeId}`;
   return (
-    <YjsInstance key={nodeId} nodeId={nodeId}>
+    <YjsInstance key={room} room={room}>
+      {children}
+    </YjsInstance>
+  );
+}
+
+/**
+ * 프로젝트 단위 presence 전용 프로바이더.
+ * 같은 프로젝트를 보고 있는 유저들이 `project-${projectId}` 룸에서 awareness만 공유한다.
+ * (ydoc 공유 필드는 사용하지 않음 — 단순 presence 용도)
+ */
+export function ProjectPresenceProvider({
+  projectId,
+  children,
+}: {
+  projectId: number;
+  children: React.ReactNode;
+}) {
+  const room = `project-${projectId}`;
+  return (
+    <YjsInstance key={room} room={room}>
       {children}
     </YjsInstance>
   );

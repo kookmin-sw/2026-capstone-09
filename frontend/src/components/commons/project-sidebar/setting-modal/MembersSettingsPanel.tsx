@@ -17,6 +17,7 @@ import { useDialog } from '@/components/commons/custom-dialog/DialogContext';
 import { CustomMenuItem } from '@/components/commons/custom-menu/CustomMemuItem';
 import { usePositionedToast } from '@/components/commons/custom-toast/usePositionedToast';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import { normalizeImageUrl } from '@/utils/normalizeImageUrl';
 import {
   useDeleteMemberMutation,
   useInviteMemberMutation,
@@ -25,7 +26,7 @@ import {
 } from '@/queries/member';
 import { cn } from '@/utils/cn';
 
-import { ProjectDeleteConfirmContent } from './ProjectDeleteConfirmContent';
+import { MemberDeleteConfirmContent } from './MemberDeleteConfirmContent';
 import type { ProjectMemberRole } from './SettingsModalContent';
 import { useMemberInviteForm } from './useMemberInviteForm';
 
@@ -139,8 +140,8 @@ export const MembersSettingsPanel = ({ projectId, myRole }: MembersSettingsPanel
       closeOnBackdrop: true,
       closeOnEsc: true,
       content: (
-        <ProjectDeleteConfirmContent
-          projectName={member.nickname || member.email}
+        <MemberDeleteConfirmContent
+          memberName={member.nickname || member.email}
           onConfirm={async () => {
             try {
               await deleteMemberMutation.mutateAsync(member.memberId);
@@ -244,7 +245,7 @@ export const MembersSettingsPanel = ({ projectId, myRole }: MembersSettingsPanel
                   <Avatar
                     variant="person"
                     size="small"
-                    src={member.profileImageUrl}
+                    src={normalizeImageUrl(member.profileImageUrl)}
                     alt={member.nickname || member.email}
                   />
                   <div className="flex min-w-0 flex-col">

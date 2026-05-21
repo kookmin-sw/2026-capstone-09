@@ -31,3 +31,9 @@ export function useCreateEdgeMutation(projectId: number) {
     mutationFn: (data: CreateEdgeRequest) => privateApi.edge.createEdge(projectId, data),
   });
 }
+
+export function useDeleteEdgeMutation(projectId: number) {
+  return useMutation({
+    mutationFn: (edgeId: number) => privateApi.edge.deleteEdge(projectId, edgeId),
+  });
+}

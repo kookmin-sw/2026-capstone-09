@@ -1,15 +1,16 @@
 'use client';
 
+import { useParams } from 'next/navigation';
 import { useState, useEffect, useMemo } from 'react';
 import { ChatWidget } from '@/components/chat/ChatWidget';
 import { ProjectDetailHeader } from '@/components/projects/project-detail/ProjectDetailHeader';
 import { ProjectDetailLinks } from '@/components/projects/project-detail/ProjectDetailLinks';
-import { EXAMPLE_USERS } from '@/constants/exampleConstant';
 import {
   ProjectDetailLayoutContext,
   VALID_VIEWS,
   ProjectViewTypes,
 } from '@/contexts/ProjectDetailLayoutContext';
+import { ProjectPresenceProvider, useAwarenessUsers } from '@/contexts/YjsContext';
 
 const STORAGE_KEY = 'project-active-view';
 
@@ -17,7 +18,30 @@ interface ProjectDetailLayoutProps {
   children: React.ReactNode;
 }
 
+// ProjectPresenceProvider 내부에서 awareness 유저를 읽어 헤더에 전달
+function HeaderWithPresence({
+  activeView,
+  onViewChange,
+}: {
+  activeView: ProjectViewTypes;
+  onViewChange: (view: ProjectViewTypes) => void;
+}) {
+  const onlineUsers = useAwarenessUsers();
+  return (
+    <ProjectDetailHeader
+      activeView={activeView}
+      onlineUsers={onlineUsers}
+      onViewChange={onViewChange}
+    />
+  );
+}
+
 export default function ProjectDetailLayout({ children }: ProjectDetailLayoutProps) {
+  const params = useParams<{ projectId?: string }>();
+  const projectIdRaw = params?.projectId;
+  const projectId = projectIdRaw ? Number(projectIdRaw) : NaN;
+  const isProjectIdValid = !Number.isNaN(projectId);
+
   const [mounted, setMounted] = useState(false);
   const [activeView, setActiveView] = useState<ProjectViewTypes>(() => {
     if (typeof window === 'undefined') return 'node-flow';
@@ -45,18 +69,20 @@ export default function ProjectDetailLayout({ children }: ProjectDetailLayoutPro
     return null;
   }
 
-  return (
+  const inner = (
     <ProjectDetailLayoutContext.Provider value={contextValue}>
       <div className="flex h-full w-full flex-1 flex-col overflow-hidden" suppressHydrationWarning>
-        <ProjectDetailHeader
-          activeView={activeView}
-          onlineUsers={EXAMPLE_USERS}
-          onViewChange={setActiveView}
-        />
+        <HeaderWithPresence activeView={activeView} onViewChange={setActiveView} />
         <ProjectDetailLinks />
         {children}
         <ChatWidget />
       </div>
     </ProjectDetailLayoutContext.Provider>
   );
+
+  if (!isProjectIdValid) {
+    return inner;
+  }
+
+  return <ProjectPresenceProvider projectId={projectId}>{inner}</ProjectPresenceProvider>;
 }

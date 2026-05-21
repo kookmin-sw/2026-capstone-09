@@ -9,7 +9,7 @@ import { MeetingEditModalContent } from '@/components/projects/node-flow/Meeting
 import { MeetingDeleteConfirmContent } from '@/components/projects/project-detail/meeting-delete/MeetingDeleteConfirmContent';
 import { NodeDeleteConfirmContent } from '@/components/projects/project-detail/node-delete/NodeDeleteConfirmContent';
 import { ReferenceNodeModalContent } from '@/components/projects/project-detail/reference-node/ReferenceNodeModalContent';
-import { useCreateEdgeMutation, useLinkedNodesQuery, useNodeListQuery } from '@/queries/edge';
+import { useCreateEdgeMutation, useDeleteEdgeMutation, useLinkedNodesQuery, useNodeListQuery } from '@/queries/edge';
 import { useCreateMeetingMutation, useUpdateMeetingMutation } from '@/queries/meeting';
 import { useDeleteMeetingMutation } from '@/queries/meetingDelete';
 import { useProjectMembersQuery } from '@/queries/member';
@@ -150,15 +150,20 @@ function ConnectedMeetingEditModal({
 function ConnectedReferenceNodeModal({
   projectId,
   nodeId,
+  nodeTitle,
+  nodeNumber,
   onClose,
 }: {
   projectId: number;
   nodeId: number;
+  nodeTitle: string;
+  nodeNumber: string;
   onClose: () => void;
 }) {
   const { data: linkedNodes = [] } = useLinkedNodesQuery(projectId, nodeId);
   const { data: nodeList = [] } = useNodeListQuery(projectId);
   const { mutate: createEdge } = useCreateEdgeMutation(projectId);
+  const { mutate: deleteEdge } = useDeleteEdgeMutation(projectId);
   const showErrorToast = useErrorToast();
 
   const nodeOptions = nodeList
@@ -170,11 +175,17 @@ function ConnectedReferenceNodeModal({
       startNodeId={nodeId}
       referencedNodes={linkedNodes}
       nodeOptions={nodeOptions}
+      currentNode={{ number: nodeNumber, title: nodeTitle }}
       onClose={onClose}
       onCreate={(payload) => {
         createEdge(payload, {
           onSuccess: onClose,
           onError: (err) => showErrorToast(err, '참조 노드 연결에 실패했어요.'),
+        });
+      }}
+      onDeleteEdge={(edgeId) => {
+        deleteEdge(edgeId, {
+          onError: (err) => showErrorToast(err, '참조 연결 삭제에 실패했어요.'),
         });
       }}
     />
@@ -249,7 +260,13 @@ export function useNodeMenuActions({
       openModal({
         closeOnBackdrop: true,
         content: (
-          <ConnectedReferenceNodeModal projectId={projectId} nodeId={nodeId} onClose={closeModal} />
+          <ConnectedReferenceNodeModal
+            projectId={projectId}
+            nodeId={nodeId}
+            nodeTitle={nodeTitle}
+            nodeNumber={String(nodeNumber ?? nodeId)}
+            onClose={closeModal}
+          />
         ),
       });
     },

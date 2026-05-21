@@ -11,21 +11,26 @@ import {
   type ReferenceNodeOption,
   useReferenceNodeForm,
 } from './useReferenceNodeForm';
+import type { EdgeNodeInfo } from '@/components/projects/project-detail/edge-delete/EdgeDeleteConfirmContent';
 
 interface ReferenceNodeModalContentProps {
   startNodeId: number;
   referencedNodes: readonly ReferencedNodeItem[];
   nodeOptions: readonly ReferenceNodeOption[];
+  currentNode?: EdgeNodeInfo;
   onClose: () => void;
   onCreate?: (payload: ReferenceNodeCreatePayload) => void;
+  onDeleteEdge?: (edgeId: number) => void;
 }
 
 export const ReferenceNodeModalContent = ({
   startNodeId,
   referencedNodes,
   nodeOptions,
+  currentNode,
   onClose,
   onCreate,
+  onDeleteEdge,
 }: ReferenceNodeModalContentProps) => {
   const form = useReferenceNodeForm({ startNodeId, nodeOptions });
   const { handleSubmit, canCreate, buildPayload, viewMode, openAddView, closeAddView } = form;
@@ -51,7 +56,7 @@ export const ReferenceNodeModalContent = ({
       </header>
 
       <div className="flex w-full flex-col gap-6">
-        <ReferencedNodesList items={referencedNodes} variant={viewMode} />
+        <ReferencedNodesList items={referencedNodes} variant={viewMode} currentNode={currentNode} onDeleteEdge={onDeleteEdge} />
 
         {viewMode === 'list' ? (
           <div className="flex w-full justify-end">

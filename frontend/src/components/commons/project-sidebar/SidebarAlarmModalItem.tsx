@@ -5,6 +5,7 @@ interface SidebarAlarmModalItemProps {
   description: string;
   timeText: string;
   isUnread?: boolean;
+  onClick?: () => void;
 }
 
 export const SidebarAlarmModalItem = ({
@@ -12,10 +13,12 @@ export const SidebarAlarmModalItem = ({
   description,
   timeText,
   isUnread = false,
+  onClick,
 }: SidebarAlarmModalItemProps) => {
   return (
     <button
       type="button"
+      onClick={onClick}
       className="bg-static-white hover:bg-background-normal-alternative flex w-full flex-col gap-2 rounded-md px-2 py-3 text-left"
     >
       <div className="flex items-start justify-between gap-2">

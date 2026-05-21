@@ -1,4 +1,5 @@
-import { EdgeProps, getBezierPath, EdgeLabelRenderer, BaseEdge, useNodes, Position } from 'reactflow';
+import { useState, useCallback } from 'react';
+import { EdgeProps, getBezierPath, EdgeLabelRenderer, useNodes, useReactFlow, Position } from 'reactflow';
 import type { Edge as FlowChartEdge } from '@/types/FlowChartTypes';
 import { DashedComment } from './DashedComment';
 
@@ -17,7 +18,27 @@ export function ReferenceEdge({
   data,
 }: EdgeProps) {
   const edgeData = data?.edgeData as FlowChartEdge | undefined;
+  const onDeleteEdgeFn = data?.onDeleteEdge as
+    | ((edgeId: number, startNodeId: number, endNodeId: number) => void)
+    | undefined;
   const nodes = useNodes();
+  const { screenToFlowPosition } = useReactFlow();
+  const [hovered, setHovered] = useState(false);
+  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
+
+  const handleEdgeClick = () => {
+    if (onDeleteEdgeFn && edgeData) {
+      onDeleteEdgeFn(edgeData.edgeId, edgeData.startNodeId, edgeData.endNodeId);
+    }
+  };
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      const pos = screenToFlowPosition({ x: e.clientX, y: e.clientY });
+      setMousePos(pos);
+    },
+    [screenToFlowPosition],
+  );
 
   const midX = (sourceX + targetX) / 2;
   const midY = (sourceY + targetY) / 2;
@@ -92,37 +113,63 @@ export function ReferenceEdge({
     curvature: 0.25,
   });
 
+  const commentX = mousePos?.x ?? referenceNodeX;
+  const commentY = mousePos?.y ?? referenceNodeY;
+
+  const sharedHoverProps = {
+    onMouseEnter: () => setHovered(true),
+    onMouseLeave: () => { setHovered(false); setMousePos(null); },
+    onMouseMove: handleMouseMove,
+  };
+
   return (
     <>
-      {/* 첫 번째 점선: 시작 노드 → 참조노드 */}
-      <BaseEdge
-        id={`${id}-1`}
-        path={path1}
+      {/* 첫 번째 점선: 시작 노드 → 참조노드 (시각) */}
+      <path
+        d={path1}
+        fill="none"
         style={{
-          stroke: 'var(--color-primary-50)',
+          stroke: hovered ? 'var(--color-primary-40)' : 'var(--color-primary-50)',
           strokeWidth: 1,
           strokeDasharray: '5,5',
+          transition: 'stroke 0.15s',
         }}
       />
-
-      {/* 두 번째 점선: 참조노드 → 끝 노드 */}
-      <BaseEdge
-        id={`${id}-2`}
-        path={path2}
+      {/* 두 번째 점선: 참조노드 → 끝 노드 (시각) */}
+      <path
+        d={path2}
+        fill="none"
         style={{
-          stroke: 'var(--color-primary-50)',
+          stroke: hovered ? 'var(--color-primary-40)' : 'var(--color-primary-50)',
           strokeWidth: 1,
           strokeDasharray: '5,5',
+          transition: 'stroke 0.15s',
         }}
       />
+      {/* 투명 히트영역: path1 클릭/호버/마우스 감지 */}
+      <path
+        d={path1}
+        fill="none"
+        style={{ stroke: 'transparent', strokeWidth: 14, cursor: 'pointer' }}
+        onClick={handleEdgeClick}
+        {...sharedHoverProps}
+      />
+      {/* 투명 히트영역: path2 클릭/호버/마우스 감지 */}
+      <path
+        d={path2}
+        fill="none"
+        style={{ stroke: 'transparent', strokeWidth: 14, cursor: 'pointer' }}
+        onClick={handleEdgeClick}
+        {...sharedHoverProps}
+      />
 
-      {edgeData && (
+      {edgeData && hovered && mousePos && (
         <EdgeLabelRenderer>
           <div
             style={{
               position: 'absolute',
-              transform: `translate(-50%, -50%) translate(${referenceNodeX}px,${referenceNodeY}px)`,
-              pointerEvents: 'all',
+              transform: `translate(-50%, -120%) translate(${commentX}px,${commentY}px)`,
+              pointerEvents: 'none',
               zIndex: 10001,
             }}
             className="nodrag nopan"

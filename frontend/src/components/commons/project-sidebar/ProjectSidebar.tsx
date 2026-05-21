@@ -1,5 +1,6 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import {
   IconBell,
   IconChevronDoubleLeft,
@@ -9,12 +10,13 @@ import {
   IconSetting,
 } from '@wanteddev/wds-icon';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useParams, usePathname } from 'next/navigation';
+import { useParams, usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { authStorage } from '@/api/authStorage';
 import { userStorage } from '@/api/userStorage';
 import { useModal } from '@/components/commons/modal/ModalContext';
+import { notificationKeys } from '@/queries/keys/notificationKeys';
 import { useUnreadCountQuery } from '@/queries/notification';
 import { useProjectQuery } from '@/queries/project';
 import { useCurrentUserQuery } from '@/queries/user';
@@ -58,11 +60,13 @@ export const ProjectSidebar = ({
   onProfileClick,
 }: ProjectSidebarProps) => {
   const pathname = usePathname();
+  const router = useRouter();
   const params = useParams<{ projectId?: string }>();
   const projectIdRaw = params?.projectId;
   const projectId = projectIdRaw ? Number(projectIdRaw) : undefined;
   const isProjectIdValid = projectId !== undefined && !Number.isNaN(projectId);
   const { openModal, closeModal } = useModal();
+  const queryClient = useQueryClient();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isCollapsedInternal, setIsCollapsedInternal] = useState(false);
   const [isAlarmModalOpen, setIsAlarmModalOpen] = useState(false);
@@ -80,17 +84,23 @@ export const ProjectSidebar = ({
   const { data: initialUnreadCount = 0 } = useUnreadCountQuery();
   const [sseExtra, setSseExtra] = useState(0);
   const unreadCount = initialUnreadCount + sseExtra;
+  // SSE로 새로 수신한 알림 여부 (알림창 열면 초기화)
+  const [hasNewSseNotification, setHasNewSseNotification] = useState(false);
 
   useEffect(() => {
+    if (!isProjectIdValid || projectId === undefined) return;
+
     const token = authStorage.getAccess();
     if (!token) return;
 
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
+    const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL ?? '').replace(/\/$/, '');
     const controller = new AbortController();
+    const subscribeUrl = new URL(`${baseUrl}/v1/notifications/subscribe`, window.location.origin);
+    subscribeUrl.searchParams.set('projectId', String(projectId));
 
     const connect = async () => {
       try {
-        const response = await fetch(`${baseUrl}/v1/notifications/subscribe`, {
+        const response = await fetch(subscribeUrl, {
           headers: { Authorization: `Bearer ${token}` },
           signal: controller.signal,
         });
@@ -100,6 +110,7 @@ export const ProjectSidebar = ({
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
+        let currentEventType: string | null = null;
 
         while (true) {
           const { done, value } = await reader.read();
@@ -108,8 +119,17 @@ export const ProjectSidebar = ({
           const lines = buffer.split('\n');
           buffer = lines.pop() ?? '';
           for (const line of lines) {
-            if (line.startsWith('data:')) {
-              setSseExtra((prev) => prev + 1);
+            if (line.startsWith('event:')) {
+              currentEventType = line.slice('event:'.length).trim();
+            } else if (line.startsWith('data:')) {
+              // 'notification' 이벤트만 카운트 (connected, heartbeat 등은 무시)
+              if (currentEventType === 'notification') {
+                setSseExtra((prev) => prev + 1);
+                setHasNewSseNotification(true);
+              }
+            } else if (line === '') {
+              // 빈 줄은 메시지 구분자 — event 타입 초기화
+              currentEventType = null;
             }
           }
         }
@@ -120,7 +140,7 @@ export const ProjectSidebar = ({
 
     void connect();
     return () => { controller.abort(); };
-  }, []);
+  }, [isProjectIdValid, projectId]);
 
   // prop > query > storage > 빈 문자열 우선순위로 합성
   const projectName = projectNameProp ?? projectData?.name ?? '';
@@ -165,7 +185,11 @@ export const ProjectSidebar = ({
   };
 
   const handleAlarmModalToggle = () => {
-    setIsAlarmModalOpen((prev) => !prev);
+    setIsAlarmModalOpen((prev) => {
+      const nextOpen = !prev;
+      if (nextOpen) setHasNewSseNotification(false);
+      return nextOpen;
+    });
     onInboxClick?.();
   };
 
@@ -191,6 +215,15 @@ export const ProjectSidebar = ({
       closeOnEsc: true,
       content: <SettingsModalContent projectId={projectId} onClose={closeModal} />,
     });
+  };
+
+  const handleNotificationClick = (notification: import('@/api/Api').NotificationSummaryResponse) => {
+    // 알림창 닫기
+    setIsAlarmModalOpen(false);
+    const targetId = notification.targetId;
+    const notifProjectId = notification.projectId;
+    if (!targetId || !notifProjectId) return;
+    router.push(`/projects/${notifProjectId}?openNode=${targetId}`);
   };
 
   const handleProfileClick = () => {
@@ -304,6 +337,7 @@ export const ProjectSidebar = ({
                   label="수신함"
                   labelWidth={64}
                   badgeText={badgeText}
+                  showDot={hasNewSseNotification}
                   labelTransitionDuration={SIDEBAR_LABEL_TRANSITION_DURATION}
                   onClick={handleAlarmModalToggle}
                 />
@@ -331,8 +365,17 @@ export const ProjectSidebar = ({
         </div>
       </motion.aside>
       <AnimatePresence>
-        {isAlarmModalOpen && !isCollapsed && (
-          <SidebarAlarmModal onClose={() => setIsAlarmModalOpen(false)} />
+        {isAlarmModalOpen && !isCollapsed && isProjectIdValid && projectId !== undefined && (
+          <SidebarAlarmModal
+            projectId={projectId}
+            onClose={() => setIsAlarmModalOpen(false)}
+            onNotificationClick={handleNotificationClick}
+            onListLoaded={(unreadInList) => {
+              // 알림 리스트 기반 실제 unread 개수로 캐시 동기화 + SSE 누적값 초기화
+              queryClient.setQueryData(notificationKeys.unreadCount(), unreadInList);
+              setSseExtra(0);
+            }}
+          />
         )}
       </AnimatePresence>
     </div>
