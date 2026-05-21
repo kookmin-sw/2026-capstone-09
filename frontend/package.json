@@ -21,7 +21,7 @@
     "files": [
       "electron/**/*"
     ],
-    "icon" : "build/icon"
+    "icon": "assets/icon"
     ,
     "publish": {
       "provider": "github",
