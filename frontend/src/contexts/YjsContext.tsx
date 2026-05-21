@@ -141,14 +141,42 @@ function useAwarenessUsersFromContext(
     const { provider } = yjsCtx;
 
     const updateUsers = () => {
-      const result: YjsAwarenessState['user'][] = [];
+      // 같은 유저가 새로고침/다중 탭 등으로 여러 awareness 엔트리를 갖는 경우가 있어
+      // 실제 유저 식별자(email) 기준으로 dedupe 한다.
+      // - 로컬 클라이언트 엔트리는 항상 우선 (새로고침 직후 자신의 stale 엔트리 덮어쓰기)
+      // - 그 외에는 `awareness.meta.lastUpdated`가 더 큰(최근) 엔트리 우선
+      //   (서버가 stale 엔트리를 정리하기 전에도 stale activeNodeId 등이 노출되지 않도록)
+      const localClientId = provider.awareness.clientID;
+      const meta = provider.awareness.meta;
+      const byEmail = new Map<
+        string,
+        { user: YjsAwarenessState['user']; lastUpdated: number; isLocal: boolean }
+      >();
+
       provider.awareness.getStates().forEach((state, clientId) => {
         const s = state as Partial<YjsAwarenessState>;
-        if (s.user?.nickname) {
-          result.push({ ...s.user, userId: clientId });
+        if (!s.user?.nickname) return;
+
+        const user = { ...s.user, userId: clientId };
+        const key = s.user.email || `__client_${clientId}`;
+        const isLocal = clientId === localClientId;
+        const lastUpdated = meta.get(clientId)?.lastUpdated ?? 0;
+
+        const existing = byEmail.get(key);
+        if (!existing) {
+          byEmail.set(key, { user, lastUpdated, isLocal });
+          return;
+        }
+        if (isLocal && !existing.isLocal) {
+          byEmail.set(key, { user, lastUpdated, isLocal });
+          return;
+        }
+        if (!existing.isLocal && lastUpdated > existing.lastUpdated) {
+          byEmail.set(key, { user, lastUpdated, isLocal });
         }
       });
-      setUsers(result);
+
+      setUsers(Array.from(byEmail.values()).map((v) => v.user));
     };
 
     updateUsers();
