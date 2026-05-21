@@ -2,7 +2,6 @@
 
 import {
   Avatar,
-  AvatarGroup,
   Button,
   Menu,
   MenuContent,
@@ -11,16 +10,29 @@ import {
   MenuTrigger,
   TextField,
   TextFieldContent,
-  Typography,
 } from '@wanteddev/wds';
 import { IconChevronDownThickSmall, IconSearchThick } from '@wanteddev/wds-icon';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { ProjectSidebar } from '@/components/commons/project-sidebar/ProjectSidebar';
+import { Users } from '@/components/commons/user/UserAvatarGroup';
+import { useProjectMembersQuery } from '@/queries/member';
 import { useCreateProjectMutation, useProjectListQuery } from '@/queries/project';
 
 type SortType = 'LATEST' | 'NAME';
+
+function ProjectMemberAvatars({ projectId }: { projectId: number }) {
+  const { data: members = [] } = useProjectMembersQuery(projectId);
+  const users = members.map((m) => ({
+    userId: m.userId,
+    nickname: m.nickname,
+    email: m.email,
+    profileImageUrl: m.profileImageUrl,
+  }));
+  if (users.length === 0) return null;
+  return <Users users={users} maxVisible={3} compact={false} size="xsmall" />;
+}
 
 const SORT_OPTIONS: { label: string; value: SortType }[] = [
   { label: '최신순', value: 'LATEST' },
@@ -130,7 +142,7 @@ export const ProjectListPage = () => {
         </div>
 
         {/* Project list */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="bg-surface-canvas flex-1 overflow-y-auto">
           {isLoading && (
             <p className="text-body-2 text-label-assistive py-12 text-center">불러오는 중...</p>
           )}
@@ -144,18 +156,14 @@ export const ProjectListPage = () => {
           )}
 
           {projects.length > 0 && (
-            <ul>
+            <ul className="bg-surface-canvas">
               {projects.map((project) => {
-                const memberCount = project.memberCount ?? 0;
-                const visibleAvatars = Math.min(memberCount, 3);
-                const extraCount = Math.max(0, memberCount - visibleAvatars);
-
                 return (
-                  <li key={project.projectId} className="border-line-normal-neutral border-b">
+                  <li key={project.projectId} className="border-line-normal-neutral bg-surface-canvas border-b">
                     <button
                       type="button"
                       onClick={() => router.push(`/projects/${project.projectId}`)}
-                      className="hover:bg-fill-alternative flex w-full items-center gap-4 px-6 py-5 text-left transition-colors"
+                      className="bg-surface-canvas hover:bg-fill-alternative flex w-full items-center gap-4 px-6 py-5 text-left transition-colors"
                     >
                       {/* Project icon */}
                       <div className="shrink-0 overflow-hidden rounded-xl">
@@ -172,23 +180,14 @@ export const ProjectListPage = () => {
                         <span className="text-label-1 text-label-normal truncate font-semibold">
                           {project.name}
                         </span>
-                        <span className="text-caption-1 text-label-assistive font-normal">
-                          최종 수정일 {formatDate(project.updatedAt)}
+                        <span className="text-caption-1 text-label-alternative font-normal">
+                          최근 활동 {formatDate(project.lastActivityAt)}
                         </span>
                       </div>
 
                       {/* Members */}
                       <div className="flex shrink-0 items-center gap-2">
-                        {visibleAvatars > 0 && (
-                          <AvatarGroup size="xsmall">
-                            {Array.from({ length: visibleAvatars }).map((_, i) => (
-                              <Avatar key={i} variant="person" size="xsmall" />
-                            ))}
-                          </AvatarGroup>
-                        )}
-                        <Typography variant="label1" color="semantic.label.alternative">
-                          외 {extraCount}명
-                        </Typography>
+                        <ProjectMemberAvatars projectId={project.projectId} />
                       </div>
                     </button>
                   </li>

@@ -1412,11 +1412,11 @@ export interface ProjectSummaryResponse {
    */
   memberCount?: number;
   /**
-   * 마지막 수정 시각
+   * 마지막 활동 시각
    * @format date-time
    * @example "2026-04-19T10:15:30"
    */
-  updatedAt?: string;
+  lastActivityAt?: string;
 }
 
 /** 공통 응답 형식 */
@@ -6727,10 +6727,17 @@ export class Api<
      * @request GET:/v1/notifications/subscribe
      * @secure
      */
-    subscribe: (params: RequestParams = {}) =>
+    subscribe: (
+      query: {
+        /** @format int64 */
+        projectId: number;
+      },
+      params: RequestParams = {},
+    ) =>
       this.request<SseEmitter, any>({
         path: `/v1/notifications/subscribe`,
         method: "GET",
+        query: query,
         secure: true,
         ...params,
       }),

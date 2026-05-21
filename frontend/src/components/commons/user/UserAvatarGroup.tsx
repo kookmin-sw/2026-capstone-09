@@ -11,9 +11,8 @@ import {
 
 import { normalizeImageUrl } from '@/utils/normalizeImageUrl';
 
-const IMAGE_AVATAR_SX = (theme: Theme) => ({
-  backgroundColor: theme.semantic.background.normal.normal,
-  padding: '1px',
+const IMAGE_AVATAR_SX = (_theme: Theme) => ({
+  padding: '0',
 });
 
 export interface UserInfo {
