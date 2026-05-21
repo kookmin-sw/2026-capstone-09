@@ -1,6 +1,11 @@
 {
+<<<<<<< HEAD
+  "name": "flowmeet",
+  "version": "0.2.3",
+=======
   "name": "frontend",
   "version": "0.2.0",
+>>>>>>> eaeeccf989377b2c32c0234174868e479627ac29
   "private": true,
   "main": "electron/main.cjs",
   "scripts": {
@@ -26,7 +31,8 @@
     "publish": {
       "provider": "github",
       "owner": "kookmin-sw",
-      "repo": "2026-capstone-09"
+      "repo": "2026-capstone-09",
+      "releaseType": "release"
     },
     "mac": {
       "category": "public.app-category.productivity",
