@@ -11,6 +11,7 @@ import { ModalProvider } from '@/components/commons/modal/ModalContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import Dialog from './commons/custom-dialog/Dialog';
 import { DialogProvider } from './commons/custom-dialog/DialogContext';
+import { ElectronUpdateModal } from './commons/ElectronUpdateModal';
 import { ToastProvider } from './commons/custom-toast/ToastProvider';
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -37,6 +38,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
                   {children}
                   <Modal />
                   <Dialog />
+                  <ElectronUpdateModal />
                 </DialogProvider>
               </ModalProvider>
             </ToastProvider>
