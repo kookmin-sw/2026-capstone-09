@@ -7,6 +7,16 @@
 @import 'pretendard/dist/web/static/pretendard.css';
 @plugin "@tailwindcss/typography";
 
+.node-flow-canvas .react-flow__selection,
+.node-flow-canvas .react-flow__nodesselection-rect {
+  background: rgb(from var(--color---primary-40) r g b / 0.1);
+  border: 1px dotted rgb(from var(--color---primary-40) r g b / 0.8);
+}
+
+.node-flow-canvas .react-flow__nodesselection {
+  display: none;
+}
+
 @theme inline {
   /* Fonts */
   --font-pretendard:

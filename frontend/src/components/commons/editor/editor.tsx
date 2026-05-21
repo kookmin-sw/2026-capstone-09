@@ -1,10 +1,10 @@
 'use client';
 
-import { useRef } from 'react';
 import { Collaboration, isChangeOrigin } from '@tiptap/extension-collaboration';
 import { Placeholder } from '@tiptap/extensions';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import { useEffect, useRef } from 'react';
 import { Markdown, type MarkdownStorage } from 'tiptap-markdown';
 import type { XmlFragment } from 'yjs';
 
@@ -24,9 +24,12 @@ interface EditorProps {
 
 export default function Editor({ content, fragment, onUpdate, editable = true }: EditorProps) {
   const onUpdateRef = useRef(onUpdate);
-  onUpdateRef.current = onUpdate;
 
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    onUpdateRef.current = onUpdate;
+  }, [onUpdate]);
 
   const editor = useEditor(
     {
@@ -56,6 +59,11 @@ export default function Editor({ content, fragment, onUpdate, editable = true }:
   );
 
   useYjsFragmentInit(editor, fragment ?? null, content);
+
+  useEffect(() => {
+    if (!editor || editor.isDestroyed || fragment || content === undefined) return;
+    editor.commands.setContent(content, { emitUpdate: false });
+  }, [content, editor, fragment]);
 
   return (
     <div className="prose [&_.ProseMirror]:leading-[1.4] [&_.ProseMirror_p]:my-0">

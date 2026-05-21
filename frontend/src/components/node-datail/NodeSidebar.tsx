@@ -84,10 +84,10 @@ export function NodeSidebar({ nodeId, projectId, onClose }: NodeSidebarProps) {
         <div className="flex-1 overflow-hidden px-14 pt-14">
           <YjsProvider nodeId={numericNodeId}>
             <NodeDetailLayout
-              nodeId={nodeId}
+              nodeId={numericNodeId}
               projectId={projectId}
-              noteContent={<NodeNoteTab nodeId={nodeId} projectId={projectId} />}
-              meetingContent={<NodeMeetingTab nodeId={nodeId} projectId={projectId} />}
+              noteContent={<NodeNoteTab nodeId={numericNodeId} projectId={projectId} />}
+              meetingContent={<NodeMeetingTab nodeId={numericNodeId} projectId={projectId} />}
               value={value}
               onValueChange={setValue}
               onDeleteSuccess={handleClose}

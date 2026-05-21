@@ -18,7 +18,7 @@ import { userStorage } from '@/api/userStorage';
 import { useModal } from '@/components/commons/modal/ModalContext';
 import { notificationKeys } from '@/queries/keys/notificationKeys';
 import { useUnreadCountQuery } from '@/queries/notification';
-import { useProjectQuery } from '@/queries/project';
+import { useProjectListQuery, useProjectQuery } from '@/queries/project';
 import { useCurrentUserQuery } from '@/queries/user';
 import { cn } from '@/utils/cn';
 
@@ -72,11 +72,13 @@ export const ProjectSidebar = ({
     () => typeof window !== 'undefined' && localStorage.getItem('sidebar-collapsed') === 'true',
   );
   const [isAlarmModalOpen, setIsAlarmModalOpen] = useState(false);
+  const [isProjectMenuOpen, setIsProjectMenuOpen] = useState(false);
   const [projectImgError, setProjectImgError] = useState(false);
   const isProjectSelectionPage = pathname === '/projects';
 
   // 프로젝트 정보 — Tanstack Query
   const { data: projectData } = useProjectQuery(isProjectIdValid ? (projectId as number) : 0);
+  const { data: projectListData } = useProjectListQuery({ sort: 'LATEST', search: '' });
 
   // 사용자 정보 — API(getMe) 우선, localStorage 폴백
   const { data: currentUser } = useCurrentUserQuery();
@@ -160,13 +162,14 @@ export const ProjectSidebar = ({
   const badgeText = unreadCount > 99 ? '+99' : unreadCount > 0 ? `${unreadCount}` : undefined;
 
   useEffect(() => {
-    if (!isAlarmModalOpen) {
+    if (!isAlarmModalOpen && !isProjectMenuOpen) {
       return;
     }
 
     const handleMouseDown = (event: MouseEvent) => {
       if (!containerRef.current?.contains(event.target as Node)) {
         setIsAlarmModalOpen(false);
+        setIsProjectMenuOpen(false);
       }
     };
 
@@ -175,7 +178,7 @@ export const ProjectSidebar = ({
     return () => {
       document.removeEventListener('mousedown', handleMouseDown);
     };
-  }, [isAlarmModalOpen]);
+  }, [isAlarmModalOpen, isProjectMenuOpen]);
 
   const handleToggleCollapsed = () => {
     setIsCollapsedInternal((prev) => {
@@ -184,12 +187,14 @@ export const ProjectSidebar = ({
       setIsCollapseSettled(!nextIsCollapsed);
       if (nextIsCollapsed) {
         setIsAlarmModalOpen(false);
+        setIsProjectMenuOpen(false);
       }
       return nextIsCollapsed;
     });
   };
 
   const handleAlarmModalToggle = () => {
+    setIsProjectMenuOpen(false);
     setIsAlarmModalOpen((prev) => {
       const nextOpen = !prev;
       if (nextOpen) setHasNewSseNotification(false);
@@ -199,6 +204,7 @@ export const ProjectSidebar = ({
   };
 
   const handleSearchClick = () => {
+    setIsProjectMenuOpen(false);
     onSearchClick?.();
     if (!isProjectIdValid || projectId === undefined) return;
     openModal({
@@ -210,6 +216,7 @@ export const ProjectSidebar = ({
   };
 
   const handleSettingClick = () => {
+    setIsProjectMenuOpen(false);
     onSettingClick?.();
     if (!isProjectIdValid || projectId === undefined) return;
     openModal({
@@ -223,6 +230,7 @@ export const ProjectSidebar = ({
   const handleNotificationClick = (notification: import('@/api/Api').NotificationSummaryResponse) => {
     // 알림창 닫기
     setIsAlarmModalOpen(false);
+    setIsProjectMenuOpen(false);
     const targetId = notification.targetId;
     const notifProjectId = notification.projectId;
     if (!targetId || !notifProjectId) return;
@@ -230,6 +238,7 @@ export const ProjectSidebar = ({
   };
 
   const handleProfileClick = () => {
+    setIsProjectMenuOpen(false);
     onProfileClick?.();
     openModal({
       variant: 'default',
@@ -239,10 +248,26 @@ export const ProjectSidebar = ({
     });
   };
 
+  const handleProjectListClick = () => {
+    setIsProjectMenuOpen(false);
+    router.push('/projects');
+  };
+
+  const handleProjectMenuToggle = () => {
+    setIsAlarmModalOpen(false);
+    setIsProjectMenuOpen((prev) => !prev);
+  };
+
+  const handleProjectMove = (nextProjectId?: number) => {
+    if (!nextProjectId) return;
+    setIsProjectMenuOpen(false);
+    router.push(`/projects/${nextProjectId}`);
+  };
+
   return (
     <div ref={containerRef} className="relative z-20 flex shrink-0">
       <motion.aside
-        className="border-line-normal-neutral bg-background-normal-alternative font-pretendard text-body-2 text-label-alternative relative z-10 h-screen shrink-0 overflow-hidden border-r px-2.5 pt-2 pb-0"
+        className="border-line-normal-neutral bg-background-normal-alternative font-pretendard text-body-2 text-label-alternative relative z-10 h-screen shrink-0 overflow-visible border-r px-2.5 pt-2 pb-0"
         initial={false}
         animate={{
           width: isCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH,
@@ -264,11 +289,16 @@ export const ProjectSidebar = ({
                   : 'flex items-center justify-between pt-2 pb-4 pl-1.5',
               )}
             >
-              <div
+              <button
+                type="button"
+                onClick={handleProjectMenuToggle}
                 className={cn(
-                  'flex items-center',
+                  'hover:bg-fill-alternative flex appearance-none items-center rounded-md border-none bg-transparent text-left transition-colors',
                   shouldUseCollapsedLayout ? 'w-full justify-center gap-0' : 'gap-2',
                 )}
+                aria-expanded={isProjectMenuOpen}
+                aria-haspopup="menu"
+                aria-label="프로젝트 메뉴 열기"
               >
                 <div className="relative flex items-center justify-center">
                   <div className="border-line-solid-normal bg-cool-neutral-96 relative flex aspect-square h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-md border">
@@ -297,7 +327,64 @@ export const ProjectSidebar = ({
                     {projectName}
                   </motion.div>
                 )}
-              </div>
+              </button>
+
+              {isProjectMenuOpen && (
+                <div
+                  role="menu"
+                  className="border-line-normal-neutral bg-static-white shadow-normal-small absolute top-16 left-4 z-30 flex w-72 flex-col rounded-xl border py-2"
+                >
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={handleProjectListClick}
+                    className="group w-full bg-static-white px-2 py-0.5 text-left"
+                  >
+                    <span className="hover:bg-fill-alternative text-label-1 text-label-normal block rounded-lg px-3 py-1.5 font-medium">
+                      목록으로 돌아가기
+                    </span>
+                  </button>
+
+                  <div className="bg-line-normal-neutral my-0.5 h-px" />
+
+                  <div className="custom-scrollbar max-h-60 overflow-y-auto">
+                    {(projectListData?.content ?? []).map((project) => (
+                      <button
+                        key={project.projectId}
+                        type="button"
+                        role="menuitem"
+                        onClick={() => handleProjectMove(project.projectId)}
+                        className="group w-full bg-static-white px-2 py-0.5 text-left"
+                      >
+                        <span
+                          className={cn(
+                            'hover:bg-fill-alternative flex items-center gap-3 rounded-lg px-3 py-1.5',
+                            project.projectId === projectId
+                              ? 'text-label-normal'
+                              : 'text-label-alternative',
+                          )}
+                        >
+                          <span className="border-line-solid-normal bg-cool-neutral-96 flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-md border">
+                            {project.profileImageUrl ? (
+                              <img
+                                src={normalizeImageUrl(project.profileImageUrl)}
+                                alt={project.name ?? '프로젝트'}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <IconCompany
+                                className="text-static-white h-4 w-4"
+                                aria-hidden="true"
+                              />
+                            )}
+                          </span>
+                          <span className="text-label-2 truncate font-normal">{project.name}</span>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {!isCollapsed && !isProjectSelectionPage && (
                 <button

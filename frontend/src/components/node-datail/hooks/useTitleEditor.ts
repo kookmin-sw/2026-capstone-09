@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { Collaboration } from '@tiptap/extension-collaboration';
 import { Extension } from '@tiptap/core';
+import { Collaboration } from '@tiptap/extension-collaboration';
 import { Placeholder } from '@tiptap/extensions';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import { useEffect, useRef } from 'react';
 
 import { YJS_FIELDS, useYjsContext } from '@/contexts/YjsContext';
 import { useYjsFragmentInit } from '@/hooks/useYjsFragmentInit';

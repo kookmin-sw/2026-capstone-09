@@ -9,6 +9,7 @@ interface NodeButtonProps {
   showDashedLines?: boolean;
   onToggleDashedLines?: (value: boolean) => void;
   isCreating?: boolean;
+  areNodeActionsDisabled?: boolean;
 }
 
 export function NodeButton({
@@ -19,7 +20,9 @@ export function NodeButton({
   showDashedLines = false,
   onToggleDashedLines,
   isCreating = false,
+  areNodeActionsDisabled = false,
 }: NodeButtonProps) {
+  const isNodeActionDisabled = isCreating || areNodeActionsDisabled;
 
   return (
     <div className="px-3 py-2 bg-white rounded-xl inline-flex justify-start items-center gap-3">
@@ -37,7 +40,7 @@ export function NodeButton({
         color="primary"
         size="small"
         onClick={onAddMainNode}
-        disabled={isCreating}
+        disabled={isNodeActionDisabled}
         leadingContent={<IconPlus />}
       >
         메인 노드
@@ -48,7 +51,7 @@ export function NodeButton({
         color={onAddSubNode ? 'primary' : 'assistive'}
         size="small"
         onClick={onAddSubNode}
-        disabled={!onAddSubNode || isCreating}
+        disabled={!onAddSubNode || isNodeActionDisabled}
         leadingContent={<IconPlus />}
       >
         서브 노드
@@ -59,7 +62,7 @@ export function NodeButton({
         color={onAddMeeting ? 'primary' : 'assistive'}
         size="small"
         onClick={onAddMeeting}
-        disabled={!onAddMeeting}
+        disabled={!onAddMeeting || areNodeActionsDisabled}
         leadingContent={<IconPresentation />}
       >
         회의 추가

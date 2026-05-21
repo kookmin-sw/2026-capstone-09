@@ -9,7 +9,7 @@ import {
   VALID_VIEWS,
   ProjectViewTypes,
 } from '@/contexts/ProjectDetailLayoutContext';
-import { useAwarenessUsers } from '@/contexts/YjsContext';
+import { useProjectAwarenessUsers } from '@/contexts/YjsContext';
 
 const STORAGE_KEY = 'project-active-view';
 
@@ -25,7 +25,7 @@ function HeaderWithPresence({
   activeView: ProjectViewTypes;
   onViewChange: (view: ProjectViewTypes) => void;
 }) {
-  const onlineUsers = useAwarenessUsers();
+  const onlineUsers = useProjectAwarenessUsers();
   return (
     <ProjectDetailHeader
       activeView={activeView}

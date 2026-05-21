@@ -45,6 +45,7 @@ const AWARENESS_COLORS = [
 ];
 
 const YjsContext = createContext<YjsContextValue | null>(null);
+const ProjectPresenceContext = createContext<YjsContextValue | null>(null);
 
 /**
  * 브라우저 환경에서만 Y.Doc과 WebsocketProvider를 생성한다.
@@ -69,7 +70,15 @@ function createYjsState(room: string): YjsContextValue | null {
 }
 
 // 상위 Provider의 key prop으로 room 변경 시 리마운트된다.
-function YjsInstance({ room, children }: { room: string; children: React.ReactNode }) {
+function YjsInstance({
+  room,
+  children,
+  context = 'node',
+}: {
+  room: string;
+  children: React.ReactNode;
+  context?: 'node' | 'project';
+}) {
   const [value, setValue] = useState<YjsContextValue | null>(null);
   const { data: currentUser } = useCurrentUserQuery();
 
@@ -102,11 +111,24 @@ function YjsInstance({ room, children }: { room: string; children: React.ReactNo
     });
   }, [value, currentUser]);
 
-  return <YjsContext.Provider value={value}>{children}</YjsContext.Provider>;
+  const ContextProvider = context === 'project' ? ProjectPresenceContext.Provider : YjsContext.Provider;
+
+  return <ContextProvider value={value}>{children}</ContextProvider>;
 }
 
 export function useAwarenessUsers(): YjsAwarenessState['user'][] {
   const yjsCtx = useYjsContext();
+  return useAwarenessUsersFromContext(yjsCtx);
+}
+
+export function useProjectAwarenessUsers(): YjsAwarenessState['user'][] {
+  const yjsCtx = useProjectPresenceContext();
+  return useAwarenessUsersFromContext(yjsCtx);
+}
+
+function useAwarenessUsersFromContext(
+  yjsCtx: YjsContextValue | null,
+): YjsAwarenessState['user'][] {
   const [users, setUsers] = useState<YjsAwarenessState['user'][]>([]);
 
   useEffect(() => {
@@ -138,7 +160,7 @@ export function useAwarenessUsers(): YjsAwarenessState['user'][] {
 }
 
 export function useActiveNodeUsers(nodeId?: number | null): YjsAwarenessState['user'][] {
-  const users = useAwarenessUsers();
+  const users = useProjectAwarenessUsers();
 
   if (!nodeId) return [];
 
@@ -148,7 +170,7 @@ export function useActiveNodeUsers(nodeId?: number | null): YjsAwarenessState['u
 export const useNodeAwarenessUsers = useActiveNodeUsers;
 
 export function useSetActiveAwarenessNode(nodeId?: number | null) {
-  const yjsCtx = useYjsContext();
+  const yjsCtx = useProjectPresenceContext();
 
   useEffect(() => {
     if (!yjsCtx) return;
@@ -206,7 +228,7 @@ export function ProjectPresenceProvider({
 }) {
   const room = `project-${projectId}`;
   return (
-    <YjsInstance key={room} room={room}>
+    <YjsInstance key={room} room={room} context="project">
       {children}
     </YjsInstance>
   );
@@ -215,4 +237,8 @@ export function ProjectPresenceProvider({
 /** WebSocket 연결 준비 전(SSR 포함)에는 null을 반환한다 */
 export function useYjsContext() {
   return useContext(YjsContext);
+}
+
+export function useProjectPresenceContext() {
+  return useContext(ProjectPresenceContext);
 }

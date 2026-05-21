@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
 import type { Editor } from '@tiptap/react';
+import { useEffect } from 'react';
 import type { XmlFragment } from 'yjs';
 
 import { useYjsContext } from '@/contexts/YjsContext';
@@ -30,14 +30,18 @@ export function useYjsFragmentInit(
       return;
     }
 
+    const fallbackTimer = window.setTimeout(init, 120);
+
     const handleSync = (isSynced: boolean) => {
       if (isSynced) {
+        window.clearTimeout(fallbackTimer);
         init();
         provider.off('sync', handleSync);
       }
     };
     provider.on('sync', handleSync);
     return () => {
+      window.clearTimeout(fallbackTimer);
       provider.off('sync', handleSync);
     };
   }, [editor, fragment, content, provider]);
