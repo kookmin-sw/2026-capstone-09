@@ -12,6 +12,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import kr.flowmeet.domain.common.BaseSoftDeleteEntity;
 import kr.flowmeet.domain.project.entity.Project;
 import lombok.AccessLevel;
@@ -31,7 +32,7 @@ import org.hibernate.annotations.SQLRestriction;
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLDelete(sql = "UPDATE nodes SET deleted_at = CURRENT_TIMESTAMP WHERE node_id = ?")
+@SQLDelete(sql = "UPDATE nodes SET deleted_at = CURRENT_TIMESTAMP WHERE node_id = ? AND version = ?")
 @SQLRestriction("deleted_at IS NULL")
 public class Node extends BaseSoftDeleteEntity {
 
@@ -39,6 +40,10 @@ public class Node extends BaseSoftDeleteEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "node_id")
     private Long id;
+
+    @Version
+    @Column(nullable = false)
+    private Long version;
 
     @Column(name = "project_id", nullable = false)
     private Long projectId;

@@ -11,6 +11,7 @@ dependencies {
     // Database
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly 'com.mysql:mysql-connector-j'
 
     // QueryDSL (OpenFeign fork — Jakarta-only)
     implementation 'io.github.openfeign.querydsl:querydsl-jpa:7.1'

@@ -10,10 +10,11 @@ public record NotificationSsePayload(
         String content,
         Long projectId,
         Long targetId,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        long unreadCount
 ) {
 
-    public static NotificationSsePayload from(final Notification notification) {
+    public static NotificationSsePayload from(final Notification notification, final long unreadCount) {
         return new NotificationSsePayload(
                 notification.getId(),
                 notification.getType().name(),
@@ -21,7 +22,8 @@ public record NotificationSsePayload(
                 notification.getContent(),
                 notification.getProjectId(),
                 notification.getTargetId(),
-                notification.getCreatedAt()
+                notification.getCreatedAt(),
+                unreadCount
         );
     }
 }

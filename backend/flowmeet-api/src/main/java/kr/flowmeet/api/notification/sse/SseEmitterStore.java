@@ -10,24 +10,33 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @Component
 public class SseEmitterStore {
 
-    private final Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
+    private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
 
-    public void save(final Long userId, final SseEmitter emitter) {
-        SseEmitter existing = emitters.put(userId, emitter);
+    private String key(Long userId, Long projectId) {
+        return userId + ":" + projectId;
+    }
+
+    public void save(final Long userId, final Long projectId, final SseEmitter emitter) {
+        String key = key(userId, projectId);
+        SseEmitter existing = emitters.put(key, emitter);
         if (existing != null) {
             existing.complete();
         }
     }
 
-    public Optional<SseEmitter> findByUserId(final Long userId) {
-        return Optional.ofNullable(emitters.get(userId));
+    public Optional<SseEmitter> findByUserAndProject(final Long userId, final Long projectId) {
+        return Optional.ofNullable(emitters.get(key(userId, projectId)));
     }
 
-    public void remove(final Long userId) {
-        emitters.remove(userId);
+    public void remove(final Long userId, final Long projectId) {
+        emitters.remove(key(userId, projectId));
     }
 
-    public Map<Long, SseEmitter> findAll() {
+    public void removeByKey(final String key) {
+        emitters.remove(key);
+    }
+
+    public Map<String, SseEmitter> findAll() {
         return Collections.unmodifiableMap(emitters);
     }
 }

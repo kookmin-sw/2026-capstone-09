@@ -3,15 +3,16 @@ package kr.flowmeet.api.chat.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.flowmeet.api.chat.dto.request.AddChatNodeRequest;
-import kr.flowmeet.api.chat.dto.request.CreateChatSessionRequest;
 import kr.flowmeet.api.chat.dto.request.SendMessageRequest;
+import kr.flowmeet.api.chat.dto.request.StartChatRequest;
 import kr.flowmeet.api.chat.dto.request.UpdateChatSessionRequest;
 import kr.flowmeet.api.chat.dto.response.AddChatNodeResponse;
 import kr.flowmeet.api.chat.dto.response.ChatSessionSummaryResponse;
-import kr.flowmeet.api.chat.dto.response.CreateChatSessionResponse;
 import kr.flowmeet.api.chat.dto.response.GetChatSessionResponse;
 import kr.flowmeet.api.chat.dto.response.GetReferenceNodesResponse;
+import kr.flowmeet.api.chat.dto.response.GetReferenceUsersResponse;
 import kr.flowmeet.api.chat.dto.response.SendMessageResponse;
+import kr.flowmeet.api.chat.dto.response.StartChatResponse;
 import kr.flowmeet.api.chat.dto.response.UpdateChatSessionResponse;
 import kr.flowmeet.api.chat.success.ChatSuccessCode;
 import kr.flowmeet.api.common.dto.CommonResponse;
@@ -21,6 +22,7 @@ import kr.flowmeet.api.common.swagger.ApiSuccessCode;
 import kr.flowmeet.auth.annotation.UserId;
 import kr.flowmeet.domain.chat.exception.ChatErrorCode;
 import kr.flowmeet.domain.project.exception.ProjectErrorCode;
+import kr.flowmeet.external.ai.AiAgentErrorCode;
 
 @Tag(name = "Chat", description = "채팅")
 public interface ChatApi {
@@ -45,13 +47,15 @@ public interface ChatApi {
             Long cursorId,
             int size);
 
-    @Operation(summary = "새 채팅 세션 생성")
-    @ApiSuccessCode(code = ChatSuccessCode.class, name = "CREATE_CHAT_SESSION")
+    @Operation(summary = "새 채팅 시작 (세션 생성 + 첫 메시지 전송)")
+    @ApiSuccessCode(code = ChatSuccessCode.class, name = "START_CHAT")
     @ApiErrorCode(code = ProjectErrorCode.class, names = {"PROJECT_ACCESS_DENIED"})
-    CommonResponse<CreateChatSessionResponse> createChatSession(
+    @ApiErrorCode(code = AiAgentErrorCode.class, names = {"AI_AGENT_UNAVAILABLE"})
+    CommonResponse<StartChatResponse> startChat(
             @UserId Long userId,
             Long projectId,
-            CreateChatSessionRequest request);
+            StartChatRequest request,
+            String authorization);
 
     @Operation(summary = "채팅 제목 수정")
     @ApiSuccessCode(code = ChatSuccessCode.class, name = "UPDATE_CHAT_SESSION")
@@ -73,16 +77,25 @@ public interface ChatApi {
     @Operation(summary = "메시지 전송")
     @ApiSuccessCode(code = ChatSuccessCode.class, name = "SEND_MESSAGE")
     @ApiErrorCode(code = ChatErrorCode.class, names = {"CHAT_SESSION_NOT_FOUND"})
+    @ApiErrorCode(code = AiAgentErrorCode.class, names = {"AI_AGENT_UNAVAILABLE"})
     CommonResponse<SendMessageResponse> sendMessage(
             @UserId Long userId,
             Long projectId,
             Long chatSessionId,
-            SendMessageRequest request);
+            SendMessageRequest request,
+            String authorization);
 
     @Operation(summary = "참조 가능한 노드 조회")
     @ApiSuccessCode(code = ChatSuccessCode.class, name = "GET_REFERENCE_NODES")
     @ApiErrorCode(code = ProjectErrorCode.class, names = {"PROJECT_ACCESS_DENIED"})
     CommonResponse<GetReferenceNodesResponse> getReferenceNodes(
+            @UserId Long userId,
+            Long projectId);
+
+    @Operation(summary = "참조 가능한 사용자 조회")
+    @ApiSuccessCode(code = ChatSuccessCode.class, name = "GET_REFERENCE_USERS")
+    @ApiErrorCode(code = ProjectErrorCode.class, names = {"PROJECT_ACCESS_DENIED"})
+    CommonResponse<GetReferenceUsersResponse> getReferenceUsers(
             @UserId Long userId,
             Long projectId);
 

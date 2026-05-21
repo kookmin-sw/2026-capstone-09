@@ -50,15 +50,15 @@ public class LlmResponseListener {
     }
 
     private void notifyUser(final AiTask task) {
-        sseEmitterStore.findByUserId(task.getUserId())
+        sseEmitterStore.findByUserAndProject(task.getUserId(), task.getProjectId())
                 .ifPresent(emitter -> {
                     try {
                         emitter.send(SseEmitter.event()
                                 .name("ai-task-done")
                                 .data(Map.of("jobId", task.getId())));
                     } catch (IOException e) {
-                        sseEmitterStore.remove(task.getUserId());
-                        log.debug("[SSE] AI 결과 알림 전송 실패, 연결 제거: userId={}", task.getUserId());
+                        sseEmitterStore.remove(task.getUserId(), task.getProjectId());
+                        log.debug("[SSE] AI 결과 알림 전송 실패, 연결 제거: userId={}, projectId={}", task.getUserId(), task.getProjectId());
                     }
                 });
     }

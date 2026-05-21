@@ -18,6 +18,9 @@ public record SignupRequest(
         @NotBlank(message = "소셜 access token은 필수로 입력해 주세요.")
         String socialAccessToken,
 
+        @Schema(description = "소셜 refresh token (로그인 응답으로 받은 값, 없으면 null)", example = "1//0gLY...")
+        String socialRefreshToken,
+
         @Schema(description = "닉네임(최대 20자)", example = "수민")
         @NotBlank(message = ValidationMessage.NICKNAME_REQUIRED)
         @Size(max = 20, message = ValidationMessage.NICKNAME_MAX_LENGTH)

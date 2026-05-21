@@ -126,6 +126,6 @@ public class ProjectMemberService {
             throw new BusinessException(ProjectErrorCode.INVITATION_EMAIL_MISMATCH);
         }
 
-        create(user.getId(), projectId, ProjectMemberRole.VIEWER);
+        create(user.getId(), projectId, ProjectMemberRole.MEMBER);
     }
 }

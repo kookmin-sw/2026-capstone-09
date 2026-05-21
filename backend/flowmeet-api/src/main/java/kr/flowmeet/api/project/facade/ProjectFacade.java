@@ -1,6 +1,7 @@
 package kr.flowmeet.api.project.facade;
 
 import java.util.List;
+import kr.flowmeet.domain.node.service.NodeService;
 import kr.flowmeet.domain.project.service.ProjectPermissionValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,14 +20,11 @@ import kr.flowmeet.api.project.dto.response.GetProjectResponse;
 import kr.flowmeet.api.project.dto.response.ProjectSummaryResponse;
 import kr.flowmeet.auth.jwt.InvitationTokenPayload;
 import kr.flowmeet.auth.jwt.JwtProvider;
-import kr.flowmeet.domain.common.exception.BusinessException;
 import kr.flowmeet.domain.common.vo.CursorSlice;
 import kr.flowmeet.domain.file.entity.FileDomainType;
 import kr.flowmeet.domain.project.entity.Project;
-import kr.flowmeet.domain.project.entity.ProjectMember;
 import kr.flowmeet.domain.project.entity.ProjectMemberRole;
 import kr.flowmeet.domain.project.entity.ProjectUrl;
-import kr.flowmeet.domain.project.exception.ProjectErrorCode;
 import kr.flowmeet.domain.project.repository.projection.ProjectWithMemberCountProjection;
 import kr.flowmeet.domain.project.service.ProjectMemberService;
 import kr.flowmeet.domain.project.service.ProjectService;
@@ -49,12 +47,15 @@ public class ProjectFacade {
     private final ImageUploader imageUploader;
     private final JwtProvider jwtProvider;
     private final FrontendProperties frontendProperties;
+    private final NodeService nodeService;
 
     @Transactional
     public CreateProjectResponse createProject(final Long userId, final CreateProjectRequest request) {
         Project project = projectService.create(request.name());
+        Long projectId = project.getId();
 
-        projectMemberService.create(userId, project.getId(), ProjectMemberRole.OWNER);
+        projectMemberService.create(userId, projectId, ProjectMemberRole.OWNER);
+        nodeService.createFirstMainNode(projectId);
 
         return CreateProjectResponse.from(project);
     }

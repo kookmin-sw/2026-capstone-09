@@ -14,7 +14,8 @@ public class ChatSessionRepositoryCustomImpl implements ChatSessionRepositoryCus
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<ChatSession> findAllByProjectId(
+    public List<ChatSession> findAllByUserIdAndProjectId(
+            final Long userId,
             final Long projectId,
             final String search,
             final Long cursorId,
@@ -24,6 +25,7 @@ public class ChatSessionRepositoryCustomImpl implements ChatSessionRepositoryCus
                 .selectFrom(chatSession)
                 .where(
                         chatSession.projectId.eq(projectId),
+                        chatSession.createdById.eq(userId),
                         titleContains(search),
                         afterCursor(cursorId)
                 )

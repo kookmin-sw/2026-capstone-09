@@ -74,7 +74,7 @@ public class LlmResponseHandler {
             return;
         }
 
-        AiTask mainTask = aiTaskService.create(task.getUserId(), node.getParentId(), AiTaskType.MAIN_SUMMARY);
+        AiTask mainTask = aiTaskService.create(task.getUserId(), node.getProjectId(), node.getParentId(), AiTaskType.MAIN_SUMMARY);
         eventPublisher.publishEvent(new NodeSummaryRequestEvent(mainTask.getId(), mergedText));
         log.info("sub-summary 완료 → main-summary 자동 트리거 - parentNodeId: {}, jobId: {}",
                 node.getParentId(), mainTask.getId());

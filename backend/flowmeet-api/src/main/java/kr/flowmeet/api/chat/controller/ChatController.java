@@ -2,15 +2,16 @@ package kr.flowmeet.api.chat.controller;
 
 import jakarta.validation.Valid;
 import kr.flowmeet.api.chat.dto.request.AddChatNodeRequest;
-import kr.flowmeet.api.chat.dto.request.CreateChatSessionRequest;
 import kr.flowmeet.api.chat.dto.request.SendMessageRequest;
+import kr.flowmeet.api.chat.dto.request.StartChatRequest;
 import kr.flowmeet.api.chat.dto.request.UpdateChatSessionRequest;
 import kr.flowmeet.api.chat.dto.response.AddChatNodeResponse;
 import kr.flowmeet.api.chat.dto.response.ChatSessionSummaryResponse;
-import kr.flowmeet.api.chat.dto.response.CreateChatSessionResponse;
 import kr.flowmeet.api.chat.dto.response.GetChatSessionResponse;
 import kr.flowmeet.api.chat.dto.response.GetReferenceNodesResponse;
+import kr.flowmeet.api.chat.dto.response.GetReferenceUsersResponse;
 import kr.flowmeet.api.chat.dto.response.SendMessageResponse;
+import kr.flowmeet.api.chat.dto.response.StartChatResponse;
 import kr.flowmeet.api.chat.dto.response.UpdateChatSessionResponse;
 import kr.flowmeet.api.chat.facade.ChatFacade;
 import kr.flowmeet.api.chat.success.ChatSuccessCode;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -66,15 +68,16 @@ public class ChatController implements ChatApi {
     }
 
     @Override
-    @PostMapping
-    public CommonResponse<CreateChatSessionResponse> createChatSession(
+    @PostMapping("/new")
+    public CommonResponse<StartChatResponse> startChat(
             @UserId Long userId,
             @PathVariable Long projectId,
-            @RequestBody @Valid CreateChatSessionRequest request
+            @RequestBody @Valid StartChatRequest request,
+            @RequestHeader("Authorization") String authorization
     ) {
         return CommonResponse.ok(
-                ChatSuccessCode.CREATE_CHAT_SESSION,
-                chatFacade.createChatSession(userId, projectId, request)
+                ChatSuccessCode.START_CHAT,
+                chatFacade.startChat(userId, projectId, request, authorization)
         );
     }
 
@@ -109,11 +112,12 @@ public class ChatController implements ChatApi {
             @UserId Long userId,
             @PathVariable Long projectId,
             @PathVariable Long chatSessionId,
-            @RequestBody @Valid SendMessageRequest request
+            @RequestBody @Valid SendMessageRequest request,
+            @RequestHeader("Authorization") String authorization
     ) {
         return CommonResponse.ok(
                 ChatSuccessCode.SEND_MESSAGE,
-                chatFacade.sendMessage(userId, projectId, chatSessionId, request.content())
+                chatFacade.sendMessage(userId, projectId, chatSessionId, request, authorization)
         );
     }
 
@@ -126,6 +130,18 @@ public class ChatController implements ChatApi {
         return CommonResponse.ok(
                 ChatSuccessCode.GET_REFERENCE_NODES,
                 chatFacade.getReferenceNodes(userId, projectId)
+        );
+    }
+
+    @Override
+    @GetMapping("/users")
+    public CommonResponse<GetReferenceUsersResponse> getReferenceUsers(
+            @UserId Long userId,
+            @PathVariable Long projectId
+    ) {
+        return CommonResponse.ok(
+                ChatSuccessCode.GET_REFERENCE_USERS,
+                chatFacade.getReferenceUsers(userId, projectId)
         );
     }
 

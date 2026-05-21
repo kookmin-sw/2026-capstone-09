@@ -47,10 +47,14 @@ public class AiTask extends BaseTimeEntity {
     @Column(name = "error_message")
     private String errorMessage;
 
+    @Column(name = "project_id", nullable = false)
+    private Long projectId;
+
     @Builder
-    public AiTask(String id, Long userId, Long referenceId, AiTaskType taskType) {
+    public AiTask(String id, Long userId, Long projectId, Long referenceId, AiTaskType taskType) {
         this.id = id;
         this.userId = userId;
+        this.projectId = projectId;
         this.referenceId = referenceId;
         this.taskType = taskType;
         this.status = AiTaskStatus.PENDING;

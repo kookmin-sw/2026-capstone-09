@@ -18,6 +18,8 @@ import kr.flowmeet.domain.project.entity.ProjectMember;
 import kr.flowmeet.domain.project.entity.ProjectMemberRole;
 import kr.flowmeet.domain.project.service.ProjectMemberService;
 import kr.flowmeet.domain.project.service.ProjectPermissionValidator;
+import kr.flowmeet.domain.user.entity.User;
+import kr.flowmeet.domain.user.service.UserService;
 import kr.flowmeet.api.meeting.event.MeetingEndedEvent;
 import kr.flowmeet.domain.transcript.service.MeetingTranscriptService;
 import kr.flowmeet.external.meeting.MeetingRoomProvider;
@@ -25,6 +27,7 @@ import kr.flowmeet.external.meeting.dto.CreateMeetingRoomCommand;
 import kr.flowmeet.external.meeting.dto.MeetingRoom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +42,7 @@ public class MeetingFacade {
     private final NodeValidator nodeValidator;
     private final ProjectPermissionValidator projectPermissionValidator;
     private final ProjectMemberService projectMemberService;
+    private final UserService userService;
     private final MeetingRoomProvider meetingRoomProvider;
     private final MeetingTranscriptService meetingTranscriptService;
     private final AiTaskService aiTaskService;
@@ -55,18 +59,18 @@ public class MeetingFacade {
         projectPermissionValidator.validateAllAreMembers(projectId, request.participantUserIds());
         meetingService.validateCreatable(nodeId, request.startedAt());
 
+        User host = userService.findById(userId);
         Node node = nodeService.findByIdAndProjectId(nodeId, projectId);
-        MeetingRoom room = meetingRoomProvider.create(toCreateRoomCommand(node, request.startedAt(), null));
+        MeetingRoom room = meetingRoomProvider.create(toCreateRoomCommand(node, request.startedAt(), host.getGoogleRefreshToken()));
 
         //Meeting 생성 실패 시, 외부로 호출해서 생성한 회의실 삭제
         try {
             meetingService.create(nodeId, userId, room.url(), room.externalEventId(), request.toCommand());
+        } catch (OptimisticLockingFailureException e) {
+            rollbackMeetingRoom(room.externalEventId(), e);
+            throw new BusinessException(MeetingErrorCode.MEETING_ALREADY_EXISTS);
         } catch (RuntimeException e) {
-            try {
-                meetingRoomProvider.delete(room.externalEventId(), null);
-            } catch (RuntimeException cleanupError) {
-                e.addSuppressed(cleanupError);
-            }
+            rollbackMeetingRoom(room.externalEventId(), e);
             throw e;
         }
     }
@@ -99,11 +103,13 @@ public class MeetingFacade {
 
         ProjectMember projectMember = projectMemberService.findByProjectIdAndUserId(projectId, userId);
         String externalEventId = meeting.getExternalEventId();
+        Long hostId = meeting.getCreatedById();
 
         meetingService.delete(projectMember, meeting);
 
         if (externalEventId != null && !externalEventId.isBlank()) {
-            meetingRoomProvider.delete(externalEventId, null);
+            User host = userService.findById(hostId);
+            meetingRoomProvider.delete(externalEventId, host.getGoogleRefreshToken());
         }
     }
 
@@ -117,8 +123,8 @@ public class MeetingFacade {
         projectPermissionValidator.validate(projectId, userId, ProjectMemberRole.MEMBER);
         Meeting meeting = meetingService.findById(meetingId);
         nodeValidator.validateIsIn(meeting.getNodeId(), projectId);
-        validateMeetingInProgress(meeting);
 
+        meetingService.startIfScheduled(meetingId);
         meetingTranscriptService.create(meetingId, content);
     }
 
@@ -140,7 +146,7 @@ public class MeetingFacade {
             throw new BusinessException(MeetingErrorCode.MEETING_NO_TRANSCRIPT);
         }
 
-        AiTask aiTask = aiTaskService.create(userId, meetingId, AiTaskType.SUB_SUMMARY);
+        AiTask aiTask = aiTaskService.create(userId, projectId, meetingId, AiTaskType.SUB_SUMMARY);
         eventPublisher.publishEvent(new MeetingEndedEvent(aiTask.getId(), mergedText));
 
         return EndMeetingResponse.from(aiTask.getId());
@@ -165,4 +171,11 @@ public class MeetingFacade {
         );
     }
 
+    private void rollbackMeetingRoom(String externalEventId, Exception e) {
+        try {
+            meetingRoomProvider.delete(externalEventId, null);
+        } catch (RuntimeException cleanupError) {
+            e.addSuppressed(cleanupError);
+        }
+    }
 }

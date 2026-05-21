@@ -1,2 +1,4 @@
-mcp
+fastapi
+uvicorn[standard]
 google-genai
+mcp

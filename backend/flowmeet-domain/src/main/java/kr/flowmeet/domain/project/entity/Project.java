@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -35,6 +36,9 @@ public class Project extends BaseSoftDeleteEntity {
 
     @Column(name = "root_node_seq", nullable = false)
     private int rootNodeSeq;
+
+    @Column(name = "last_activity_at")
+    private LocalDateTime lastActivityAt;
 
     @Builder
     public Project(String name, String profileImageUrl) {

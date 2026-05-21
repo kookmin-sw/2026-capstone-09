@@ -43,6 +43,19 @@ public class ChatSessionNodeService {
     }
 
     @Transactional
+    public void register(final Long chatSessionId, final Long nodeId) {
+        if (chatSessionNodeRepository.existsByChatSessionIdAndNodeId(chatSessionId, nodeId)) {
+            return;
+        }
+        chatSessionNodeRepository.save(
+                ChatSessionNode.builder()
+                        .chatSessionId(chatSessionId)
+                        .nodeId(nodeId)
+                        .build()
+        );
+    }
+
+    @Transactional
     public void remove(final Long chatSessionId, final Long nodeId) {
         ChatSessionNode chatSessionNode = chatSessionNodeRepository
                 .findByChatSessionIdAndNodeId(chatSessionId, nodeId)

@@ -7,10 +7,12 @@ import kr.flowmeet.domain.node.entity.Node;
 public record ReferencedNodeResponse(
         @Schema(description = "노드 ID", example = "101")
         Long nodeId,
+        @Schema(description = "노드 번호", example = "1.1")
+        String number,
         @Schema(description = "노드 제목", example = "기획 문서 작성")
         String title
 ) {
     public static ReferencedNodeResponse from(final Node node) {
-        return new ReferencedNodeResponse(node.getId(), node.getTitle());
+        return new ReferencedNodeResponse(node.getId(), node.getNumber(), node.getTitle());
     }
 }

@@ -8,13 +8,29 @@ MAX_TOOL_ROUNDS = 10
 MAX_HISTORY = 30
  
 class Agent:
-    def __init__(self, mcp_client: MCPClient):
+    def __init__(self, mcp_client: MCPClient, project_id: str):
         self.mcp_client = mcp_client
+        self.project_id = project_id
         self.client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
         self.model = "gemini-2.5-flash"
         self.conversation_history = []
         self._tools = None
- 
+
+    async def close(self):
+        pass
+
+    async def generate_session_name(self, first_message: str) -> str:
+        response = await self.client.aio.models.generate_content(
+            model=self.model,
+            contents=[
+                types.Content(role="user", parts=[types.Part(text=(
+                    f"다음 메시지를 보고 채팅 세션 이름을 한국어로 10자 이내로 만들어줘. "
+                    f"이름만 출력하고 다른 말은 하지 마.\n\n메시지: {first_message}"
+                ))])
+            ],
+        )
+        return response.text.strip()
+
     async def _get_gemini_tools(self) -> list[types.Tool]:
         mcp_tools = await self.mcp_client.list_tools()
  
@@ -33,6 +49,12 @@ class Agent:
     async def run(self, user_message: str) -> str:
 
         self.conversation_history = self.conversation_history[-MAX_HISTORY:]
+        # tool_call/response 쌍 중간에서 잘리면 Gemini 오류 발생 — 텍스트 user 메시지부터 시작
+        while self.conversation_history and (
+            self.conversation_history[0].role != "user"
+            or any(p.function_response is not None for p in self.conversation_history[0].parts)
+        ):
+            self.conversation_history.pop(0)
 
         # 대화 히스토리에 사용자 메시지 추가
         self.conversation_history.append(
@@ -50,8 +72,14 @@ class Agent:
                 contents=self.conversation_history,
                 config=types.GenerateContentConfig(
                     tools=self._tools,
+                    system_instruction=(
+                        f"당신은 플로우밋 프로젝트 관리 AI 어시스턴트입니다. "
+                        f"현재 작업 중인 projectId는 {self.project_id}입니다. "
+                        f"모든 도구 호출 시 projectId는 반드시 {self.project_id}를 사용하세요. "
+                        f"응답 시 userId, nodeId, projectId, memberId 등 내부 ID 값은 절대 사용자에게 노출하지 마세요. "
+                    ),
                     thinking_config=types.ThinkingConfig(
-                        thinking_budget=512 #응답 너무 느리면 0으로 변경 가능
+                        thinking_budget=512 # 응답 너무 느리면 0으로 변경 가능
                     ),
                 ),
             )
@@ -77,12 +105,18 @@ class Agent:
             tool_results = []
             for part in tool_calls:
                 fc = part.function_call
-                print(f"[Agent] 툴 호출: {fc.name}({dict(fc.args)})")
 
+                all_args = {
+                    **dict(fc.args),
+                    "projectId": int(self.project_id),
+                }
+
+                print(f"[Agent] 툴 호출: {fc.name}({all_args})")
+                
                 try:
                     result = await self.mcp_client.call_tool(
                         tool_name=fc.name,
-                        arguments=dict(fc.args),
+                        arguments=all_args,
                     )
                 except Exception as e:
                     result = f"Tool execution failed: {str(e)}"

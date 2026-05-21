@@ -10,7 +10,7 @@ frontend:
   invitation-path: /invitations
 
 cors:
-  allowed-origins: http://localhost:3000, http://localhost:8080, https://api.flowmeet.kr, https://flowmeet.kr, https://www.flowmeet.kr, https://app.flowmeet.kr
+  allowed-origins: http://localhost:3000, http://localhost:8080, https://api.flowmeet.kr, https://flowmeet.kr, https://www.flowmeet.kr, https://app.flowmeet.kr, chrome-extension://*
 
 spring:
   security:

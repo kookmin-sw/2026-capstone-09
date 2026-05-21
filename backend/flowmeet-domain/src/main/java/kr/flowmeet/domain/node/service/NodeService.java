@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import kr.flowmeet.domain.node.entity.NodeStatus;
+import kr.flowmeet.domain.node.entity.NodeType;
 import kr.flowmeet.domain.node.service.vo.CreateNodeCommand;
 import kr.flowmeet.domain.node.service.vo.UpdateNodeKanbanCommand;
 import kr.flowmeet.domain.node.service.vo.UpdateNodeStatusCommand;
@@ -32,6 +33,8 @@ public class NodeService {
     private final TagRepository tagRepository;
     private final NodeAssigneeRepository nodeAssigneeRepository;
     private final NodeTagRepository nodeTagRepository;
+
+    private static final int SORT_ORDER_GAP = 1024;
 
     public Node findById(final Long nodeId) {
         return nodeRepository.findById(nodeId)
@@ -87,13 +90,10 @@ public class NodeService {
         return parent.getNumber() + "." + parent.issueChildSeq();
     }
 
-    private static final int SORT_ORDER_GAP = 1024;
-
-    private int nextSortOrder(final Long projectId, final Long parentId, final NodeStatus status) {
-        int maxOrder = parentId != null
-                ? nodeRepository.findMaxSortOrderByParentId(parentId, status)
-                : nodeRepository.findMaxSortOrderByProjectIdAndRootNodes(projectId, status);
-        return maxOrder + SORT_ORDER_GAP;
+    @Transactional
+    public void createFirstMainNode(final Long projectId) {
+        CreateNodeCommand command = new CreateNodeCommand("새 메인 노드", null, NodeType.MAIN, null);
+        create(projectId, "1", command);
     }
 
     @Transactional
@@ -143,29 +143,6 @@ public class NodeService {
         nodeRepository.softDeleteAllByProjectId(projectId);
     }
 
-    private List<Node> findAllDescendants(Long projectId, Long nodeId) {
-        List<Node> allNodes = findAllByProjectId(projectId);
-
-        Map<Long, List<Node>> childMap = allNodes.stream()
-                .filter(n -> n.getParentId() != null)
-                .collect(Collectors.groupingBy(Node::getParentId));
-
-        List<Node> descendants = new ArrayList<>();
-        Deque<Long> queue = new ArrayDeque<>();
-
-        queue.add(nodeId);
-
-        while (!queue.isEmpty()) {
-            Long currentId = queue.poll();
-            List<Node> children = childMap.getOrDefault(currentId, List.of());
-
-            descendants.addAll(children);
-            children.forEach(child -> queue.add(child.getId()));
-        }
-
-        return descendants;
-    }
-
     @Transactional
     public void updateNodeTitle(final Long projectId, final Long nodeId, final String title) {
         Node node = findByIdAndProjectId(nodeId, projectId);
@@ -205,5 +182,35 @@ public class NodeService {
     public void saveSummary(final Long nodeId, final String summary) {
         Node node = findById(nodeId);
         node.saveSummary(summary);
+    }
+
+    private int nextSortOrder(final Long projectId, final Long parentId, final NodeStatus status) {
+        int maxOrder = parentId != null
+                ? nodeRepository.findMaxSortOrderByParentId(parentId, status)
+                : nodeRepository.findMaxSortOrderByProjectIdAndRootNodes(projectId, status);
+        return maxOrder + SORT_ORDER_GAP;
+    }
+
+    private List<Node> findAllDescendants(Long projectId, Long nodeId) {
+        List<Node> allNodes = findAllByProjectId(projectId);
+
+        Map<Long, List<Node>> childMap = allNodes.stream()
+                .filter(n -> n.getParentId() != null)
+                .collect(Collectors.groupingBy(Node::getParentId));
+
+        List<Node> descendants = new ArrayList<>();
+        Deque<Long> queue = new ArrayDeque<>();
+
+        queue.add(nodeId);
+
+        while (!queue.isEmpty()) {
+            Long currentId = queue.poll();
+            List<Node> children = childMap.getOrDefault(currentId, List.of());
+
+            descendants.addAll(children);
+            children.forEach(child -> queue.add(child.getId()));
+        }
+
+        return descendants;
     }
 }

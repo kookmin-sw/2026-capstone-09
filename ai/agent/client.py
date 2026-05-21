@@ -1,9 +1,9 @@
-import asyncio
 from contextlib import AsyncExitStack
 from typing import Any
- 
+
+import httpx
 from mcp import ClientSession
-from mcp.client.sse import sse_client
+from mcp.client.streamable_http import streamable_http_client
  
  
 class MCPClient:
@@ -11,15 +11,18 @@ class MCPClient:
         self.session: ClientSession | None = None
         self.exit_stack = AsyncExitStack()
  
-    async def connect_sse(self, url: str):
-        read, write = await self.exit_stack.enter_async_context(
-            sse_client(url)
+    async def connect(self, url: str, token: str):
+        http_client = await self.exit_stack.enter_async_context(
+            httpx.AsyncClient(headers={"Authorization": f"Bearer {token}"})
+        )
+        read, write, _ = await self.exit_stack.enter_async_context(
+            streamable_http_client(url, http_client=http_client)
         )
         self.session = await self.exit_stack.enter_async_context(
             ClientSession(read, write)
         )
         await self.session.initialize()
-        print("[MCP] SSE 서버 연결 완료")
+        print("[MCP] Streamable HTTP 서버 연결 완료")
  
     async def list_tools(self) -> list[dict]:
         if not self.session:

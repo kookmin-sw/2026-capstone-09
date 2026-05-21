@@ -71,6 +71,7 @@ public class AuthFacade {
         );
 
         User saved = userService.create(command);
+        userService.updateGoogleRefreshToken(saved.getId(), request.socialRefreshToken());
 
         return issueTokens(saved.getId(), saved.getEmail(), saved.getNickname());
     }
@@ -114,6 +115,7 @@ public class AuthFacade {
         SignupRequiredResponse data = SignupRequiredResponse.of(
                 provider,
                 tokens.accessToken(),
+                tokens.refreshToken(),
                 userInfo.name(),
                 userInfo.email()
         );

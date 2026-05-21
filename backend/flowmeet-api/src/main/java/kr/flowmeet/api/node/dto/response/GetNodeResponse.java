@@ -131,6 +131,8 @@ public record GetNodeResponse(
             Long userId,
             @Schema(description = "닉네임", example = "홍길동")
             String nickname,
+            @Schema(description = "이메일", example = "test@flowmeet.kr")
+            String email,
             @Schema(description = "프로필 이미지 URL", example = "https://cdn.flowmit.com/profiles/10.png")
             String profileImageUrl
     ) {
@@ -140,6 +142,7 @@ public record GetNodeResponse(
                     participant.getId(),
                     participant.getUserId(),
                     user != null ? user.getNickname() : null,
+                    user != null ? user.getEmail() : null,
                     user != null ? user.getProfileImageUrl() : null
             );
         }

@@ -23,6 +23,10 @@ public interface NodeRepository extends JpaRepository<Node, Long>, NodeRepositor
     @Query("SELECT n FROM Node n WHERE n.id = :id AND n.projectId = :projectId")
     Optional<Node> findByIdAndProjectIdWithLock(@Param("id") Long id, @Param("projectId") Long projectId);
 
+    @Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
+    @Query("SELECT n FROM Node n WHERE n.id = :nodeId")
+    Optional<Node> lockVersionById(@Param("nodeId") Long nodeId);
+
     List<Node> findAllByParentId(Long parentId);
 
     @Query("SELECT COALESCE(MAX(n.sortOrder), 0) FROM Node n WHERE n.projectId = :projectId AND n.parentId IS NULL AND n.status = :status")

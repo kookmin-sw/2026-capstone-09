@@ -42,6 +42,7 @@ USER spring
 
 COPY --from=builder /workspace/flowmeet-api/build/libs/flowmeet-api.jar /app/app.jar
 
+ENV TZ=Asia/Seoul
 ENV SPRING_PROFILES_ACTIVE=prod
 
 EXPOSE 8080 8081

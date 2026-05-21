@@ -1,5 +1,6 @@
 package kr.flowmeet.domain.project.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import kr.flowmeet.domain.project.event.ProjectMemberInvitedEvent;
 import kr.flowmeet.domain.user.entity.User;
@@ -83,5 +84,10 @@ public class ProjectService {
                         inviteLink
                 )
         );
+    }
+
+    @Transactional
+    public void touchLastActivityAt(final Long projectId, final LocalDateTime now) {
+        projectRepository.touchLastActivityAt(projectId, now);
     }
 }

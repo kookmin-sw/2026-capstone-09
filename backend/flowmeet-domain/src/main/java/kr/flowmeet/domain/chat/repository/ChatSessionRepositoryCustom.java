@@ -5,5 +5,5 @@ import kr.flowmeet.domain.chat.entity.ChatSession;
 
 public interface ChatSessionRepositoryCustom {
 
-    List<ChatSession> findAllByProjectId(Long projectId, String search, Long cursorId, int size);
+    List<ChatSession> findAllByUserIdAndProjectId(Long userId, Long projectId, String search, Long cursorId, int size);
 }

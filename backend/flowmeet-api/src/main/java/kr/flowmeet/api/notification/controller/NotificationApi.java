@@ -21,7 +21,7 @@ public interface NotificationApi {
 
     @Operation(summary = "알림 실시간 구독 (SSE)",
             description = "SSE 연결 후 알림이 발생하면 `notification` 이벤트로 실시간 전달됩니다. 연결 타임아웃은 30분이며 클라이언트가 자동 재연결해야 합니다.")
-    SseEmitter subscribe(@UserId Long userId, HttpServletResponse response);
+    SseEmitter subscribe(@UserId Long userId, @RequestParam Long projectId, HttpServletResponse response);
 
     @Operation(summary = "알림 목록 조회",
             description = "isRead 필터와 커서 기반 슬라이싱을 지원합니다. 첫 요청은 cursorId 생략, 이후 응답의 nextCursorId를 그대로 전달합니다.")

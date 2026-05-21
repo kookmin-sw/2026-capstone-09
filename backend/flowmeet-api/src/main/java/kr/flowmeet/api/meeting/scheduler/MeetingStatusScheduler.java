@@ -26,6 +26,6 @@ public class MeetingStatusScheduler {
         }
 
         meetings.forEach(Meeting::start);
-        log.info("회의 상태 전환 완료 - SCHEDULED → IN_PROGRESS, {}건", meetings.size());
+        log.info("[startScheduledMeetings] 회의 상태 전환 완료 - SCHEDULED → IN_PROGRESS, {}건", meetings.size());
     }
 }

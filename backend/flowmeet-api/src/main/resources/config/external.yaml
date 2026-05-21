@@ -37,6 +37,10 @@ oauth:
     token-uri: ${OAUTH2_GOOGLE_TOKEN_URI:https://oauth2.googleapis.com/token}
     user-info-uri: ${OAUTH2_GOOGLE_USER_INFO_URI:https://www.googleapis.com/oauth2/v3/userinfo}
 
+ai:
+  agent:
+    url: ${AI_AGENT_URL:http://localhost:8000}
+
 discord:
   error-notifier:
     enabled: ${DISCORD_ERROR_NOTIFIER_ENABLED:false}
