@@ -1,5 +1,6 @@
 'use client';
 
+import { useNodeMenuActions } from '@/hooks/useNodeMenuActions';
 import { useNodeDetailQuery } from '@/queries/node';
 import CreateMeeting from './CreateMeeting';
 import HasMeeting from './HasMeeting';
@@ -12,9 +13,15 @@ interface NodeMeetingTabProps {
 
 export const NodeMeetingTab = ({ nodeId, projectId }: NodeMeetingTabProps) => {
   const { data: nodeDetail } = useNodeDetailQuery(projectId, nodeId);
+  const { onCreateMeeting } = useNodeMenuActions({
+    nodeId: nodeId ?? 0,
+    projectId,
+    nodeTitle: nodeDetail?.title,
+    nodeNumber: nodeDetail?.number,
+  });
   const meeting = nodeDetail?.meeting;
 
-  if (!meeting) return <CreateMeeting />;
+  if (!meeting) return <CreateMeeting onCreateMeeting={nodeId !== null ? onCreateMeeting : undefined} />;
   if (meeting?.status == 'IN_PROGRESS' || !meeting?.summary) return <HasMeeting />;
 
   return (
