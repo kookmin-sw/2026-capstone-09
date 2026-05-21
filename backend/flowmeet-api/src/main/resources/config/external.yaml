@@ -7,3 +7,42 @@ spring:
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
+
+cloud:
+  aws:
+    s3:
+      bucket: ${S3_BUCKET:flowmeet-bucket}
+      region: ${S3_REGION:ap-northeast-2}
+      cdn-url: ${S3_CDN_URL:}
+    sqs:
+      request-queue-url: ${SQS_REQUEST_QUEUE_URL:}
+      response-queue-url: ${SQS_RESPONSE_QUEUE_URL:}
+      region: ${SQS_REGION:ap-northeast-2}
+    ai:
+      endpoint-url: ${AI_NODE_ANALYSIS_ENDPOINT_URL:}
+
+google:
+  meet:
+    enabled: ${GOOGLE_MEET_ENABLED:false}
+    application-name: ${GOOGLE_APP_NAME:FlowMeet}
+    client-id: ${OAUTH2_GOOGLE_CLIENT_ID:}
+    client-secret: ${OAUTH2_GOOGLE_CLIENT_SECRET:}
+    calendar-id: ${GOOGLE_CALENDAR_ID:primary}
+    timezone: ${GOOGLE_MEET_TIMEZONE:Asia/Seoul}
+
+oauth:
+  google:
+    client-id: ${OAUTH2_GOOGLE_CLIENT_ID:}
+    client-secret: ${OAUTH2_GOOGLE_CLIENT_SECRET:}
+    token-uri: ${OAUTH2_GOOGLE_TOKEN_URI:https://oauth2.googleapis.com/token}
+    user-info-uri: ${OAUTH2_GOOGLE_USER_INFO_URI:https://www.googleapis.com/oauth2/v3/userinfo}
+
+ai:
+  agent:
+    url: ${AI_AGENT_URL:http://localhost:8000}
+
+discord:
+  error-notifier:
+    enabled: ${DISCORD_ERROR_NOTIFIER_ENABLED:false}
+    bot-token: ${DISCORD_BOT_TOKEN:}
+    channel-id: ${DISCORD_ERROR_CHANNEL_ID:}

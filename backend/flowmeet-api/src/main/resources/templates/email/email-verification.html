@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>FlowMeet 이메일 인증 코드</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f6f8fa; margin: 0; padding: 24px;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 560px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden;">
+        <tr>
+            <td style="padding: 32px;">
+                <h1 style="margin: 0 0 16px; font-size: 22px; color: #111827;">이메일 인증 코드</h1>
+                <p style="margin: 0 0 16px; font-size: 15px; color: #374151; line-height: 1.6;">
+                    아래 인증 코드를 5분 안에 입력해 주세요.
+                </p>
+                <p style="margin: 0 0 24px; padding: 16px 20px; background-color: #f3f4f6; border-radius: 10px; text-align: center; font-size: 28px; font-weight: 700; letter-spacing: 6px; color: #111827;">
+                    <span th:text="${code}">000000</span>
+                </p>
+                <p style="margin: 0; font-size: 12px; color: #9ca3af; line-height: 1.6;">
+                    본인이 요청하지 않은 인증 메일이라면 이 메일을 무시해도 돼요.
+                </p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

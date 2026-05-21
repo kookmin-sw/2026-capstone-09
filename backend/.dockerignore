@@ -1,0 +1,36 @@
+# Gradle / 빌드 산출물
+.gradle
+**/build
+!**/src/main/**/build
+!**/src/test/**/build
+
+# IDE / OS
+.idea
+.vscode
+*.iml
+*.iws
+*.ipr
+.DS_Store
+
+# Git / CI
+.git
+.gitignore
+.github
+
+# Docker 파일 자체 (빌드 컨텍스트에 불필요)
+Dockerfile
+.dockerignore
+docker
+docker-compose.yml
+docker-compose.*.yml
+
+# 환경/비밀 파일
+.env
+.env.*
+*.env
+**/application-local.yaml
+
+# 문서
+README*
+HELP.md
+docs
