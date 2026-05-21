@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { privateApi } from '@/api';
 import { type MultiSelectInputValue, type NodeOption, type UserOption } from '@/components/commons/custom-input/MultiSelectInput';
-import { useCreateChatSession, useSendMessage, useGetAllChatSessions, useGetChatSessionDetail, useGetReferenceNodes, useAddChatNode, useRemoveChatNode } from '@/queries/chat';
+import { useStartChat, useSendMessage, useGetAllChatSessions, useGetChatSessionDetail, useGetReferenceNodes, useAddChatNode, useRemoveChatNode } from '@/queries/chat';
 import { chatKeys } from '@/queries/keys/chatKeys';
 import { ChatHeader } from './ChatHeader';
 import { ChatInputArea } from './ChatInputArea';
@@ -39,7 +39,6 @@ export function ChatWindow({ onClose }: ChatWindowProps) {
   const [menuOpenChatId, setMenuOpenChatId] = useState<number | null>(null);
   const params = useParams();
   const projectId = Number(params?.projectId);
-  const isValidProjectId = Number.isFinite(projectId) && projectId > 0;
   const queryClient = useQueryClient();
 
   // NodeSidebar 너비 계산
@@ -61,7 +60,6 @@ export function ChatWindow({ onClose }: ChatWindowProps) {
       setIsNodeSidebarOpen(!!sidebarState);
     };
 
-    // 초기 상태 확인
     checkSidebar();
 
     // custom event 리스너 등록
@@ -142,35 +140,11 @@ export function ChatWindow({ onClose }: ChatWindowProps) {
   const isViewingExistingChat = selectedChatId !== null && selectedChatId !== chatSessionId;
   const visibleMessages = isViewingExistingChat ? serverMessages : messages;
 
-  const createChatMutation = useCreateChatSession();
-
+  const startChatMutation = useStartChat();
   const sendMessageMutation = useSendMessage();
 
-  useEffect(() => {
-    if (!isValidProjectId || chatSessionId || selectedChatId || createChatMutation.isPending) {
-      return;
-    }
-
-    createChatMutation.mutate(
-      {
-        projectId,
-        title: '새 채팅',
-      },
-      {
-        onSuccess: (data) => {
-          const id = data.data?.chatSessionId;
-          if (!id) return;
-
-          setChatSessionId(id);
-          setSelectedChatId(id);
-          setMessages([]);
-        },
-      }
-    );
-  }, [projectId, isValidProjectId, chatSessionId, selectedChatId, createChatMutation.isPending]);
-
   const handleSend = (value: MultiSelectInputValue) => {
-    if (!value.text.trim() || sendMessageMutation.isPending || !currentChatSessionId) return;
+    if (!value.text.trim() || startChatMutation.isPending || sendMessageMutation.isPending) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -183,76 +157,109 @@ export function ChatWindow({ onClose }: ChatWindowProps) {
     setInputValue({ text: '', mentions: [] });
 
     // mentions에서 노드와 사용자 ID 추출
-    const referenceNodeIds = value.mentions
+    const nodeIds = value.mentions
       .filter((mention) => mention.type === 'node')
       .map((mention) => Number(mention.id));
     const referenceUserIds = value.mentions
       .filter((mention) => mention.type === 'user')
       .map((mention) => Number(mention.id));
 
-    sendMessageMutation.mutate(
-      {
-        projectId,
-        chatSessionId: currentChatSessionId,
-        content: value.text.trim(),
-        referenceNodeIds: referenceNodeIds.length > 0 ? referenceNodeIds : undefined,
-        referenceUserIds: referenceUserIds.length > 0 ? referenceUserIds : undefined,
-      },
-      {
-        onSuccess: (data) => {
-          // AI 응답 추가
-          if (data.data) {
-            const assistantMessage: Message = {
-              id: data.data.messageId?.toString() || Date.now().toString(),
-              role: 'assistant',
-              content: data.data.content || '',
-              timestamp: data.data.createdAt || new Date().toISOString(),
-              shouldAnimate: true,
-            };
-            setMessages((prev) => [...prev, assistantMessage]);
-          }
+    // 첫 메시지인 경우 (세션이 없는 경우)
+    if (!currentChatSessionId) {
+      startChatMutation.mutate(
+        {
+          projectId,
+          content: value.text.trim(),
+          nodeIds: nodeIds.length > 0 ? nodeIds : undefined,
+          referenceUserIds: referenceUserIds.length > 0 ? referenceUserIds : undefined,
+        },
+        {
+          onSuccess: (data) => {
+            if (data.data) {
+              // 세션 ID 설정
+              const newChatSessionId = data.data.chatSessionId;
+              if (newChatSessionId) {
+                setChatSessionId(newChatSessionId);
+                setSelectedChatId(newChatSessionId);
+              }
 
-          // 선택된 채팅의 메시지 목록 새로고침
-          if (currentChatSessionId) {
-            void queryClient.invalidateQueries({
-              queryKey: chatKeys.detail(projectId, currentChatSessionId),
-            });
-          }
+              // AI 응답 추가
+              const assistantMessage: Message = {
+                id: Date.now().toString(),
+                role: 'assistant',
+                content: data.data.aiResponse || '',
+                timestamp: data.data.createdAt || new Date().toISOString(),
+                shouldAnimate: true,
+              };
+              setMessages((prev) => [...prev, assistantMessage]);
+
+              // 채팅 목록 새로고침 (AI가 생성한 제목이 반영됨)
+              void queryClient.invalidateQueries({ queryKey: chatKeys.lists() });
+            }
+          },
+          onError: () => {
+            const errorMessage: Message = {
+              id: (Date.now() + 1).toString(),
+              role: 'assistant',
+              content: '죄송합니다. 메시지 전송에 실패했습니다. 다시 시도해주세요.',
+              timestamp: new Date().toISOString(),
+            };
+            setMessages((prev) => [...prev, errorMessage]);
+          },
+        }
+      );
+    } else {
+      // 기존 세션에 메시지 추가
+      sendMessageMutation.mutate(
+        {
+          projectId,
+          chatSessionId: currentChatSessionId,
+          content: value.text.trim(),
+          referenceNodeIds: nodeIds.length > 0 ? nodeIds : undefined,
+          referenceUserIds: referenceUserIds.length > 0 ? referenceUserIds : undefined,
         },
-        onError: () => {
-          const errorMessage: Message = {
-            id: (Date.now() + 1).toString(),
-            role: 'assistant',
-            content: '죄송합니다. 메시지 전송에 실패했습니다. 다시 시도해주세요.',
-            timestamp: new Date().toISOString(),
-          };
-          setMessages((prev) => [...prev, errorMessage]);
-        },
-      }
-    );
+        {
+          onSuccess: (data) => {
+            // AI 응답 추가
+            if (data.data) {
+              const assistantMessage: Message = {
+                id: data.data.messageId?.toString() || Date.now().toString(),
+                role: 'assistant',
+                content: data.data.content || '',
+                timestamp: data.data.createdAt || new Date().toISOString(),
+                shouldAnimate: true,
+              };
+              setMessages((prev) => [...prev, assistantMessage]);
+            }
+
+            // 선택된 채팅의 메시지 목록 새로고침
+            if (currentChatSessionId) {
+              void queryClient.invalidateQueries({
+                queryKey: chatKeys.detail(projectId, currentChatSessionId),
+              });
+            }
+          },
+          onError: () => {
+            const errorMessage: Message = {
+              id: (Date.now() + 1).toString(),
+              role: 'assistant',
+              content: '죄송합니다. 메시지 전송에 실패했습니다. 다시 시도해주세요.',
+              timestamp: new Date().toISOString(),
+            };
+            setMessages((prev) => [...prev, errorMessage]);
+          },
+        }
+      );
+    }
   };
 
   const handleNewChat = () => {
-    createChatMutation.mutate(
-      {
-        projectId,
-        title: '새 채팅',
-      },
-      {
-        onSuccess: (data) => {
-          if (data.data?.chatSessionId) {
-            setChatSessionId(data.data.chatSessionId);
-            setSelectedChatId(data.data.chatSessionId);
-            setMessages([]);
-            setInputValue({ text: '', mentions: [] });
-
-            // 채팅 목록 새로고침
-            void queryClient.invalidateQueries({ queryKey: chatKeys.lists() });
-          }
-        },
-        onError: () => {},
-      }
-    );
+    // 세션을 생성하지 않고 상태만 초기화
+    // 실제 세션은 첫 메시지를 보낼 때 생성됨
+    setChatSessionId(null);
+    setSelectedChatId(null);
+    setMessages([]);
+    setInputValue({ text: '', mentions: [] });
   };
 
   return (
@@ -298,7 +305,7 @@ export function ChatWindow({ onClose }: ChatWindowProps) {
 
             <ChatMessageList
               messages={visibleMessages}
-              isLoading={sendMessageMutation.isPending}
+              isLoading={startChatMutation.isPending || sendMessageMutation.isPending}
             />
 
             <ChatInputArea

@@ -447,85 +447,6 @@ export interface CreateEdgeRequest {
   comment?: string;
 }
 
-/** 채팅 세션 생성 요청 */
-export interface CreateChatSessionRequest {
-  /**
-   * 채팅 제목 (미입력 시 자동 생성)
-   * @example "기획 방향성 질문"
-   */
-  title?: string;
-  /**
-   * 참조할 노드 ID 목록
-   * @example [101,102]
-   */
-  nodeIds?: number[];
-}
-
-/** 공통 응답 형식 */
-export interface CommonResponseCreateChatSessionResponse {
-  /**
-   * HTTP 상태 코드
-   * @format int32
-   * @example 200
-   */
-  status?: number;
-  /**
-   * 응답 코드
-   * @example "OK"
-   */
-  code?: string;
-  /**
-   * 응답 메시지
-   * @example "요청에 성공했습니다."
-   */
-  message?: string;
-  /** 응답 데이터 */
-  data?: CreateChatSessionResponse;
-}
-
-/** 채팅 세션 생성 응답 */
-export interface CreateChatSessionResponse {
-  /**
-   * 채팅 세션 ID
-   * @format int64
-   * @example 301
-   */
-  chatSessionId?: number;
-  /**
-   * 채팅 제목
-   * @example "기획 방향성 질문"
-   */
-  title?: string;
-  /** 참조 노드 목록 */
-  referencedNodes?: ReferencedNodeResponse[];
-  /**
-   * 생성 시각
-   * @format date-time
-   * @example "2026-04-19T10:00:00"
-   */
-  createdAt?: string;
-}
-
-/** 참조 노드 정보 */
-export interface ReferencedNodeResponse {
-  /**
-   * 노드 ID
-   * @format int64
-   * @example 101
-   */
-  nodeId?: number;
-  /**
-   * 노드 번호
-   * @example "1.1"
-   */
-  number?: string;
-  /**
-   * 노드 제목
-   * @example "기획 문서 작성"
-   */
-  title?: string;
-}
-
 /** 참조 노드 추가 요청 */
 export interface AddChatNodeRequest {
   /**
@@ -568,6 +489,26 @@ export interface CommonResponseAddChatNodeResponse {
   message?: string;
   /** 응답 데이터 */
   data?: AddChatNodeResponse;
+}
+
+/** 참조 노드 정보 */
+export interface ReferencedNodeResponse {
+  /**
+   * 노드 ID
+   * @format int64
+   * @example 101
+   */
+  nodeId?: number;
+  /**
+   * 노드 번호
+   * @example "1.1"
+   */
+  number?: string;
+  /**
+   * 노드 제목
+   * @example "기획 문서 작성"
+   */
+  title?: string;
 }
 
 /** 메시지 전송 요청 */
@@ -631,6 +572,71 @@ export interface SendMessageResponse {
    * 생성 시각
    * @format date-time
    * @example "2026-04-19T10:05:00"
+   */
+  createdAt?: string;
+}
+
+/** 새 채팅 시작 요청 */
+export interface StartChatRequest {
+  /**
+   * 첫 메시지 내용
+   * @minLength 1
+   * @example "이 프로젝트 노드들을 정리해줘"
+   */
+  content: string;
+  /**
+   * 참조할 노드 ID 목록
+   * @example [101,102]
+   */
+  nodeIds?: number[];
+  /**
+   * 참조 사용자 ID 목록
+   * @example [3,4]
+   */
+  referenceUserIds?: number[];
+}
+
+/** 공통 응답 형식 */
+export interface CommonResponseStartChatResponse {
+  /**
+   * HTTP 상태 코드
+   * @format int32
+   * @example 200
+   */
+  status?: number;
+  /**
+   * 응답 코드
+   * @example "OK"
+   */
+  code?: string;
+  /**
+   * 응답 메시지
+   * @example "요청에 성공했습니다."
+   */
+  message?: string;
+  /** 응답 데이터 */
+  data?: StartChatResponse;
+}
+
+/** 새 채팅 시작 응답 */
+export interface StartChatResponse {
+  /**
+   * 채팅 세션 ID
+   * @format int64
+   * @example 301
+   */
+  chatSessionId?: number;
+  /**
+   * AI가 생성한 채팅 제목
+   * @example "프로젝트 노드 정리 요청"
+   */
+  title?: string;
+  /** AI 응답 메시지 */
+  aiResponse?: string;
+  /**
+   * 생성 시각
+   * @format date-time
+   * @example "2026-04-19T10:00:00"
    */
   createdAt?: string;
 }
@@ -5309,116 +5315,6 @@ export class Api<
      * No description
      *
      * @tags Chat
-     * @name GetAllChatSessions
-     * @summary 채팅 세션 목록 조회
-     * @request GET:/v1/projects/{projectId}/chats
-     * @secure
-     */
-    getAllChatSessions: (
-      projectId: number,
-      query?: {
-        search?: string;
-        /** @format int64 */
-        cursorId?: number;
-        /**
-         * @format int32
-         * @default 20
-         */
-        size?: number;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<
-        {
-          /**
-           * HTTP 상태 코드
-           * @format int32
-           * @example 200
-           */
-          status?: object;
-          /**
-           * 응답 코드
-           * @example "GET_ALL_CHAT_SESSIONS"
-           */
-          code?: object;
-          /**
-           * 응답 메시지
-           * @example "채팅 목록을 조회했어요."
-           */
-          message?: object;
-          /** 커서 기반 페이지 응답 */
-          data?: CursorSliceResponseChatSessionSummaryResponse;
-        },
-        {
-          /** @format int32 */
-          status?: number;
-          code?: string;
-          message?: string;
-          data?: object;
-        }
-      >({
-        path: `/v1/projects/${projectId}/chats`,
-        method: "GET",
-        query: query,
-        secure: true,
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Chat
-     * @name CreateChatSession
-     * @summary 새 채팅 세션 생성
-     * @request POST:/v1/projects/{projectId}/chats
-     * @secure
-     */
-    createChatSession: (
-      projectId: number,
-      data: CreateChatSessionRequest,
-      params: RequestParams = {},
-    ) =>
-      this.request<
-        {
-          /**
-           * HTTP 상태 코드
-           * @format int32
-           * @example 200
-           */
-          status?: object;
-          /**
-           * 응답 코드
-           * @example "CREATE_CHAT_SESSION"
-           */
-          code?: object;
-          /**
-           * 응답 메시지
-           * @example "새 채팅을 생성했어요."
-           */
-          message?: object;
-          /** 채팅 세션 생성 응답 */
-          data?: CreateChatSessionResponse;
-        },
-        {
-          /** @format int32 */
-          status?: number;
-          code?: string;
-          message?: string;
-          data?: object;
-        }
-      >({
-        path: `/v1/projects/${projectId}/chats`,
-        method: "POST",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Chat
      * @name AddChatNode
      * @summary 참조 노드 추가
      * @request POST:/v1/projects/{projectId}/chats/{chatSessionId}/nodes
@@ -5512,6 +5408,57 @@ export class Api<
         }
       >({
         path: `/v1/projects/${projectId}/chats/${chatSessionId}/messages`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Chat
+     * @name StartChat
+     * @summary 새 채팅 시작 (세션 생성 + 첫 메시지 전송)
+     * @request POST:/v1/projects/{projectId}/chats/new
+     * @secure
+     */
+    startChat: (
+      projectId: number,
+      data: StartChatRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "START_CHAT"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "새 채팅을 시작했어요."
+           */
+          message?: object;
+          /** 새 채팅 시작 응답 */
+          data?: StartChatResponse;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/projects/${projectId}/chats/new`,
         method: "POST",
         body: data,
         secure: true,
@@ -5676,6 +5623,65 @@ export class Api<
         body: data,
         secure: true,
         type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Chat
+     * @name GetAllChatSessions
+     * @summary 채팅 세션 목록 조회
+     * @request GET:/v1/projects/{projectId}/chats
+     * @secure
+     */
+    getAllChatSessions: (
+      projectId: number,
+      query?: {
+        search?: string;
+        /** @format int64 */
+        cursorId?: number;
+        /**
+         * @format int32
+         * @default 20
+         */
+        size?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /**
+           * HTTP 상태 코드
+           * @format int32
+           * @example 200
+           */
+          status?: object;
+          /**
+           * 응답 코드
+           * @example "GET_ALL_CHAT_SESSIONS"
+           */
+          code?: object;
+          /**
+           * 응답 메시지
+           * @example "채팅 목록을 조회했어요."
+           */
+          message?: object;
+          /** 커서 기반 페이지 응답 */
+          data?: CursorSliceResponseChatSessionSummaryResponse;
+        },
+        {
+          /** @format int32 */
+          status?: number;
+          code?: string;
+          message?: string;
+          data?: object;
+        }
+      >({
+        path: `/v1/projects/${projectId}/chats`,
+        method: "GET",
+        query: query,
+        secure: true,
         ...params,
       }),
 
