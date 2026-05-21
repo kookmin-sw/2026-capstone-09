@@ -31,9 +31,9 @@ public class NotificationController implements NotificationApi {
 
     @Override
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter subscribe(@UserId Long userId, HttpServletResponse response) {
+    public SseEmitter subscribe(@UserId Long userId, @RequestParam Long projectId, HttpServletResponse response) {
         response.setHeader("X-Accel-Buffering", "no");
-        return sseEmitterService.subscribe(userId);
+        return sseEmitterService.subscribe(userId, projectId);
     }
 
     @Override

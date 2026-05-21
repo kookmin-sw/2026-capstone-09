@@ -21,7 +21,7 @@ public class DefaultNotificationSender implements NotificationSender {
 
     @Override
     public void send(final Notification notification) {
-        sseEmitterStore.findByUserId(notification.getUserId())
+        sseEmitterStore.findByUserAndProject(notification.getUserId(), notification.getProjectId())
                 .ifPresent(emitter -> {
                     try {
                         long unreadCount = notificationService.countUnread(notification.getUserId());
@@ -29,8 +29,8 @@ public class DefaultNotificationSender implements NotificationSender {
                                 .name("notification")
                                 .data(NotificationSsePayload.from(notification, unreadCount)));
                     } catch (IOException e) {
-                        sseEmitterStore.remove(notification.getUserId());
-                        log.debug("[SSE] 전송 실패, 연결 제거: userId={}", notification.getUserId());
+                        sseEmitterStore.remove(notification.getUserId(), notification.getProjectId());
+                        log.debug("[SSE] 전송 실패, 연결 제거: userId={}, projectId={}", notification.getUserId(), notification.getProjectId());
                     }
                 });
     }

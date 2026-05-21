@@ -16,18 +16,18 @@ public class SseEmitterService {
 
     private final SseEmitterStore sseEmitterStore;
 
-    public SseEmitter subscribe(final Long userId) {
+    public SseEmitter subscribe(final Long userId, final Long projectId) {
         SseEmitter emitter = new SseEmitter(SSE_TIMEOUT);
-        sseEmitterStore.save(userId, emitter);
+        sseEmitterStore.save(userId, projectId, emitter);
 
-        emitter.onTimeout(() -> sseEmitterStore.remove(userId));
-        emitter.onError(e -> sseEmitterStore.remove(userId));
-        emitter.onCompletion(() -> sseEmitterStore.remove(userId));
+        emitter.onTimeout(() -> sseEmitterStore.remove(userId, projectId));
+        emitter.onError(e -> sseEmitterStore.remove(userId, projectId));
+        emitter.onCompletion(() -> sseEmitterStore.remove(userId, projectId));
 
         try {
             emitter.send(SseEmitter.event().name("connect").data("connected"));
         } catch (IOException e) {
-            sseEmitterStore.remove(userId);
+            sseEmitterStore.remove(userId, projectId);
         }
 
         return emitter;
@@ -35,12 +35,12 @@ public class SseEmitterService {
 
     @Scheduled(fixedRate = 30_000)
     public void sendHeartbeat() {
-        sseEmitterStore.findAll().forEach((userId, emitter) -> {
+        sseEmitterStore.findAll().forEach((key, emitter) -> {
             try {
                 emitter.send(SseEmitter.event().name("heartbeat").data(""));
             } catch (IOException e) {
-                sseEmitterStore.remove(userId);
-                log.debug("[SSE] heartbeat 실패, 연결 제거: userId={}", userId);
+                sseEmitterStore.removeByKey(key);
+                log.debug("[SSE] heartbeat 실패, 연결 제거: key={}", key);
             }
         });
     }
