@@ -1,6 +1,5 @@
 'use client';
 
-import { useParams } from 'next/navigation';
 import { useState, useEffect, useMemo } from 'react';
 import { ChatWidget } from '@/components/chat/ChatWidget';
 import { ProjectDetailHeader } from '@/components/projects/project-detail/ProjectDetailHeader';
@@ -10,7 +9,7 @@ import {
   VALID_VIEWS,
   ProjectViewTypes,
 } from '@/contexts/ProjectDetailLayoutContext';
-import { ProjectPresenceProvider, useAwarenessUsers } from '@/contexts/YjsContext';
+import { useAwarenessUsers } from '@/contexts/YjsContext';
 
 const STORAGE_KEY = 'project-active-view';
 
@@ -37,11 +36,6 @@ function HeaderWithPresence({
 }
 
 export default function ProjectDetailLayout({ children }: ProjectDetailLayoutProps) {
-  const params = useParams<{ projectId?: string }>();
-  const projectIdRaw = params?.projectId;
-  const projectId = projectIdRaw ? Number(projectIdRaw) : NaN;
-  const isProjectIdValid = !Number.isNaN(projectId);
-
   const [mounted, setMounted] = useState(false);
   const [activeView, setActiveView] = useState<ProjectViewTypes>(() => {
     if (typeof window === 'undefined') return 'node-flow';
@@ -80,9 +74,5 @@ export default function ProjectDetailLayout({ children }: ProjectDetailLayoutPro
     </ProjectDetailLayoutContext.Provider>
   );
 
-  if (!isProjectIdValid) {
-    return inner;
-  }
-
-  return <ProjectPresenceProvider projectId={projectId}>{inner}</ProjectPresenceProvider>;
+  return inner;
 }

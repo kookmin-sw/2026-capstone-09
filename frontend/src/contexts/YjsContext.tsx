@@ -14,6 +14,7 @@ export interface YjsAwarenessState {
     nickname: string;
     profileImageUrl: string | null;
     color: string;
+    activeNodeId?: number | null;
   };
 }
 
@@ -88,12 +89,16 @@ function YjsInstance({ room, children }: { room: string; children: React.ReactNo
     const existingColor =
       (value.provider.awareness.getLocalState() as Partial<YjsAwarenessState> | null)?.user
         ?.color ?? AWARENESS_COLORS[0];
+    const activeNodeId =
+      (value.provider.awareness.getLocalState() as Partial<YjsAwarenessState> | null)?.user
+        ?.activeNodeId ?? null;
     value.provider.awareness.setLocalStateField('user', {
       userId: value.provider.awareness.clientID,
       email: currentUser.email ?? '',
       nickname: currentUser.nickname ?? '',
       profileImageUrl: currentUser.profileImageUrl ?? null,
       color: existingColor,
+      activeNodeId,
     });
   }, [value, currentUser]);
 
@@ -130,6 +135,48 @@ export function useAwarenessUsers(): YjsAwarenessState['user'][] {
   }, [yjsCtx]);
 
   return users;
+}
+
+export function useActiveNodeUsers(nodeId?: number | null): YjsAwarenessState['user'][] {
+  const users = useAwarenessUsers();
+
+  if (!nodeId) return [];
+
+  return users.filter((user) => user.activeNodeId === nodeId);
+}
+
+export const useNodeAwarenessUsers = useActiveNodeUsers;
+
+export function useSetActiveAwarenessNode(nodeId?: number | null) {
+  const yjsCtx = useYjsContext();
+
+  useEffect(() => {
+    if (!yjsCtx) return;
+    const { provider } = yjsCtx;
+
+    const setActiveNodeId = (activeNodeId: number | null) => {
+      const localState = provider.awareness.getLocalState() as
+        | Partial<YjsAwarenessState>
+        | null;
+      const user = localState?.user;
+      if (!user) return;
+
+      provider.awareness.setLocalStateField('user', {
+        ...user,
+        activeNodeId,
+      });
+    };
+
+    setActiveNodeId(nodeId ?? null);
+    return () => {
+      const localState = provider.awareness.getLocalState() as
+        | Partial<YjsAwarenessState>
+        | null;
+      if (localState?.user?.activeNodeId === nodeId) {
+        setActiveNodeId(null);
+      }
+    };
+  }, [yjsCtx, nodeId]);
 }
 
 /**

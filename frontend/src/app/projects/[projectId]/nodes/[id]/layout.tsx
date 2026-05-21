@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 
 import NodeMeetingTab from '@/components/node-datail/meeting/NodeMeetingTab';
 import NodeNoteTab from '@/components/node-datail/note/NodeNoteTab';
-import { YjsProvider } from '@/contexts/YjsContext';
+import { YjsProvider, useSetActiveAwarenessNode } from '@/contexts/YjsContext';
 import { NodePageLayoutClient } from './_components/NodePageLayoutClient';
 
 export default function NodePageLayout() {
@@ -18,6 +18,8 @@ export default function NodePageLayout() {
   const projectSegment = segments[segments.length - 4];
   const nodeId = Number(nodeSegment);
   const projectId = Number(projectSegment);
+
+  useSetActiveAwarenessNode(Number.isFinite(nodeId) ? nodeId : null);
 
   return (
     <div className="flex h-full w-full flex-col bg-white">

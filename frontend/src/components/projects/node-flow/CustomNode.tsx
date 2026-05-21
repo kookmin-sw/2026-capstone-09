@@ -4,6 +4,7 @@ import { NodeProps, Handle, Position } from 'reactflow';
 import type { NodeItem } from '@/api/Api';
 import { Users } from '@/components/commons/user/UserAvatarGroup';
 import { ColorType } from '@/constants/badgeColor';
+import { useActiveNodeUsers } from '@/contexts/YjsContext';
 import { useNodeMenuActions } from '@/hooks/useNodeMenuActions';
 import { getColorToken } from '@/utils/getBadgeColorInfo';
 import { formatDate, getVisibleTags } from '@/utils/nodeUtils';
@@ -18,6 +19,7 @@ interface CustomNodeData extends NodeItem {
 
 function CustomFlowNodeComponent({ data, selected }: NodeProps<CustomNodeData>) {
   const { visibleTags, remainingTagsCount } = getVisibleTags(data.tags ?? []);
+  const activeUsers = useActiveNodeUsers(data.nodeId);
   const isMain = data.isMainNode;
   const nodeNumber = data.number ?? data.nodeId;
 
@@ -195,9 +197,9 @@ function CustomFlowNodeComponent({ data, selected }: NodeProps<CustomNodeData>) 
           )}
         </div>
 
-        {data.assignees && data.assignees.length > 0 && (
+        {activeUsers.length > 0 && (
           <div className="shrink-0">
-            <Users users={data.assignees} maxVisible={2} compact />
+            <Users users={activeUsers} maxVisible={2} compact />
           </div>
         )}
       </div>

@@ -4,7 +4,7 @@ import { IconButton } from '@wanteddev/wds';
 import { IconFull } from '@wanteddev/wds-icon';
 import Link from 'next/link';
 import { useEffect, useState, useCallback, useSyncExternalStore } from 'react';
-import { YjsProvider } from '@/contexts/YjsContext';
+import { YjsProvider, useSetActiveAwarenessNode } from '@/contexts/YjsContext';
 import {
   getServerSnapshot,
   getSessionSnapshot,
@@ -41,6 +41,9 @@ export function NodeSidebar({ nodeId, projectId, onClose }: NodeSidebarProps) {
   const activeNodeId = nodeId ?? savedNodeId;
   const numericNodeId = Number(activeNodeId);
   const isOpen = !!activeNodeId;
+  const awarenessNodeId = isOpen && Number.isFinite(numericNodeId) ? numericNodeId : null;
+
+  useSetActiveAwarenessNode(awarenessNodeId);
 
   const handleClose = useCallback(() => {
     sessionStorage.removeItem(SESSION_KEY);
