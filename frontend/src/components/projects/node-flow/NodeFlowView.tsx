@@ -2,6 +2,7 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState, useMemo } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import ReactFlow, {
   Node,
   Controls,
@@ -22,6 +23,8 @@ import { privateApi } from '@/api';
 import { GetFlowchartResponse } from '@/api/Api';
 import { Loading } from '@/components/commons/loading/Loading';
 import { useModal } from '@/components/commons/modal/ModalContext';
+import { useDialog } from '@/components/commons/custom-dialog/DialogContext';
+import type { EdgeNodeInfo } from '@/components/projects/project-detail/edge-delete/EdgeDeleteConfirmContent';
 import { NodeSidebar } from '@/components/node-datail/NodeSidebar';
 import { MultiNodeSummaryModalContent } from '@/components/projects/project-detail/multi-node-summary/MultiNodeSummaryModalContent';
 import type { MultiNodeSummaryNode, MultiNodeSummaryResult } from '@/components/projects/project-detail/multi-node-summary/types';
@@ -83,7 +86,10 @@ function ConnectedMultiNodeSummary({
 function NodeFlowContent({ projectId }: NodeFlowViewProps) {
   const { setViewport, getViewport } = useReactFlow();
   const queryClient = useQueryClient();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { openModal, closeModal } = useModal();
+  const { openDialog, closeDialog } = useDialog();
   const showErrorToast = useErrorToast();
   const { mutate: deleteEdge } = useDeleteEdgeMutation(projectId);
   const { data: flowChart, isLoading: loading } = useFlowchartQuery(projectId);
@@ -110,6 +116,18 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
   useEffect(() => {
     localStorage.setItem('showDashedLines', JSON.stringify(showDashedLines));
   }, [showDashedLines]);
+
+  // 알림 클릭으로 넘어온 openNode param 처리
+  useEffect(() => {
+    const openNodeParam = searchParams.get('openNode');
+    if (!openNodeParam) return;
+    const nodeId = parseInt(openNodeParam, 10);
+    if (!Number.isNaN(nodeId)) {
+      setSidebarNodeId(nodeId);
+      // 파라미터 제거 (히스토리 오염 없이)
+      router.replace(`/projects/${projectId}`);
+    }
+  }, [searchParams, projectId, router]);
 
   // 쿼리 데이터가 바뀌면 ReactFlow 상태 동기화
   useEffect(() => {
@@ -259,38 +277,57 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
     }
   }, [flowChart, updateFlowAndMoveToNode, projectId, isCreating, queryClient]);
 
+  // 노드 정보 조회 헬퍼
+  const findNodeInfo = useCallback(
+    (nodeId: number): EdgeNodeInfo | undefined => {
+      const flowNode = nodes.find((n) => n.id === String(nodeId));
+      if (!flowNode) return undefined;
+      return {
+        number: String(flowNode.data?.number ?? nodeId),
+        title: String(flowNode.data?.title ?? ''),
+      };
+    },
+    [nodes],
+  );
+
   // 점선(참조 엣지) 삭제 핸들러
   const handleDeleteEdge = useCallback(
-    (edgeId: number) => {
-      openModal({
-        variant: 'small',
+    (edgeId: number, fromNode?: EdgeNodeInfo, toNode?: EdgeNodeInfo) => {
+      openDialog({
         closeOnBackdrop: true,
+        closeOnEsc: true,
         content: (
           <EdgeDeleteConfirmContent
+            fromNode={fromNode}
+            toNode={toNode}
             onConfirm={() => {
               deleteEdge(edgeId, {
                 onSuccess: () => {
-                  closeModal();
+                  closeDialog();
                   void queryClient.invalidateQueries({ queryKey: nodeKeys.flowchart(projectId) });
                 },
                 onError: (err) => showErrorToast(err, '참조 연결 삭제에 실패했어요.'),
               });
             }}
-            onClose={closeModal}
+            onClose={closeDialog}
           />
         ),
       });
     },
-    [openModal, closeModal, deleteEdge, projectId, queryClient, showErrorToast],
+    [openDialog, closeDialog, deleteEdge, projectId, queryClient, showErrorToast],
   );
 
   const edgesWithHandlers = useMemo(
     () =>
       edges.map((edge) => ({
         ...edge,
-        data: { ...edge.data, onDeleteEdge: handleDeleteEdge },
+        data: {
+          ...edge.data,
+          onDeleteEdge: (edgeId: number, startNodeId: number, endNodeId: number) =>
+            handleDeleteEdge(edgeId, findNodeInfo(startNodeId), findNodeInfo(endNodeId)),
+        },
       })),
-    [edges, handleDeleteEdge],
+    [edges, handleDeleteEdge, findNodeInfo],
   );
 
   const nodesWithHandlers = useMemo(() => {

@@ -12,6 +12,7 @@ import { SidebarAlarmModalItem } from './SidebarAlarmModalItem';
 
 interface SidebarAlarmModalProps {
   onClose: () => void;
+  onNotificationClick?: (notification: NotificationSummaryResponse) => void;
 }
 
 const sidebarVariants = {
@@ -74,7 +75,7 @@ const formatNotificationTime = (createdAt?: string) => {
   return createdAt.slice(0, 10);
 };
 
-export const SidebarAlarmModal = ({ onClose }: SidebarAlarmModalProps) => {
+export const SidebarAlarmModal = ({ onClose, onNotificationClick }: SidebarAlarmModalProps) => {
   const showErrorToast = useErrorToast();
   const [hasScrolled, setHasScrolled] = useState(false);
   const [notifications, setNotifications] = useState<NotificationSummaryResponse[]>([]);
@@ -157,6 +158,7 @@ export const SidebarAlarmModal = ({ onClose }: SidebarAlarmModalProps) => {
                         description={description}
                         timeText={formatNotificationTime(item.createdAt)}
                         isUnread={item.isRead === false}
+                        onClick={() => onNotificationClick?.(item)}
                       />
                     );
                   })}

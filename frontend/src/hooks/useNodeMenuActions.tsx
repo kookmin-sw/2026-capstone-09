@@ -150,10 +150,14 @@ function ConnectedMeetingEditModal({
 function ConnectedReferenceNodeModal({
   projectId,
   nodeId,
+  nodeTitle,
+  nodeNumber,
   onClose,
 }: {
   projectId: number;
   nodeId: number;
+  nodeTitle: string;
+  nodeNumber: string;
   onClose: () => void;
 }) {
   const { data: linkedNodes = [] } = useLinkedNodesQuery(projectId, nodeId);
@@ -171,6 +175,7 @@ function ConnectedReferenceNodeModal({
       startNodeId={nodeId}
       referencedNodes={linkedNodes}
       nodeOptions={nodeOptions}
+      currentNode={{ number: nodeNumber, title: nodeTitle }}
       onClose={onClose}
       onCreate={(payload) => {
         createEdge(payload, {
@@ -255,7 +260,13 @@ export function useNodeMenuActions({
       openModal({
         closeOnBackdrop: true,
         content: (
-          <ConnectedReferenceNodeModal projectId={projectId} nodeId={nodeId} onClose={closeModal} />
+          <ConnectedReferenceNodeModal
+            projectId={projectId}
+            nodeId={nodeId}
+            nodeTitle={nodeTitle}
+            nodeNumber={String(nodeNumber ?? nodeId)}
+            onClose={closeModal}
+          />
         ),
       });
     },

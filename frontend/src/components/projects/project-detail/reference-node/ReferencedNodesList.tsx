@@ -4,7 +4,7 @@ import { ContentBadge } from '@wanteddev/wds';
 import { IconTrash } from '@wanteddev/wds-icon';
 
 import { useDialog } from '@/components/commons/custom-dialog/DialogContext';
-import { EdgeDeleteConfirmContent } from '@/components/projects/project-detail/edge-delete/EdgeDeleteConfirmContent';
+import { EdgeDeleteConfirmContent, type EdgeNodeInfo } from '@/components/projects/project-detail/edge-delete/EdgeDeleteConfirmContent';
 import { cn } from '@/utils/cn';
 
 import type { ReferencedNodeItem } from './useReferenceNodeForm';
@@ -13,6 +13,8 @@ interface ReferencedNodesListProps {
   items: readonly ReferencedNodeItem[];
   /** 추가 모드일 때는 외곽 폼 패널과 함께 노출되므로 최대 높이를 좁혀 노출한다. */
   variant?: 'list' | 'add';
+  /** 현재 모달을 열고 있는 노드 정보. from/to 방향 계산에 사용한다. */
+  currentNode?: EdgeNodeInfo;
   /** 참조 연결 삭제 핸들러. 전달되면 각 아이템에 삭제 버튼이 표시된다. */
   onDeleteEdge?: (edgeId: number) => void;
 }
@@ -20,16 +22,30 @@ interface ReferencedNodesListProps {
 export const ReferencedNodesList = ({
   items,
   variant = 'list',
+  currentNode,
   onDeleteEdge,
 }: ReferencedNodesListProps) => {
   const { openDialog, closeDialog } = useDialog();
 
-  const handleDeleteClick = (edgeId: number) => {
+  const handleDeleteClick = (item: ReferencedNodeItem) => {
+    const edgeId = item.edgeId!;
+    const linkedNode: EdgeNodeInfo | undefined =
+      item.number !== undefined
+        ? { number: item.number, title: item.title ?? '' }
+        : undefined;
+
+    // linkType === 'START': 현재 노드가 시작, 상대 노드가 도착
+    // linkType === 'END': 상대 노드가 시작, 현재 노드가 도착
+    const fromNode = item.linkType === 'START' ? currentNode : linkedNode;
+    const toNode = item.linkType === 'START' ? linkedNode : currentNode;
+
     openDialog({
       closeOnBackdrop: true,
       closeOnEsc: true,
       content: (
         <EdgeDeleteConfirmContent
+          fromNode={fromNode}
+          toNode={toNode}
           onConfirm={() => {
             closeDialog();
             onDeleteEdge?.(edgeId);
@@ -84,7 +100,7 @@ export const ReferencedNodesList = ({
               {onDeleteEdge && item.edgeId !== undefined && (
                 <button
                   type="button"
-                  onClick={() => handleDeleteClick(item.edgeId!)}
+                  onClick={() => handleDeleteClick(item)}
                   aria-label="참조 연결 삭제"
                   className="text-label-assistive hover:text-status-negative focus-visible:ring-primary-40 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-transparent outline-none transition-colors focus-visible:ring-2"
                 >

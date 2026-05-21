@@ -9,7 +9,7 @@ import {
   IconSetting,
 } from '@wanteddev/wds-icon';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useParams, usePathname } from 'next/navigation';
+import { useParams, usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { authStorage } from '@/api/authStorage';
@@ -58,6 +58,7 @@ export const ProjectSidebar = ({
   onProfileClick,
 }: ProjectSidebarProps) => {
   const pathname = usePathname();
+  const router = useRouter();
   const params = useParams<{ projectId?: string }>();
   const projectIdRaw = params?.projectId;
   const projectId = projectIdRaw ? Number(projectIdRaw) : undefined;
@@ -80,6 +81,8 @@ export const ProjectSidebar = ({
   const { data: initialUnreadCount = 0 } = useUnreadCountQuery();
   const [sseExtra, setSseExtra] = useState(0);
   const unreadCount = initialUnreadCount + sseExtra;
+  // SSE로 새로 수신한 알림 여부 (알림창 열면 초기화)
+  const [hasNewSseNotification, setHasNewSseNotification] = useState(false);
 
   useEffect(() => {
     const token = authStorage.getAccess();
@@ -100,6 +103,7 @@ export const ProjectSidebar = ({
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
+        let isFirstDataEvent = true;
 
         while (true) {
           const { done, value } = await reader.read();
@@ -109,7 +113,13 @@ export const ProjectSidebar = ({
           buffer = lines.pop() ?? '';
           for (const line of lines) {
             if (line.startsWith('data:')) {
+              // 첫 번째 data 이벤트는 연결 확인(connected) 메시지이므로 무시
+              if (isFirstDataEvent) {
+                isFirstDataEvent = false;
+                continue;
+              }
               setSseExtra((prev) => prev + 1);
+              setHasNewSseNotification(true);
             }
           }
         }
@@ -165,7 +175,11 @@ export const ProjectSidebar = ({
   };
 
   const handleAlarmModalToggle = () => {
-    setIsAlarmModalOpen((prev) => !prev);
+    setIsAlarmModalOpen((prev) => {
+      const nextOpen = !prev;
+      if (nextOpen) setHasNewSseNotification(false);
+      return nextOpen;
+    });
     onInboxClick?.();
   };
 
@@ -191,6 +205,15 @@ export const ProjectSidebar = ({
       closeOnEsc: true,
       content: <SettingsModalContent projectId={projectId} onClose={closeModal} />,
     });
+  };
+
+  const handleNotificationClick = (notification: import('@/api/Api').NotificationSummaryResponse) => {
+    // 알림창 닫기
+    setIsAlarmModalOpen(false);
+    const targetId = notification.targetId;
+    const notifProjectId = notification.projectId;
+    if (!targetId || !notifProjectId) return;
+    router.push(`/projects/${notifProjectId}?openNode=${targetId}`);
   };
 
   const handleProfileClick = () => {
@@ -304,6 +327,7 @@ export const ProjectSidebar = ({
                   label="수신함"
                   labelWidth={64}
                   badgeText={badgeText}
+                  showDot={hasNewSseNotification}
                   labelTransitionDuration={SIDEBAR_LABEL_TRANSITION_DURATION}
                   onClick={handleAlarmModalToggle}
                 />
@@ -332,7 +356,10 @@ export const ProjectSidebar = ({
       </motion.aside>
       <AnimatePresence>
         {isAlarmModalOpen && !isCollapsed && (
-          <SidebarAlarmModal onClose={() => setIsAlarmModalOpen(false)} />
+          <SidebarAlarmModal
+            onClose={() => setIsAlarmModalOpen(false)}
+            onNotificationClick={handleNotificationClick}
+          />
         )}
       </AnimatePresence>
     </div>
