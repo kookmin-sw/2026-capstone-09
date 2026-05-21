@@ -24,7 +24,7 @@ interface MeetingCreateModalContentProps {
   nodeTitle: string;
   participantOptions: readonly ParticipantOption[];
   onClose: () => void;
-  onCreate?: (payload: MeetingCreatePayload) => void;
+  onCreate?: (payload: MeetingCreatePayload) => void | Promise<void>;
 }
 
 export const MeetingCreateModalContent = ({
@@ -42,8 +42,8 @@ export const MeetingCreateModalContent = ({
     handleSubmit,
   } = form;
 
-  const handleCreate = handleSubmit((values) => {
-    onCreate?.(buildPayload(values));
+  const handleCreate = handleSubmit(async (values) => {
+    await onCreate?.(buildPayload(values));
   });
 
   return (
@@ -185,6 +185,7 @@ export const MeetingCreateModalContent = ({
             color="primary"
             size="medium"
             fullWidth
+            loading={isSubmitting}
             disabled={isSubmitting || !isValid}
           >
             회의 생성

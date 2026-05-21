@@ -2,8 +2,8 @@
 
 import { useEffect } from 'react';
 
-import { useModal } from '@/components/commons/modal/ModalContext';
 import { Loading } from '@/components/commons/loading/Loading';
+import { useModal } from '@/components/commons/modal/ModalContext';
 import { MeetingCreateModalContent } from '@/components/projects/node-flow/MeetingCreateModalContent';
 import { MeetingEditModalContent } from '@/components/projects/node-flow/MeetingEditModalContent';
 import { MeetingDeleteConfirmContent } from '@/components/projects/project-detail/meeting-delete/MeetingDeleteConfirmContent';
@@ -32,7 +32,7 @@ function ConnectedMeetingCreateModal({
   onClose: () => void;
 }) {
   const { data: members = [] } = useProjectMembersQuery(projectId);
-  const { mutate: createMeeting } = useCreateMeetingMutation(projectId, nodeId);
+  const { mutateAsync: createMeeting } = useCreateMeetingMutation(projectId, nodeId);
   const showErrorToast = useErrorToast();
 
   return (
@@ -45,11 +45,13 @@ function ConnectedMeetingCreateModal({
         email: m.email,
       }))}
       onClose={onClose}
-      onCreate={(payload) => {
-        createMeeting(payload, {
-          onSuccess: onClose,
-          onError: (err) => showErrorToast(err, '회의 생성에 실패했어요.'),
-        });
+      onCreate={async (payload) => {
+        try {
+          await createMeeting(payload);
+          onClose();
+        } catch (err) {
+          showErrorToast(err, '회의 생성에 실패했어요.');
+        }
       }}
     />
   );
