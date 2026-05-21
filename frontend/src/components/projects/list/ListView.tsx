@@ -24,7 +24,7 @@ export function ListView({ projectId }: ListViewProps) {
   const [isSelectOpen, setIsSelectOpen] = useState(false);
 
   const sortParam = sortBy === 'latest' ? 'LATEST' : 'NAME';
-  const { data, isLoading } = useNodeListQuery(projectId, sortParam);
+  const { data, isFetching: isLoading } = useNodeListQuery(projectId, sortParam);
 
   const handleNodeDoubleClick = useCallback((nodeId: number) => {
     setSidebarNodeId(nodeId);

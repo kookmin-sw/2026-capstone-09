@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import { type MultiSelectInputValue, type NodeOption, type UserOption } from '@/components/commons/custom-input/MultiSelectInput';
 import { useStartChat, useSendMessage, useGetAllChatSessions, useGetChatSessionDetail, useGetReferenceNodes, useGetReferenceUsers, useAddChatNode, useRemoveChatNode } from '@/queries/chat';
 import { chatKeys } from '@/queries/keys/chatKeys';
+import { nodeKeys } from '@/queries/keys/nodeKeys';
 import { ChatHeader } from './ChatHeader';
 import { ChatInputArea } from './ChatInputArea';
 import { ChatMessageList } from './ChatMessageList';
@@ -246,6 +247,11 @@ export function ChatWindow({ onClose }: ChatWindowProps) {
 
               // 채팅 목록 새로고침 (AI가 생성한 제목이 반영됨)
               void queryClient.invalidateQueries({ queryKey: chatKeys.lists() });
+
+              // 노드 뷰 새로고침
+              void queryClient.invalidateQueries({ queryKey: nodeKeys.flowchart(projectId) });
+              void queryClient.invalidateQueries({ queryKey: nodeKeys.list(projectId) });
+              void queryClient.invalidateQueries({ queryKey: nodeKeys.kanban(projectId) });
             }
           },
           onError: () => {
@@ -289,6 +295,11 @@ export function ChatWindow({ onClose }: ChatWindowProps) {
                 queryKey: chatKeys.detail(projectId, currentChatSessionId),
               });
             }
+
+            // 노드 뷰 새로고침 
+            void queryClient.invalidateQueries({ queryKey: nodeKeys.flowchart(projectId) });
+            void queryClient.invalidateQueries({ queryKey: nodeKeys.list(projectId) });
+            void queryClient.invalidateQueries({ queryKey: nodeKeys.kanban(projectId) });
           },
           onError: () => {
             const errorMessage: Message = {

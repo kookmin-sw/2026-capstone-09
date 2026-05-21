@@ -1,13 +1,13 @@
 'use client';
 
 import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect, useMemo } from 'react';
 
 import { privateApi } from '@/api';
-import { KanbanItem } from '@/api/Api';
 import { usePositionedToast } from '@/components/commons/custom-toast/usePositionedToast';
 import { Loading } from '@/components/commons/loading/Loading';
 import { NodeSidebar } from '@/components/node-datail/NodeSidebar';
+import { useKanbanQuery } from '@/queries/node';
 
 import { useKanbanDragDrop } from './hooks/useKanbanDragDrop';
 import { KanbanColumn } from './KanbanColumn';
@@ -17,21 +17,31 @@ interface KanbanViewProps {
 }
 
 const KANBAN_STATUSES = ['WAITING', 'IN_PROGRESS', 'DONE'] as const;
-type KanbanStatusType = (typeof KANBAN_STATUSES)[number];
 
 export function KanbanView({ projectId }: KanbanViewProps) {
   const toast = usePositionedToast();
   const [sidebarNodeId, setSidebarNodeId] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [groupedNodes, setGroupedNodes] = useState<Record<KanbanStatusType, KanbanItem[]>>({
-    WAITING: [],
-    IN_PROGRESS: [],
-    DONE: [],
-  });
+  const { data: kanbanData, isFetching: loading } = useKanbanQuery(projectId);
+
+  const groupedNodes = useMemo(() => {
+    if (!kanbanData) {
+      return { WAITING: [], IN_PROGRESS: [], DONE: [] };
+    }
+    return {
+      WAITING: [...(kanbanData.waiting ?? [])].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)),
+      IN_PROGRESS: [...(kanbanData.inProgress ?? [])].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)),
+      DONE: [...(kanbanData.done ?? [])].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)),
+    };
+  }, [kanbanData]);
+
+  const [localGroupedNodes, setLocalGroupedNodes] = useState(groupedNodes);
+
+  useEffect(() => {
+    setLocalGroupedNodes(groupedNodes);
+  }, [groupedNodes]);
 
   const loadKanbanData = useCallback(async () => {
     try {
-      setLoading(true);
       const data = await privateApi.node.getKanban(projectId);
       const chartData = data.data.data ?? null;
 
@@ -40,7 +50,7 @@ export function KanbanView({ projectId }: KanbanViewProps) {
         IN_PROGRESS: [...(chartData?.inProgress ?? [])].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)),
         DONE: [...(chartData?.done ?? [])].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)),
       };
-      setGroupedNodes(grouped);
+      setLocalGroupedNodes(grouped);
     } catch (error) {
       console.error('Failed to load kanban:', error);
       const errorMessage =
@@ -50,18 +60,12 @@ export function KanbanView({ projectId }: KanbanViewProps) {
         variant: 'negative',
         placement: 'top-center',
       });
-    } finally {
-      setLoading(false);
     }
   }, [projectId, toast]);
 
-  useEffect(() => {
-    void loadKanbanData();
-  }, [loadKanbanData]);
-
   const { handleDragOver, handleDragEnd } = useKanbanDragDrop({
-    groupedNodes,
-    setGroupedNodes,
+    groupedNodes: localGroupedNodes,
+    setGroupedNodes: setLocalGroupedNodes,
     projectId,
     loadKanbanData,
   });
@@ -96,7 +100,7 @@ export function KanbanView({ projectId }: KanbanViewProps) {
             <KanbanColumn
               key={status}
               status={status}
-              nodes={groupedNodes[status]}
+              nodes={localGroupedNodes[status]}
               onNodeDoubleClick={handleNodeDoubleClick}
             />
           ))}
