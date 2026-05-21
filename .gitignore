@@ -1,5 +1,8 @@
 .DS_Store
 .idea/
+docs/
+!wss/docs/
+!wss/docs/**
 
 # 로컬 전용 컨벤션·에이전트 문서
 conventions.md

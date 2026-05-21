@@ -10,10 +10,10 @@ export function ElectronUpdateModal() {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    window.desktop?.onUpdateAvailable((version) => {
+    window.desktop?.onUpdateAvailable?.((version) => {
       setUpdateVersion(version);
     });
-    window.desktop?.onDownloadProgress((percent) => {
+    window.desktop?.onDownloadProgress?.((percent) => {
       setProgress(percent);
     });
   }, []);

@@ -1,0 +1,59 @@
+services:
+  wss:
+    image: ${DOCKERHUB_USERNAME}/flowmeet-wss:${IMAGE_TAG:-latest}
+    container_name: flowmeet-wss
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      PORT: 1234
+    expose:
+      - "1234"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('net').connect(1234,'localhost').on('connect',()=>process.exit(0)).on('error',()=>process.exit(1))\""]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - wss-net
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: flowmeet-wss-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/conf.d:/etc/nginx/templates:ro
+      - ./docker/certbot/conf:/etc/letsencrypt:ro
+      - ./docker/certbot/www:/var/www/certbot:ro
+    # 인증서 갱신 반영을 위해 6시간마다 nginx reload
+    command: >
+      /bin/sh -c "/docker-entrypoint.d/20-envsubst-on-templates.sh &&
+      { while :; do sleep 6h & wait $${!}; nginx -s reload; done & } &&
+      exec nginx -g 'daemon off;'"
+    depends_on:
+      wss:
+        condition: service_healthy
+    networks:
+      - wss-net
+
+  certbot:
+    image: certbot/certbot:latest
+    container_name: flowmeet-wss-certbot
+    restart: unless-stopped
+    volumes:
+      - ./docker/certbot/conf:/etc/letsencrypt
+      - ./docker/certbot/www:/var/www/certbot
+    # 12시간마다 renew 시도 (최초 발급은 init-letsencrypt.sh 로)
+    entrypoint: /bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'
+
+networks:
+  wss-net:
+    driver: bridge

@@ -6,6 +6,13 @@ spring:
       - classpath:config/domain.yaml
       - classpath:config/auth.yaml
       - classpath:config/external.yaml
+  mvc:
+    async:
+      request-timeout: 1800000
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
 
 server:
   port: 8080
@@ -15,3 +22,4 @@ logging:
   level:
     root: INFO
     kr.flowmeet: DEBUG
+    org.springframework.web.context.request.async.WebAsyncManager: WARN

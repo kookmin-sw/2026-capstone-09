@@ -1,0 +1,33 @@
+services:
+  mcp-server:
+    image: ${DOCKERHUB_USERNAME}/flowmeet-mcp:${MCP_IMAGE_TAG:-latest}
+    container_name: flowmeet-mcp
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      BACKEND_URL: ${BACKEND_URL}
+    networks:
+      - ai-net
+
+  ai-agent:
+    image: ${DOCKERHUB_USERNAME}/flowmeet-agent:${AGENT_IMAGE_TAG:-latest}
+    container_name: flowmeet-agent
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_SERVER_URL: http://flowmeet-mcp:8082/mcp
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mcp-server
+    networks:
+      - ai-net
+
+networks:
+  ai-net:
+    driver: bridge

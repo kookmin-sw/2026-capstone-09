@@ -1,3 +1,10 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
 rootProject.name = 'flowmeet-server'
 
 include 'flowmeet-api', 'flowmeet-auth', 'flowmeet-common',

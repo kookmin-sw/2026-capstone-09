@@ -39,3 +39,14 @@ out/
 ### Environment ###
 *.env
 .env.*
+!.env.example
+**/application-local.yaml
+
+### Docker / certbot ###
+docker/certbot/
+
+docs/
+
+.claude/UX_MESSAGE_GUIDE.md
+
+.etc/

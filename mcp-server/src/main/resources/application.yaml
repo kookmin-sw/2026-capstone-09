@@ -1,0 +1,14 @@
+spring:
+  ai:
+    mcp:
+      server:
+        name: flowmeet-mcp-server
+        version: 1.0.0
+        type: SYNC
+        protocol: STREAMABLE
+
+server:
+  port: 8082
+
+backend:
+  url: http://localhost:8080
