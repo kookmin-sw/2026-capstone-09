@@ -1,7 +1,8 @@
 'use client';
 
-import { FormField, FormLabel, FormControl, TextField, Button } from '@wanteddev/wds';
+import { FormField, FormLabel, FormControl, IconButton, TextField, Button } from '@wanteddev/wds';
 import type { Theme } from '@wanteddev/wds-engine';
+import { IconChevronLeft } from '@wanteddev/wds-icon';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useMemo } from 'react';
 import { EmailVerificationFields } from '@/components/auth/EmailVerificationFields';
@@ -109,8 +110,8 @@ export default function SignupPage() {
           box-shadow: inset 0 0 0 2px #04E6A2 !important;
         }
       `}</style>
-      {/* 왼쪽 1/3 */}
-      <div className="w-1/3">
+      {/* 왼쪽 영상 영역 */}
+      <div className="w-1/2">
         <video
           autoPlay
           loop
@@ -123,7 +124,19 @@ export default function SignupPage() {
         </video>
       </div>
 
-      <div className="flex w-2/3 items-center justify-center">
+      <div className="relative flex w-1/2 items-center justify-center">
+        {/* 뒤로가기 (로그인 페이지로 이동) */}
+        <div className="absolute top-8 left-8">
+          <IconButton
+            color="semantic.label.alternative"
+            onClick={() => router.replace('/auth/login')}
+            size={28}
+            aria-label="로그인 페이지로 이동"
+          >
+            <IconChevronLeft />
+          </IconButton>
+        </div>
+
         <div className="flex flex-col gap-8">
           <div className="inline-flex items-start justify-start overflow-hidden">
             <h1 className="text-title-1 font-bold">회원가입</h1>

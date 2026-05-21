@@ -62,18 +62,24 @@ export const NodeDeleteConfirmContent = ({
       </div>
 
       <p className="text-body-2 text-label-alternative whitespace-pre-line">
-        노드를 삭제하시면 복구할 수 없으며, 모든 정보가 영구적으로 사라져요. 계속 진행하려면 노드
-        이름을 입력해 주세요.
+        노드를 삭제하시면 복구할 수 없으며, 모든 정보가 영구적으로 사라져요. 계속 진행하려면 아래
+        노드 이름을 입력해 주세요.
       </p>
 
-      <TextField
-        id="node-delete-confirm-name"
-        value={nameInput}
-        onChange={(event) => setNameInput(event.target.value)}
-        placeholder={nodeName}
-        width="100%"
-        invalid={isInvalid}
-      />
+      <div className="flex flex-col gap-2">
+        <p className="text-label-2 text-label-alternative font-normal">
+          삭제할 노드:{' '}
+          <span className="text-label-normal font-semibold break-all">{nodeName}</span>
+        </p>
+        <TextField
+          id="node-delete-confirm-name"
+          value={nameInput}
+          onChange={(event) => setNameInput(event.target.value)}
+          placeholder={nodeName}
+          width="100%"
+          invalid={isInvalid}
+        />
+      </div>
 
       <button
         type="button"

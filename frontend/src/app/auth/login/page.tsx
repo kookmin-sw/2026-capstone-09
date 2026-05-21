@@ -20,8 +20,8 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen">
-      {/* 왼쪽 1/3 */}
-      <div className="w-1/3">
+      {/* 왼쪽 영상 영역 */}
+      <div className="w-1/2">
         <video
           autoPlay
           loop
@@ -34,7 +34,17 @@ export default function LoginPage() {
         </video>
       </div>
 
-      <div className="flex w-2/3 items-start justify-center pt-[35vh]">
+      <div className="relative flex w-1/2 items-start justify-center pt-[35vh]">
+        {/* 랜딩페이지로 이동하는 로고 */}
+        <Link
+          href="https://kookmin-sw.github.io/2026-capstone-09/#top"
+          aria-label="flowMeet 홈으로 이동"
+          className="absolute top-8 left-8 transition-transform hover:scale-[1.03]"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/flowmeet-logo.svg" alt="flowMeet" className="h-8 w-auto" />
+        </Link>
+
         <div className="flex flex-col gap-8">
           <div className="inline-flex items-start justify-start overflow-hidden">
             <h1 className="text-title-1 font-bold">로그인</h1>

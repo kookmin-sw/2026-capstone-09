@@ -198,8 +198,8 @@ function CustomFlowNodeComponent({ data, selected }: NodeProps<CustomNodeData>) 
         </div>
 
         {activeUsers.length > 0 && (
-          <div className="shrink-0">
-            <Users users={activeUsers} maxVisible={2} compact />
+          <div className="shrink-0 -my-1.5 origin-right scale-75">
+            <Users users={activeUsers} maxVisible={2} compact size="xsmall" />
           </div>
         )}
       </div>

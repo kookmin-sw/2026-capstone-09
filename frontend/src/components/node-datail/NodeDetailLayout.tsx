@@ -96,8 +96,8 @@ export function NodeDetailLayout({
       : 'sub-without-meeting';
 
   return (
-    <div className="flex h-full flex-col overflow-y-scroll [&::-webkit-scrollbar]:hidden">
-      <div className="flex items-center justify-between pt-1">
+    <div className="flex h-full flex-col overflow-x-hidden overflow-y-scroll [&::-webkit-scrollbar]:hidden">
+      <div className="flex items-center justify-between pt-1 pr-2">
         {nodeDetail?.parentId ? (
           <ContentBadge color="neutral" size="xsmall" variant="outlined">
             #{nodeDetail?.number}
@@ -112,8 +112,8 @@ export function NodeDetailLayout({
           </ContentBadge>
         )}
 
-        <div className="flex items-center gap-1 py-0.5">
-          <Users users={activeUsers} />
+        <div className="flex items-center gap-3 py-0.5">
+          <Users users={activeUsers} size="xsmall" />
           <NodeMenu
             variant={menuVariant}
             position="bottom-end"
