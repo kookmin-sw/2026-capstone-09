@@ -19,17 +19,39 @@ interface ChatMessageListProps {
 
 export function ChatMessageList({ messages, isLoading }: ChatMessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const prevMessageCountRef = useRef(0);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    scrollToBottom();
+    const prevCount = prevMessageCountRef.current;
+    const currentCount = messages.length;
+    const behavior = prevCount === 0 || currentCount - prevCount > 2 ? 'instant' : 'smooth';
+
+    messagesEndRef.current?.scrollIntoView({ behavior: behavior as ScrollBehavior });
+
+    prevMessageCountRef.current = currentCount;
   }, [messages]);
 
+  // 타이핑 애니메이션 중에도 스크롤 유지
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const container = containerRef.current;
+    const checkAndScroll = () => {
+      const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+      if (isNearBottom) {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }
+    };
+
+    const observer = new MutationObserver(checkAndScroll);
+    observer.observe(container, { childList: true, subtree: true, characterData: true });
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col">
+    <div ref={containerRef} className="flex-1 overflow-y-auto px-5 py-4 flex flex-col">
       {messages.length === 0 && !isLoading ? (
         <div className="flex-1 flex items-center justify-center">
           <div className="w-60 inline-flex flex-col justify-start items-center gap-3">
