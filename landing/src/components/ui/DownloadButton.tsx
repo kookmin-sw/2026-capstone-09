@@ -11,7 +11,7 @@ interface DownloadButtonProps {
 export function DownloadButton({
   size = 'md',
   variant = 'subtle',
-  href = '#',
+  href = 'https://github.com/kookmin-sw/2026-capstone-09/releases',
 }: DownloadButtonProps) {
   const sizeClass =
     size === 'lg'
@@ -28,7 +28,8 @@ export function DownloadButton({
   return (
     <motion.a
       href={href}
-      onClick={(e) => e.preventDefault()}
+      target="_blank"
+      rel="noopener noreferrer"
       whileTap={{ scale: 0.97 }}
       className={[
         'inline-flex items-center justify-center rounded-full transition-all',
