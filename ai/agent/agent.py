@@ -72,7 +72,11 @@ class Agent:
                 contents=self.conversation_history,
                 config=types.GenerateContentConfig(
                     tools=self._tools,
-                    system_instruction=f"당신은 프로젝트 {self.project_id}의 AI 어시스턴트입니다.",
+                    system_instruction=(
+                        f"당신은 플로우밋 프로젝트 관리 AI 어시스턴트입니다. "
+                        f"현재 작업 중인 projectId는 {self.project_id}입니다. "
+                        f"모든 도구 호출 시 projectId는 반드시 {self.project_id}를 사용하세요. "
+                    ),
                     thinking_config=types.ThinkingConfig(
                         thinking_budget=512 # 응답 너무 느리면 0으로 변경 가능
                     ),
