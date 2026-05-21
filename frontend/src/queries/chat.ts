@@ -92,6 +92,18 @@ export function useGetReferenceNodes(projectId: number) {
   });
 }
 
+// 참조 가능한 사용자 조회
+export function useGetReferenceUsers(projectId: number) {
+  return useQuery({
+    queryKey: chatKeys.referenceUsers(projectId),
+    queryFn: async () => {
+      const response = await privateApi.chat.getReferenceUsers(projectId);
+      return response.data;
+    },
+    enabled: !!projectId,
+  });
+}
+
 
 // 새 채팅 시작 (세션 생성 + 첫 메시지 전송)
 export function useStartChat() {

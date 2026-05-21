@@ -8,4 +8,6 @@ export const chatKeys = {
     [...chatKeys.details(), projectId, chatSessionId, filters] as const,
   nodes: () => [...chatKeys.all, 'nodes'] as const,
   referenceNodes: (projectId: number) => [...chatKeys.nodes(), projectId] as const,
+  users: () => [...chatKeys.all, 'users'] as const,
+  referenceUsers: (projectId: number) => [...chatKeys.users(), projectId] as const,
 };

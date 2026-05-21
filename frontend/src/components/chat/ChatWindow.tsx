@@ -1,11 +1,10 @@
 'use client';
 
-import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { privateApi } from '@/api';
 import { type MultiSelectInputValue, type NodeOption, type UserOption } from '@/components/commons/custom-input/MultiSelectInput';
-import { useStartChat, useSendMessage, useGetAllChatSessions, useGetChatSessionDetail, useGetReferenceNodes, useAddChatNode, useRemoveChatNode } from '@/queries/chat';
+import { useStartChat, useSendMessage, useGetAllChatSessions, useGetChatSessionDetail, useGetReferenceNodes, useGetReferenceUsers, useAddChatNode, useRemoveChatNode } from '@/queries/chat';
 import { chatKeys } from '@/queries/keys/chatKeys';
 import { ChatHeader } from './ChatHeader';
 import { ChatInputArea } from './ChatInputArea';
@@ -93,15 +92,8 @@ export function ChatWindow({ onClose }: ChatWindowProps) {
   // 참조 가능한 노드 조회
   const { data: referenceNodesData } = useGetReferenceNodes(projectId);
 
-  // 프로젝트 멤버 조회
-  const { data: membersData } = useQuery({
-    queryKey: ['projectMembers', projectId],
-    queryFn: async () => {
-      const response = await privateApi.projectMember.getAllMembers(projectId);
-      return response.data;
-    },
-    enabled: !!projectId,
-  });
+  // 참조 가능한 사용자 조회
+  const { data: referenceUsersData } = useGetReferenceUsers(projectId);
 
   // 노드 옵션 생성
   const nodes = referenceNodesData?.data?.nodes || [];
@@ -113,11 +105,11 @@ export function ChatWindow({ onClose }: ChatWindowProps) {
   }));
 
   // 사용자 옵션 생성
-  const members = membersData?.data?.members || [];
-  const userOptions: UserOption[] = members.map((member) => ({
-    id: member.userId?.toString() || '',
-    label: member.nickname || member.email || '',
-    profileImageUrl: member.profileImageUrl,
+  const users = referenceUsersData?.data?.users || [];
+  const userOptions: UserOption[] = users.map((user) => ({
+    id: user.userId?.toString() || '',
+    label: user.nickname || '',
+    profileImageUrl: user.profileImageUrl,
   }));
 
   const addChatNodeMutation = useAddChatNode();
