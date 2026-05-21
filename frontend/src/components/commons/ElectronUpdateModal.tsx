@@ -7,10 +7,14 @@ import { cn } from '@/utils/cn';
 export function ElectronUpdateModal() {
   const [updateVersion, setUpdateVersion] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     window.desktop?.onUpdateAvailable((version) => {
       setUpdateVersion(version);
+    });
+    window.desktop?.onDownloadProgress((percent) => {
+      setProgress(percent);
     });
   }, []);
 
@@ -46,16 +50,25 @@ export function ElectronUpdateModal() {
             <p className="text-body-2 text-label-alternative whitespace-pre-line">
               {'FlowMeet '}
               <span className="text-label-normal font-medium">v{updateVersion}</span>
-              {
-                '이 출시됐어요.\n지금 업데이트하면 최신 기능을 바로 사용할 수 있어요.'
-              }
+              {'이 출시됐어요.\n지금 업데이트하면 최신 기능을 바로 사용할 수 있어요.'}
             </p>
+            {isDownloading && (
+              <div className="flex flex-col gap-1">
+                <div className="bg-fill-normal h-1.5 w-full overflow-hidden rounded-full">
+                  <div
+                    className="bg-primary-40 h-full rounded-full transition-all duration-300"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+                <span className="text-label-2 text-label-alternative text-right">{progress}%</span>
+              </div>
+            )}
             <div className="flex items-center justify-end gap-6 pt-2">
               <button
                 type="button"
                 onClick={handleDismiss}
                 disabled={isDownloading}
-                className="text-body-1 text-label-alternative hover:bg-fill-normal active:bg-fill-strong focus-visible:ring-primary-40 rounded-md bg-transparent px-2 py-1 font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-40"
+                className="text-body-1 text-label-alternative hover:bg-fill-normal active:bg-fill-strong focus-visible:ring-primary-40 rounded-md bg-transparent px-2 py-1 font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-40"
               >
                 나중에
               </button>
@@ -64,12 +77,12 @@ export function ElectronUpdateModal() {
                 onClick={handleUpdate}
                 disabled={isDownloading}
                 className={cn(
-                  'text-body-1 rounded-md px-2 py-1 font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-offset-2',
+                  'text-body-1 rounded-md px-2 py-1 font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
                   'focus-visible:ring-primary-40',
                   'text-primary-normal hover:bg-fill-normal active:bg-fill-strong bg-transparent disabled:opacity-40',
                 )}
               >
-                {isDownloading ? '다운로드 중...' : '지금 업데이트'}
+                {isDownloading ? `다운로드 중... ${progress}%` : '지금 업데이트'}
               </button>
             </div>
           </div>

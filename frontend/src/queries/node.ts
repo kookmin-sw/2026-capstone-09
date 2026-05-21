@@ -29,6 +29,17 @@ export function useNodeListQuery(projectId: number, sort: 'LATEST' | 'NAME' = 'L
   });
 }
 
+export function useKanbanQuery(projectId: number) {
+  return useQuery({
+    queryKey: nodeKeys.kanban(projectId),
+    queryFn: async () => {
+      const response = await privateApi.node.getKanban(projectId);
+      return response.data.data ?? null;
+    },
+    enabled: !!projectId,
+  });
+}
+
 export function useNodeDetailQuery(projectId: number, nodeId: number | null) {
   const queryClient = useQueryClient();
   const queryKey = nodeKeys.detail(projectId, nodeId);

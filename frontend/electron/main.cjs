@@ -32,6 +32,10 @@ function createWindow() {
   autoUpdater.on('update-available', (info) => {
     win.webContents.send('update:available', info.version)
   })
+
+  autoUpdater.on('download-progress', (progress) => {
+    win.webContents.send('update:progress', Math.floor(progress.percent))
+  })
 }
 
 app.whenReady().then(() => {

@@ -159,7 +159,10 @@ export const ProjectListPage = () => {
             <ul className="bg-surface-canvas">
               {projects.map((project) => {
                 return (
-                  <li key={project.projectId} className="border-line-normal-neutral bg-surface-canvas border-b">
+                  <li
+                    key={project.projectId}
+                    className="border-line-normal-neutral bg-surface-canvas border-b"
+                  >
                     <button
                       type="button"
                       onClick={() => router.push(`/projects/${project.projectId}`)}
@@ -187,7 +190,7 @@ export const ProjectListPage = () => {
 
                       {/* Members */}
                       <div className="flex shrink-0 items-center gap-2">
-                        <ProjectMemberAvatars projectId={project.projectId} />
+                        {project.projectId && <ProjectMemberAvatars projectId={project.projectId} />}
                       </div>
                     </button>
                   </li>

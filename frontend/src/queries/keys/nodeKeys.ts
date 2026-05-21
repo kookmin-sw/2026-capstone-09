@@ -6,4 +6,6 @@ export const nodeKeys = {
     [...nodeKeys.all, 'detail', projectId, nodeId] as const,
   flowchart: (projectId: number) =>
     [...nodeKeys.all, 'flowchart', projectId] as const,
+  kanban: (projectId: number) =>
+    [...nodeKeys.all, 'kanban', projectId] as const,
 };

@@ -6,4 +6,7 @@ contextBridge.exposeInMainWorld('desktop', {
   onUpdateAvailable: (callback) => {
     ipcRenderer.on('update:available', (_event, version) => callback(version))
   },
+  onDownloadProgress: (callback) => {
+    ipcRenderer.on('update:progress', (_event, percent) => callback(percent))
+  },
 })
