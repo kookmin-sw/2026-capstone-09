@@ -63,7 +63,7 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
   const { mutate: deleteEdge } = useDeleteEdgeMutation(projectId);
   const { mutateAsync: analyzeDraggedNodes, isPending: isSummaryPending } =
     useAnalyzeDraggedNodesMutation(projectId);
-  const { data: flowChart, isLoading: loading } = useFlowchartQuery(projectId);
+  const { data: flowChart, isFetching: loading } = useFlowchartQuery(projectId);
   const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
   const [sidebarNodeId, setSidebarNodeId] = useState<number | null>(null);
   const [showDashedLines, setShowDashedLines] = useState(false);

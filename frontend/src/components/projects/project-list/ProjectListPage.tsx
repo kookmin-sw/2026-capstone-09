@@ -187,7 +187,7 @@ export const ProjectListPage = () => {
 
                       {/* Members */}
                       <div className="flex shrink-0 items-center gap-2">
-                        <ProjectMemberAvatars projectId={project.projectId} />
+                        {project.projectId && <ProjectMemberAvatars projectId={project.projectId} />}
                       </div>
                     </button>
                   </li>
