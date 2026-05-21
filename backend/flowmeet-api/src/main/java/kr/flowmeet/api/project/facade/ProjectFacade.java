@@ -1,6 +1,7 @@
 package kr.flowmeet.api.project.facade;
 
 import java.util.List;
+import kr.flowmeet.domain.node.service.NodeService;
 import kr.flowmeet.domain.project.service.ProjectPermissionValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -46,12 +47,15 @@ public class ProjectFacade {
     private final ImageUploader imageUploader;
     private final JwtProvider jwtProvider;
     private final FrontendProperties frontendProperties;
+    private final NodeService nodeService;
 
     @Transactional
     public CreateProjectResponse createProject(final Long userId, final CreateProjectRequest request) {
         Project project = projectService.create(request.name());
+        Long projectId = project.getId();
 
-        projectMemberService.create(userId, project.getId(), ProjectMemberRole.OWNER);
+        projectMemberService.create(userId, projectId, ProjectMemberRole.OWNER);
+        nodeService.createFirstMainNode(projectId);
 
         return CreateProjectResponse.from(project);
     }
