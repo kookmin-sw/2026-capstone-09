@@ -68,7 +68,7 @@ export function Header() {
           />
         </a>
 
-        <nav className="mx-auto hidden items-center gap-3 lg:flex">
+        <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-3 lg:flex">
           {TABS.map((tab) => (
             <a
               key={tab.id}
