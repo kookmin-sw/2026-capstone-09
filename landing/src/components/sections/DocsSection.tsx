@@ -49,7 +49,24 @@ export function DocsSection() {
               포스터 및 발표 자료
             </h3>
           </div>
-          <div className="mt-16 grid gap-6 lg:grid-cols-2">
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.6 }}
+            className="mt-16 overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03]"
+          >
+            <div className="relative aspect-video w-full">
+              <iframe
+                src="https://www.youtube.com/embed/eSjDWheBlbU?rel=0"
+                title="flowMeet 발표 영상"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                className="absolute inset-0 h-full w-full"
+              />
+            </div>
+          </motion.div>
+          <div className="mt-6 grid gap-6 lg:grid-cols-2">
             <PosterCard />
             <PPTCarousel />
           </div>
