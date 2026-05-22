@@ -2,18 +2,25 @@
 
 기획이 흐름을 만나는 순간,
 
-<img src="https://github.com/user-attachments/assets/eee5321e-0206-404a-9058-4964b80f8c99" />
-
-</br>
+  <br>
 
 <div align="center">
   <a href="https://kookmin-sw.github.io/2026-capstone-09/">
     <img src="https://github.com/user-attachments/assets/ad3e9aff-e667-416a-83e6-98c4ec2785bc" width="500" />
   </a>
     <br>
-    <br>
     <p>로고 클릭 시 소개 페이지로 이동합니다.</p>
-    <!-- <img src="" width="700" alt="서비스 포스터 /> -->
+</div>
+
+ </br >
+  </br >
+
+<img src="https://github.com/user-attachments/assets/eee5321e-0206-404a-9058-4964b80f8c99" />
+
+</br>
+
+<div align="center">
+    <img src="https://github.com/user-attachments/assets/315f5b09-bb9b-4b67-bf1e-51551b236bbd" width="700" alt="서비스 포스터 />
 </div>
 
 </br>
