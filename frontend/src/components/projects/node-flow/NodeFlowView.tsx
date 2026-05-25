@@ -124,6 +124,21 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
     localStorage.setItem('showDashedLines', JSON.stringify(showDashedLines));
   }, [showDashedLines]);
 
+  // 뷰포트 위치 복원 (refetch 후에도 마지막 위치 유지)
+  useEffect(() => {
+    const saved = localStorage.getItem(`flowchart_viewport_${projectId}`);
+    if (saved) {
+      try {
+        const viewport = JSON.parse(saved);
+        requestAnimationFrame(() => {
+          setViewport(viewport, { duration: 0 });
+        });
+      } catch {
+        // JSON 파싱 실패 시 무시
+      }
+    }
+  }, [projectId, setViewport]);
+
   // 알림 클릭으로 넘어온 openNode param 처리
   useEffect(() => {
     const openNodeParam = searchParams.get('openNode');
@@ -410,6 +425,9 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
         onNodeMouseEnter={onNodeMouseEnter}
         onPaneClick={clearSelection}
         onSelectionChange={onSelectionChange}
+        onMove={(_event, viewport) => {
+          localStorage.setItem(`flowchart_viewport_${projectId}`, JSON.stringify(viewport));
+        }}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         nodesDraggable={false}
