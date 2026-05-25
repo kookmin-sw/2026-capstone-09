@@ -89,56 +89,61 @@ export const ProjectListPage = () => {
 
       <main className="bg-surface-canvas flex h-full flex-1 flex-col overflow-hidden">
         {/* Toolbar */}
-        <div className="flex items-center gap-3 px-6 py-4">
-          <Menu
-            value={[sort]}
-            onValueChange={(vals) => {
-              if (!vals) return;
-              const next = vals[vals.length - 1] as SortType | undefined;
-              if (next) setSort(next);
-            }}
-          >
-            <MenuTrigger>
-              <button
-                type="button"
-                className="border-line-normal-neutral bg-static-white text-body-2 text-label-normal hover:bg-fill-alternative flex h-10 shrink-0 items-center gap-1.5 rounded-xl border px-3 transition-colors"
-              >
-                {currentSortLabel}
-                <IconChevronDownThickSmall
-                  className="text-label-assistive h-4 w-4"
-                  aria-hidden="true"
-                />
-              </button>
-            </MenuTrigger>
-            <MenuContent offset={4} position="bottom-start" sx={{ minWidth: '8rem' }}>
-              <MenuList>
-                {SORT_OPTIONS.map((opt) => (
-                  <MenuItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </MenuItem>
-                ))}
-              </MenuList>
-            </MenuContent>
-          </Menu>
+        <div className="px-10 py-10">
+          <div className="flex items-center gap-3 px-6">
+            <Menu
+              value={[sort]}
+              onValueChange={(vals) => {
+                if (!vals) return;
+                const next = vals[vals.length - 1] as SortType | undefined;
+                if (next) setSort(next);
+              }}
+            >
+              <MenuTrigger>
+                <button
+                  type="button"
+                  className="border-line-normal-neutral bg-static-white text-body-2 text-label-normal hover:bg-fill-alternative flex h-10 shrink-0 items-center gap-1.5 rounded-xl border px-3 transition-colors"
+                >
+                  {currentSortLabel}
+                  <IconChevronDownThickSmall
+                    className="text-label-assistive h-4 w-4"
+                    aria-hidden="true"
+                  />
+                </button>
+              </MenuTrigger>
+              <MenuContent offset={4} position="bottom-start" sx={{ minWidth: '8rem' }}>
+                <MenuList>
+                  {SORT_OPTIONS.map((opt) => (
+                    <MenuItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </MenuItem>
+                  ))}
+                </MenuList>
+              </MenuContent>
+            </Menu>
 
-          <div className="flex-1">
-            <TextField
-              id="project-search"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="프로젝트 검색"
-              width="100%"
-              leadingContent={
-                <TextFieldContent variant="icon">
-                  <IconSearchThick className="text-label-alternative h-5 w-5" aria-hidden="true" />
-                </TextFieldContent>
-              }
-            />
+            <div className="flex-1">
+              <TextField
+                id="project-search"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="프로젝트 검색"
+                width="100%"
+                leadingContent={
+                  <TextFieldContent variant="icon">
+                    <IconSearchThick
+                      className="text-label-alternative h-5 w-5"
+                      aria-hidden="true"
+                    />
+                  </TextFieldContent>
+                }
+              />
+            </div>
+
+            <Button onClick={handleNewProject} disabled={createMutation.isPending}>
+              {createMutation.isPending ? '생성 중...' : '새 프로젝트'}
+            </Button>
           </div>
-
-          <Button onClick={handleNewProject} disabled={createMutation.isPending}>
-            {createMutation.isPending ? '생성 중...' : '새 프로젝트'}
-          </Button>
         </div>
 
         {/* Project list */}
@@ -156,17 +161,14 @@ export const ProjectListPage = () => {
           )}
 
           {projects.length > 0 && (
-            <ul className="bg-surface-canvas">
+            <ul className="bg-surface-canvas px-10">
               {projects.map((project) => {
                 return (
-                  <li
-                    key={project.projectId}
-                    className="border-line-normal-neutral bg-surface-canvas border-b"
-                  >
+                  <li key={project.projectId} className="bg-surface-canvas">
                     <button
                       type="button"
                       onClick={() => router.push(`/projects/${project.projectId}`)}
-                      className="bg-surface-canvas hover:bg-fill-alternative flex w-full items-center gap-4 px-6 py-5 text-left transition-colors"
+                      className="bg-surface-canvas hover:bg-fill-alternative flex w-full items-center gap-4 px-6 py-5 text-left transition-colors hover:rounded-xl"
                     >
                       {/* Project icon */}
                       <div className="shrink-0 overflow-hidden rounded-xl">
