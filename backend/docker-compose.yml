@@ -1,0 +1,65 @@
+services:
+  app:
+    image: ${DOCKERHUB_USERNAME}/flowmeet-api:${IMAGE_TAG:-latest}
+    container_name: flowmeet-api
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SERVER_PORT: 8080
+      MANAGEMENT_PORT: 8081
+    expose:
+      - "8080"
+    # management(8081) 포트는 expose 하지 않아 같은 compose network 내부에서도
+    # 호출은 가능하지만 호스트/외부로는 노출되지 않음 (헬스체크는 컨테이너 내부에서 수행)
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8081/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    networks:
+      - app-net
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: flowmeet-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/conf.d:/etc/nginx/templates:ro
+      - ./docker/certbot/conf:/etc/letsencrypt:ro
+      - ./docker/certbot/www:/var/www/certbot:ro
+    # 인증서 갱신 반영을 위해 6시간마다 nginx reload
+    # 공식 이미지의 docker-entrypoint.sh 는 $1 이 "nginx" 일 때만 /docker-entrypoint.d/*
+    # (envsubst 포함) 를 실행하므로, /bin/sh 로 래핑하기 전에 템플릿 렌더링을 직접 호출한다.
+    command: >
+      /bin/sh -c "/docker-entrypoint.d/20-envsubst-on-templates.sh &&
+      { while :; do sleep 6h & wait $${!}; nginx -s reload; done & } &&
+      exec nginx -g 'daemon off;'"
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - app-net
+
+  certbot:
+    image: certbot/certbot:latest
+    container_name: flowmeet-certbot
+    restart: unless-stopped
+    volumes:
+      - ./docker/certbot/conf:/etc/letsencrypt
+      - ./docker/certbot/www:/var/www/certbot
+    # 12시간마다 renew 시도 (이미 발급 상태여야 함; 최초 발급은 init-letsencrypt.sh 로)
+    entrypoint: /bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'
+
+networks:
+  app-net:
+    driver: bridge

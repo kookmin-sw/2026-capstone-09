@@ -1,5 +1,6 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import {
   IconBell,
   IconChevronDoubleLeft,
@@ -9,15 +10,21 @@ import {
   IconSetting,
 } from '@wanteddev/wds-icon';
 import { AnimatePresence, motion } from 'framer-motion';
-import { usePathname } from 'next/navigation';
+import { useParams, usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
-import {
-  EXAMPLE_PROJECT_SIDEBAR_PROFILE,
-  EXAMPLE_SIDEBAR_ALARM_ITEMS,
-} from '@/constants/exampleConstant';
+import { authStorage } from '@/api/authStorage';
+import { userStorage } from '@/api/userStorage';
+import { useModal } from '@/components/commons/modal/ModalContext';
+import { notificationKeys } from '@/queries/keys/notificationKeys';
+import { useUnreadCountQuery } from '@/queries/notification';
+import { useProjectListQuery, useProjectQuery } from '@/queries/project';
+import { useCurrentUserQuery } from '@/queries/user';
 import { cn } from '@/utils/cn';
 
+import { AccountSettingsModalContent } from './account-settings';
+import { SearchModalContent } from './SearchModalContent';
+import { SettingsModalContent } from './setting-modal';
 import { SidebarAlarmModal } from './SidebarAlarmModal';
 import { SidebarMenuButton } from './SidebarMenuButton';
 import { UserProfileButton } from './UserProfileButton';
@@ -26,6 +33,12 @@ const SIDEBAR_EXPANDED_WIDTH = 220;
 const SIDEBAR_COLLAPSED_WIDTH = 56;
 const SIDEBAR_TRANSITION_DURATION = 0.24;
 const SIDEBAR_LABEL_TRANSITION_DURATION = 0.16;
+
+const normalizeImageUrl = (raw?: string): string | undefined => {
+  if (!raw) return undefined;
+  if (/^(https?:)?\/\//i.test(raw)) return raw;
+  return `https://${raw}`;
+};
 
 interface ProjectSidebarProps {
   projectName?: string;
@@ -38,33 +51,125 @@ interface ProjectSidebarProps {
 }
 
 export const ProjectSidebar = ({
-  projectName = EXAMPLE_PROJECT_SIDEBAR_PROFILE.projectName,
-  userName = EXAMPLE_PROJECT_SIDEBAR_PROFILE.userName,
-  userEmail = EXAMPLE_PROJECT_SIDEBAR_PROFILE.userEmail,
+  projectName: projectNameProp,
+  userName: userNameProp,
+  userEmail: userEmailProp,
   onSearchClick,
   onInboxClick,
   onSettingClick,
   onProfileClick,
 }: ProjectSidebarProps) => {
   const pathname = usePathname();
+  const router = useRouter();
+  const params = useParams<{ projectId?: string }>();
+  const projectIdRaw = params?.projectId;
+  const projectId = projectIdRaw ? Number(projectIdRaw) : undefined;
+  const isProjectIdValid = projectId !== undefined && !Number.isNaN(projectId);
+  const { openModal, closeModal } = useModal();
+  const queryClient = useQueryClient();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isCollapsedInternal, setIsCollapsedInternal] = useState(false);
+  const [isCollapsedInternal, setIsCollapsedInternal] = useState(
+    () => typeof window !== 'undefined' && localStorage.getItem('sidebar-collapsed') === 'true',
+  );
   const [isAlarmModalOpen, setIsAlarmModalOpen] = useState(false);
-  const { unreadCount } = EXAMPLE_SIDEBAR_ALARM_ITEMS.data;
+  const [isProjectMenuOpen, setIsProjectMenuOpen] = useState(false);
+  const [projectImgError, setProjectImgError] = useState(false);
   const isProjectSelectionPage = pathname === '/projects';
+
+  // 프로젝트 정보 — Tanstack Query
+  const { data: projectData } = useProjectQuery(isProjectIdValid ? (projectId as number) : 0);
+  const { data: projectListData } = useProjectListQuery({ sort: 'LATEST', search: '' });
+
+  // 사용자 정보 — API(getMe) 우선, localStorage 폴백
+  const { data: currentUser } = useCurrentUserQuery();
+  const storedUser = userStorage.get();
+
+  // 읽지 않은 알림 개수 — 최초 1회 fetch + SSE로 +1씩 누적
+  const { data: initialUnreadCount = 0 } = useUnreadCountQuery();
+  const [sseExtra, setSseExtra] = useState(0);
+  const unreadCount = initialUnreadCount + sseExtra;
+  // SSE로 새로 수신한 알림 여부 (알림창 열면 초기화)
+  const [hasNewSseNotification, setHasNewSseNotification] = useState(false);
+
+  useEffect(() => {
+    if (!isProjectIdValid || projectId === undefined) return;
+
+    const token = authStorage.getAccess();
+    if (!token) return;
+
+    const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL ?? '').replace(/\/$/, '');
+    const controller = new AbortController();
+    const subscribeUrl = new URL(`${baseUrl}/v1/notifications/subscribe`, window.location.origin);
+    subscribeUrl.searchParams.set('projectId', String(projectId));
+
+    const connect = async () => {
+      try {
+        const response = await fetch(subscribeUrl, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
+        });
+
+        if (!response.ok || !response.body) return;
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let currentEventType: string | null = null;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() ?? '';
+          for (const line of lines) {
+            if (line.startsWith('event:')) {
+              currentEventType = line.slice('event:'.length).trim();
+            } else if (line.startsWith('data:')) {
+              // 'notification' 이벤트만 카운트 (connected, heartbeat 등은 무시)
+              if (currentEventType === 'notification') {
+                setSseExtra((prev) => prev + 1);
+                setHasNewSseNotification(true);
+              }
+            } else if (line === '') {
+              // 빈 줄은 메시지 구분자 — event 타입 초기화
+              currentEventType = null;
+            }
+          }
+        }
+      } catch {
+        // SSE 연결 종료 또는 오류 — 무시
+      }
+    };
+
+    void connect();
+    return () => {
+      controller.abort();
+    };
+  }, [isProjectIdValid, projectId]);
+
+  // prop > query > storage > 빈 문자열 우선순위로 합성
+  const projectName = projectNameProp ?? projectData?.name ?? '';
+  const projectImageUrl = normalizeImageUrl(projectData?.profileImageUrl);
+  const userName = userNameProp ?? currentUser?.nickname ?? storedUser?.nickname ?? '';
+  const userEmail = userEmailProp ?? currentUser?.email ?? storedUser?.email ?? '';
+  const profileImageUrl = normalizeImageUrl(
+    currentUser?.profileImageUrl ?? storedUser?.profileImageUrl,
+  );
   const isCollapsed = isProjectSelectionPage || isCollapsedInternal;
   const [isCollapseSettled, setIsCollapseSettled] = useState(true);
   const shouldUseCollapsedLayout = isCollapsed && isCollapseSettled;
   const badgeText = unreadCount > 99 ? '+99' : unreadCount > 0 ? `${unreadCount}` : undefined;
 
   useEffect(() => {
-    if (!isAlarmModalOpen) {
+    if (!isAlarmModalOpen && !isProjectMenuOpen) {
       return;
     }
 
     const handleMouseDown = (event: MouseEvent) => {
       if (!containerRef.current?.contains(event.target as Node)) {
         setIsAlarmModalOpen(false);
+        setIsProjectMenuOpen(false);
       }
     };
 
@@ -73,28 +178,96 @@ export const ProjectSidebar = ({
     return () => {
       document.removeEventListener('mousedown', handleMouseDown);
     };
-  }, [isAlarmModalOpen]);
+  }, [isAlarmModalOpen, isProjectMenuOpen]);
 
   const handleToggleCollapsed = () => {
     setIsCollapsedInternal((prev) => {
       const nextIsCollapsed = !prev;
+      localStorage.setItem('sidebar-collapsed', String(nextIsCollapsed));
       setIsCollapseSettled(!nextIsCollapsed);
       if (nextIsCollapsed) {
         setIsAlarmModalOpen(false);
+        setIsProjectMenuOpen(false);
       }
       return nextIsCollapsed;
     });
   };
 
   const handleAlarmModalToggle = () => {
-    setIsAlarmModalOpen((prev) => !prev);
+    setIsProjectMenuOpen(false);
+    setIsAlarmModalOpen((prev) => {
+      const nextOpen = !prev;
+      if (nextOpen) setHasNewSseNotification(false);
+      return nextOpen;
+    });
     onInboxClick?.();
+  };
+
+  const handleSearchClick = () => {
+    setIsProjectMenuOpen(false);
+    onSearchClick?.();
+    if (!isProjectIdValid || projectId === undefined) return;
+    openModal({
+      variant: 'compact',
+      closeOnBackdrop: true,
+      closeOnEsc: true,
+      content: <SearchModalContent projectId={projectId} onResultClick={() => closeModal()} />,
+    });
+  };
+
+  const handleSettingClick = () => {
+    setIsProjectMenuOpen(false);
+    onSettingClick?.();
+    if (!isProjectIdValid || projectId === undefined) return;
+    openModal({
+      variant: 'default',
+      closeOnBackdrop: true,
+      closeOnEsc: true,
+      content: <SettingsModalContent projectId={projectId} onClose={closeModal} />,
+    });
+  };
+
+  const handleNotificationClick = (notification: import('@/api/Api').NotificationSummaryResponse) => {
+    // 알림창 닫기
+    setIsAlarmModalOpen(false);
+    setIsProjectMenuOpen(false);
+    const targetId = notification.targetId;
+    const notifProjectId = notification.projectId;
+    if (!targetId || !notifProjectId) return;
+    router.push(`/projects/${notifProjectId}?openNode=${targetId}`);
+  };
+
+  const handleProfileClick = () => {
+    setIsProjectMenuOpen(false);
+    onProfileClick?.();
+    openModal({
+      variant: 'default',
+      closeOnBackdrop: true,
+      closeOnEsc: true,
+      content: <AccountSettingsModalContent onClose={closeModal} />,
+    });
+  };
+
+  const handleProjectListClick = () => {
+    setIsProjectMenuOpen(false);
+    router.push('/projects');
+  };
+
+  const handleProjectMenuToggle = () => {
+    setIsAlarmModalOpen(false);
+    setIsProjectMenuOpen((prev) => !prev);
+  };
+
+  const handleProjectMove = (nextProjectId?: number) => {
+    if (!nextProjectId) return;
+    setIsProjectMenuOpen(false);
+    router.push(`/projects/${nextProjectId}`);
   };
 
   return (
     <div ref={containerRef} className="relative z-20 flex shrink-0">
       <motion.aside
-        className="border-line-normal-neutral bg-background-normal-alternative font-pretendard text-body-2 text-label-alternative relative z-10 h-screen shrink-0 overflow-hidden border-r px-2.5 pt-2 pb-0"
+        className="border-line-normal-neutral bg-background-normal-alternative font-pretendard text-body-2 text-label-alternative relative z-10 h-screen shrink-0 overflow-visible border-r px-2.5 pt-2 pb-0"
         initial={false}
         animate={{
           width: isCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH,
@@ -116,15 +289,29 @@ export const ProjectSidebar = ({
                   : 'flex items-center justify-between pt-2 pb-4 pl-1.5',
               )}
             >
-              <div
+              <button
+                type="button"
+                onClick={handleProjectMenuToggle}
                 className={cn(
-                  'flex items-center',
+                  'hover:bg-fill-alternative flex appearance-none items-center rounded-md border-none bg-transparent text-left transition-colors',
                   shouldUseCollapsedLayout ? 'w-full justify-center gap-0' : 'gap-2',
                 )}
+                aria-expanded={isProjectMenuOpen}
+                aria-haspopup="menu"
+                aria-label="프로젝트 메뉴 열기"
               >
                 <div className="relative flex items-center justify-center">
                   <div className="border-line-solid-normal bg-cool-neutral-96 relative flex aspect-square h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-md border">
-                    <IconCompany className="text-static-white h-4 w-4" aria-hidden="true" />
+                    {projectImageUrl && !projectImgError ? (
+                      <img
+                        src={projectImageUrl}
+                        alt={projectName}
+                        className="h-full w-full object-cover"
+                        onError={() => setProjectImgError(true)}
+                      />
+                    ) : (
+                      <IconCompany className="text-static-white h-4 w-4" aria-hidden="true" />
+                    )}
                   </div>
                 </div>
                 {projectName && (
@@ -140,7 +327,64 @@ export const ProjectSidebar = ({
                     {projectName}
                   </motion.div>
                 )}
-              </div>
+              </button>
+
+              {isProjectMenuOpen && (
+                <div
+                  role="menu"
+                  className="border-line-normal-neutral bg-static-white shadow-normal-small absolute top-16 left-4 z-30 flex w-72 flex-col rounded-xl border py-2"
+                >
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={handleProjectListClick}
+                    className="group w-full bg-static-white px-2 py-0.5 text-left"
+                  >
+                    <span className="hover:bg-fill-alternative text-label-1 text-label-normal block rounded-lg px-3 py-1.5 font-medium">
+                      목록으로 돌아가기
+                    </span>
+                  </button>
+
+                  <div className="bg-line-normal-neutral my-0.5 h-px" />
+
+                  <div className="custom-scrollbar max-h-60 overflow-y-auto">
+                    {(projectListData?.content ?? []).map((project) => (
+                      <button
+                        key={project.projectId}
+                        type="button"
+                        role="menuitem"
+                        onClick={() => handleProjectMove(project.projectId)}
+                        className="group w-full bg-static-white px-2 py-0.5 text-left"
+                      >
+                        <span
+                          className={cn(
+                            'hover:bg-fill-alternative flex items-center gap-3 rounded-lg px-3 py-1.5',
+                            project.projectId === projectId
+                              ? 'text-label-normal'
+                              : 'text-label-alternative',
+                          )}
+                        >
+                          <span className="border-line-solid-normal bg-cool-neutral-96 flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-md border">
+                            {project.profileImageUrl ? (
+                              <img
+                                src={normalizeImageUrl(project.profileImageUrl)}
+                                alt={project.name ?? '프로젝트'}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <IconCompany
+                                className="text-static-white h-4 w-4"
+                                aria-hidden="true"
+                              />
+                            )}
+                          </span>
+                          <span className="text-label-2 truncate font-normal">{project.name}</span>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {!isCollapsed && !isProjectSelectionPage && (
                 <button
@@ -175,7 +419,7 @@ export const ProjectSidebar = ({
                   label="검색"
                   labelWidth={48}
                   labelTransitionDuration={SIDEBAR_LABEL_TRANSITION_DURATION}
-                  onClick={onSearchClick}
+                  onClick={handleSearchClick}
                 />
                 <SidebarMenuButton
                   icon={IconBell}
@@ -183,6 +427,7 @@ export const ProjectSidebar = ({
                   label="수신함"
                   labelWidth={64}
                   badgeText={badgeText}
+                  showDot={hasNewSseNotification}
                   labelTransitionDuration={SIDEBAR_LABEL_TRANSITION_DURATION}
                   onClick={handleAlarmModalToggle}
                 />
@@ -192,7 +437,7 @@ export const ProjectSidebar = ({
                   label="설정"
                   labelWidth={48}
                   labelTransitionDuration={SIDEBAR_LABEL_TRANSITION_DURATION}
-                  onClick={onSettingClick}
+                  onClick={handleSettingClick}
                 />
               </nav>
             )}
@@ -203,14 +448,24 @@ export const ProjectSidebar = ({
               isCollapsed={isCollapsed}
               userName={userName}
               userEmail={userEmail}
-              onClick={onProfileClick}
+              profileImageUrl={profileImageUrl}
+              onClick={handleProfileClick}
             />
           </div>
         </div>
       </motion.aside>
       <AnimatePresence>
-        {isAlarmModalOpen && !isCollapsed && (
-          <SidebarAlarmModal onClose={() => setIsAlarmModalOpen(false)} />
+        {isAlarmModalOpen && !isCollapsed && isProjectIdValid && projectId !== undefined && (
+          <SidebarAlarmModal
+            projectId={projectId}
+            onClose={() => setIsAlarmModalOpen(false)}
+            onNotificationClick={handleNotificationClick}
+            onListLoaded={(unreadInList) => {
+              // 알림 리스트 기반 실제 unread 개수로 캐시 동기화 + SSE 누적값 초기화
+              queryClient.setQueryData(notificationKeys.unreadCount(), unreadInList);
+              setSseExtra(0);
+            }}
+          />
         )}
       </AnimatePresence>
     </div>

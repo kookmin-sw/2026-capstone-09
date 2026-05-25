@@ -15,6 +15,8 @@ export function GoogleLoginButton({ size = 'md', compact = false }: GoogleLoginB
   const sx = useSpring(x, { stiffness: 220, damping: 18 });
   const sy = useSpring(y, { stiffness: 220, damping: 18 });
 
+  const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
   function onMove(e: React.MouseEvent) {
     const r = ref.current?.getBoundingClientRect();
     if (!r) return;

@@ -10,6 +10,7 @@ interface SidebarMenuButtonProps {
   labelWidth: number;
   labelTransitionDuration: number;
   badgeText?: string;
+  showDot?: boolean;
   onClick?: () => void;
 }
 
@@ -20,6 +21,7 @@ export const SidebarMenuButton = ({
   labelWidth,
   labelTransitionDuration,
   badgeText,
+  showDot,
   onClick,
 }: SidebarMenuButtonProps) => {
   return (
@@ -32,7 +34,7 @@ export const SidebarMenuButton = ({
       )}
     >
       <span className={cn('flex items-center gap-1.5 text-label-alternative', isCollapsed && 'gap-0')}>
-        <Icon className="h-4 w-4" aria-hidden="true" />
+        <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
         <motion.span
           initial={false}
           animate={{ maxWidth: isCollapsed ? 0 : labelWidth, opacity: isCollapsed ? 0 : 1 }}
@@ -42,10 +44,23 @@ export const SidebarMenuButton = ({
           {label}
         </motion.span>
       </span>
-      {!isCollapsed && badgeText && (
-        <span className="ml-auto rounded-sm bg-fill-normal px-1 py-0.5 text-caption-1 font-normal text-label-alternative">
-          {badgeText}
-        </span>
+      {!isCollapsed && (badgeText || showDot) && (
+        <div className="relative ml-auto flex shrink-0 items-center">
+          {badgeText && (
+            <span className="rounded-sm bg-fill-normal px-1 py-0.5 text-caption-1 font-normal text-label-alternative">
+              {badgeText}
+            </span>
+          )}
+          {showDot && (
+            <span
+              className={cn(
+                'bg-primary-40 h-2 w-2 rounded-full',
+                badgeText ? 'absolute -top-1 -right-1' : 'block',
+              )}
+              aria-hidden="true"
+            />
+          )}
+        </div>
       )}
     </button>
   );

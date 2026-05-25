@@ -3,23 +3,22 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { EditorContent } from '@tiptap/react';
 import { ContentBadge, Tab, TabList, TabListItem, TabPanel, Typography } from '@wanteddev/wds';
-import {
-  IconDocumentText,
-  IconFire,
-  IconMoreVertical,
-  IconPersons,
-  IconTag,
-} from '@wanteddev/wds-icon';
+import { IconDocumentText, IconFire, IconPersons, IconTag } from '@wanteddev/wds-icon';
 import { useEffect } from 'react';
 
-import { AssigneeItem, GetNodeResponse, TagItem } from '@/api/Api';
+import { GetNodeResponse } from '@/api/Api';
 import { GoogleMeetIcon } from '@/assets/svgs/GoogleMeetIcon';
 import { Loading } from '@/components/commons/loading/Loading';
-import { EXAMPLE_USERS } from '@/constants/exampleConstant';
 import { NodeStatusType } from '@/constants/nodeStatus';
+import { useAwarenessUsers } from '@/contexts/YjsContext';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import { useNodeMenuActions } from '@/hooks/useNodeMenuActions';
 import { nodeKeys } from '@/queries/keys/nodeKeys';
-import { useNodeDetailQuery, useUpdateNodeTitleMutation } from '@/queries/node';
+import {
+  useCreateSubNodeMutation,
+  useNodeDetailQuery,
+  useUpdateNodeTitleMutation,
+} from '@/queries/node';
 import { formatDatetoString } from '@/utils/formatData';
 import { AssigneeField } from './fields/AssigneeField';
 import { DescriptionField } from './fields/DescriptionField';
@@ -27,6 +26,7 @@ import { StatusField } from './fields/StatusField';
 import { TagField } from './fields/TagField';
 import { useTitleEditor } from './hooks/useTitleEditor';
 import { Users } from '../commons/user/UserAvatarGroup';
+import { NodeMenu } from '../projects/node-flow/NodeMenu';
 
 interface NodeDetailLayoutProps {
   nodeId: number | null;
@@ -35,6 +35,7 @@ interface NodeDetailLayoutProps {
   meetingContent: React.ReactNode;
   value?: string;
   onValueChange?: (tab: string) => void;
+  onDeleteSuccess?: () => void;
 }
 
 export function NodeDetailLayout({
@@ -44,9 +45,11 @@ export function NodeDetailLayout({
   meetingContent,
   value,
   onValueChange,
+  onDeleteSuccess,
 }: NodeDetailLayoutProps) {
   const queryClient = useQueryClient();
   const { data: nodeDetail, error, isLoading } = useNodeDetailQuery(projectId, nodeId);
+  const activeUsers = useAwarenessUsers();
   const showErrorToast = useErrorToast();
 
   useEffect(() => {
@@ -61,6 +64,7 @@ export function NodeDetailLayout({
   };
 
   const { mutate: updateTitle } = useUpdateNodeTitleMutation(projectId, nodeId);
+  const { mutate: createSubNode } = useCreateSubNodeMutation(projectId);
 
   const handleTitleUpdate = (title: string) => {
     if (!nodeId || title === (nodeDetail?.title ?? '')) return;
@@ -71,38 +75,29 @@ export function NodeDetailLayout({
 
   const titleEditor = useTitleEditor(nodeDetail?.title, handleTitleUpdate);
 
-  const handleStatusUpdate = (status: NodeStatusType) => {
-    updateCache((prev) => ({ ...prev, status }));
-  };
-
   const handleDescriptionUpdate = (description: string) => {
     updateCache((prev) => ({ ...prev, description }));
   };
 
-  const handleTagAdd = (tag: TagItem) => {
-    updateCache((prev) => ({ ...prev, tags: [...(prev.tags ?? []), tag] }));
-  };
-
-  const handleTagRemove = (tagId: number) => {
-    updateCache((prev) => ({ ...prev, tags: prev.tags?.filter((t) => t.tagId !== tagId) }));
-  };
-
-  const handleAssigneeAdd = (assignee: AssigneeItem) => {
-    updateCache((prev) => ({ ...prev, assignees: [...(prev.assignees ?? []), assignee] }));
-  };
-
-  const handleAssigneeRemove = (userId: number) => {
-    updateCache((prev) => ({
-      ...prev,
-      assignees: prev.assignees?.filter((a) => a.userId !== userId),
-    }));
-  };
+  const menuActions = useNodeMenuActions({
+    nodeId: nodeId ?? 0,
+    projectId,
+    nodeTitle: nodeDetail?.title,
+    nodeNumber: nodeDetail?.number,
+    onDeleteSuccess,
+  });
 
   if (isLoading) return <Loading />;
 
+  const menuVariant = !nodeDetail?.parentId
+    ? 'main'
+    : nodeDetail?.meeting?.meetingId
+      ? 'sub-with-meeting'
+      : 'sub-without-meeting';
+
   return (
-    <div className="flex h-full flex-col overflow-y-scroll [&::-webkit-scrollbar]:hidden">
-      <div className="flex items-center justify-between">
+    <div className="flex h-full flex-col overflow-x-hidden overflow-y-scroll [&::-webkit-scrollbar]:hidden">
+      <div className="flex items-center justify-between pt-1 pr-2">
         {nodeDetail?.parentId ? (
           <ContentBadge color="neutral" size="xsmall" variant="outlined">
             #{nodeDetail?.number}
@@ -117,9 +112,19 @@ export function NodeDetailLayout({
           </ContentBadge>
         )}
 
-        <div className="flex items-center gap-1 py-0.5">
-          <Users users={EXAMPLE_USERS} />
-          <IconMoreVertical />
+        <div className="flex items-center gap-3 py-0.5">
+          <Users users={activeUsers} size="xsmall" />
+          <NodeMenu
+            variant={menuVariant}
+            position="bottom-end"
+            {...menuActions}
+            onCreateSubNode={() => {
+              if (!nodeId) return;
+              createSubNode(nodeId, {
+                onError: (err) => showErrorToast(err, '서브 노드 생성에 실패했어요.'),
+              });
+            }}
+          />
         </div>
       </div>
 
@@ -129,13 +134,7 @@ export function NodeDetailLayout({
         <div className="flex flex-col gap-5">
           <MetaRow icon={<IconTag />} label="태그">
             {nodeId && (
-              <TagField
-                projectId={projectId}
-                nodeId={nodeId}
-                tags={nodeDetail?.tags ?? []}
-                onAdd={handleTagAdd}
-                onRemove={handleTagRemove}
-              />
+              <TagField projectId={projectId} nodeId={nodeId} initialTags={nodeDetail?.tags} />
             )}
           </MetaRow>
 
@@ -144,9 +143,7 @@ export function NodeDetailLayout({
               <AssigneeField
                 projectId={projectId}
                 nodeId={nodeId}
-                assignees={nodeDetail?.assignees ?? []}
-                onAdd={handleAssigneeAdd}
-                onRemove={handleAssigneeRemove}
+                initialAssignees={nodeDetail?.assignees}
               />
             )}
           </MetaRow>
@@ -163,21 +160,19 @@ export function NodeDetailLayout({
           </MetaRow>
 
           <MetaRow icon={<IconFire />} label="진행 상태">
-            {nodeId && nodeDetail?.status && (
+            {nodeId && (
               <StatusField
                 projectId={projectId}
                 nodeId={nodeId}
-                status={nodeDetail.status as NodeStatusType}
-                onUpdate={handleStatusUpdate}
+                initialStatus={nodeDetail?.status as NodeStatusType | undefined}
               />
             )}
           </MetaRow>
         </div>
 
-        {nodeDetail?.meeting?.meetingId ? (
-          // 추후 수정 필요...
+        {nodeDetail?.meeting?.meetingId && nodeDetail.meeting.status !== 'ENDED' ? (
           <a
-            href="https://meet.google.com/jne-evsa-qzn"
+            href={nodeDetail?.meeting?.meetingUrl}
             className="text-label-1-normal flex items-center justify-between rounded-lg border border-gray-200 p-3"
           >
             <div>{formatDatetoString(nodeDetail?.meeting?.startedAt)}에 회의 예정</div>
@@ -190,8 +185,12 @@ export function NodeDetailLayout({
 
       <Tab value={value} onValueChange={onValueChange} defaultValue="note">
         <TabList size="medium" resize="fill">
-          <TabListItem value="note">노트</TabListItem>
-          {nodeDetail?.parentId && <TabListItem value="meeting">회의</TabListItem>}
+          {nodeDetail?.parentId && (
+            <>
+              <TabListItem value="note">노트</TabListItem>
+              <TabListItem value="meeting">회의</TabListItem>
+            </>
+          )}
         </TabList>
         <TabPanel value="note">{noteContent}</TabPanel>
         <TabPanel value="meeting" sx={{ flex: 1 }}>

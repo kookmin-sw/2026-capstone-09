@@ -3,11 +3,14 @@
 import { Button, Theme } from '@wanteddev/wds';
 import { IconFolderFill } from '@wanteddev/wds-icon';
 
-export const CreateMeeting = () => {
+interface CreateMeetingProps {
+  onCreateMeeting?: () => void;
+}
+
+export const CreateMeeting = ({ onCreateMeeting }: CreateMeetingProps) => {
   return (
     <div className="flex h-full items-center justify-center">
       <div className="flex flex-col items-center justify-center gap-5">
-        {/* 임시용 디자인 - 추후 수정 */}
         <div className="flex flex-col items-center justify-center gap-6">
           <div className="flex scale-400">
             <IconFolderFill
@@ -27,7 +30,7 @@ export const CreateMeeting = () => {
             </div>
           </div>
         </div>
-        <Button>회의 생성하기</Button>
+        <Button onClick={onCreateMeeting}>회의 생성하기</Button>
       </div>
     </div>
   );

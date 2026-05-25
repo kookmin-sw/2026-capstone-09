@@ -32,6 +32,7 @@ export function NodePageLayoutClient({
       meetingContent={meetingContent}
       value={value}
       onValueChange={(tab) => router.replace(`/projects/${projectId}/nodes/${nodeId}/${tab}`)}
+      onDeleteSuccess={() => router.push(`/projects/${projectId}`)}
     />
   );
 }

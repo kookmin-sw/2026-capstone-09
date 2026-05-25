@@ -4,61 +4,40 @@ import { NodeProps, Handle, Position } from 'reactflow';
 import type { NodeItem } from '@/api/Api';
 import { Users } from '@/components/commons/user/UserAvatarGroup';
 import { ColorType } from '@/constants/badgeColor';
+import { useActiveNodeUsers } from '@/contexts/YjsContext';
+import { useNodeMenuActions } from '@/hooks/useNodeMenuActions';
 import { getColorToken } from '@/utils/getBadgeColorInfo';
 import { formatDate, getVisibleTags } from '@/utils/nodeUtils';
 import { NodeMenu } from './NodeMenu';
 
 interface CustomNodeData extends NodeItem {
   isMainNode: boolean;
+  projectId: number;
   onCreateSubNode?: (nodeId: number) => void;
   onSelectNode?: (nodeId: number) => void;
 }
 
 function CustomFlowNodeComponent({ data, selected }: NodeProps<CustomNodeData>) {
   const { visibleTags, remainingTagsCount } = getVisibleTags(data.tags ?? []);
+  const activeUsers = useActiveNodeUsers(data.nodeId);
   const isMain = data.isMainNode;
   const nodeNumber = data.number ?? data.nodeId;
+
+  const menuActions = useNodeMenuActions({
+    nodeId: data.nodeId ?? 0,
+    projectId: data.projectId,
+    nodeTitle: data.title ?? undefined,
+    nodeNumber,
+    onBeforeAction: () => {
+      if (data.nodeId !== undefined) data.onSelectNode?.(data.nodeId);
+    },
+  });
 
   const handleCreateSubNode = () => {
     if (data.nodeId !== undefined) {
       data.onSelectNode?.(data.nodeId);
       data.onCreateSubNode?.(data.nodeId);
     }
-  };
-
-  const handleCreateMeeting = () => {
-    if (data.nodeId !== undefined) {
-      data.onSelectNode?.(data.nodeId);
-    }
-    // TODO: 회의 생성 모달 열기
-  };
-
-  const handleEditMeeting = () => {
-    if (data.nodeId !== undefined) {
-      data.onSelectNode?.(data.nodeId);
-    }
-    // TODO: 회의 수정 모달 열기
-  };
-
-  const handleDeleteMeeting = () => {
-    if (data.nodeId !== undefined) {
-      data.onSelectNode?.(data.nodeId);
-    }
-    // TODO: 회의 삭제 확인 모달 열기
-  };
-
-  const handleCreateReference = () => {
-    if (data.nodeId !== undefined) {
-      data.onSelectNode?.(data.nodeId);
-    }
-    // TODO: 참조 생성 모달 열기
-  };
-
-  const handleDelete = () => {
-    if (data.nodeId !== undefined) {
-      data.onSelectNode?.(data.nodeId);
-    }
-    // TODO: 삭제 확인 모달 열기
   };
 
   const menuVariant = isMain
@@ -98,6 +77,20 @@ function CustomFlowNodeComponent({ data, selected }: NodeProps<CustomNodeData>) 
             position={Position.Right}
             style={{ opacity: 0, pointerEvents: 'none', right: '0px', top: '60px' }}
           />
+          {/* 참조 관계용 - 왼쪽 */}
+          <Handle
+            id="ref-source"
+            type="source"
+            position={Position.Left}
+            style={{ opacity: 0, pointerEvents: 'none', left: '0px', top: '60px' }}
+          />
+          {/* 참조 관계용 - 오른쪽 */}
+          <Handle
+            id="ref-target"
+            type="target"
+            position={Position.Right}
+            style={{ opacity: 0, pointerEvents: 'none', right: '0px', top: '60px' }}
+          />
           {/* 아래 방향으로 서브 노드 (왼쪽에서 20px) */}
           <Handle
             id="child-source"
@@ -125,6 +118,20 @@ function CustomFlowNodeComponent({ data, selected }: NodeProps<CustomNodeData>) 
           <Handle
             id="source"
             type="source"
+            position={Position.Right}
+            style={{ opacity: 0, pointerEvents: 'none', right: '0px', top: '48px' }}
+          />
+          {/* 참조 관계용 - 왼쪽 */}
+          <Handle
+            id="ref-source"
+            type="source"
+            position={Position.Left}
+            style={{ opacity: 0, pointerEvents: 'none', left: '0px', top: '48px' }}
+          />
+          {/* 참조 관계용 - 오른쪽 */}
+          <Handle
+            id="ref-target"
+            type="target"
             position={Position.Right}
             style={{ opacity: 0, pointerEvents: 'none', right: '0px', top: '48px' }}
           />
@@ -157,12 +164,8 @@ function CustomFlowNodeComponent({ data, selected }: NodeProps<CustomNodeData>) 
 
           <NodeMenu
             variant={menuVariant}
+            {...menuActions}
             onCreateSubNode={handleCreateSubNode}
-            onCreateMeeting={handleCreateMeeting}
-            onEditMeeting={handleEditMeeting}
-            onDeleteMeeting={handleDeleteMeeting}
-            onCreateReference={handleCreateReference}
-            onDelete={handleDelete}
           />
         </div>
 
@@ -194,9 +197,9 @@ function CustomFlowNodeComponent({ data, selected }: NodeProps<CustomNodeData>) 
           )}
         </div>
 
-        {data.assignees && data.assignees.length > 0 && (
-          <div className="shrink-0">
-            <Users users={data.assignees} maxVisible={2} compact />
+        {activeUsers.length > 0 && (
+          <div className="shrink-0 -my-1.5 origin-right scale-75">
+            <Users users={activeUsers} maxVisible={2} compact size="xsmall" />
           </div>
         )}
       </div>

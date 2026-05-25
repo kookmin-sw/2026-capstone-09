@@ -1,3 +1,5 @@
+'use client';
+
 import { Avatar } from '@wanteddev/wds';
 import { useState, useRef, useEffect } from 'react';
 
@@ -15,7 +17,6 @@ interface CommentDisplayProps {
   comment: string | null;
 }
 
-// 공통 코멘트 컴포넌트 (default 상태)
 function CommentDisplay({ avatarSrc, nickname, timeText, comment }: CommentDisplayProps) {
   return (
     <div className="flex items-start justify-start gap-2 rounded-lg bg-white p-3">
@@ -35,6 +36,8 @@ function CommentDisplay({ avatarSrc, nickname, timeText, comment }: CommentDispl
 
 export function DashedComment(props: DashedCommentProps) {
   const { isCreateMode, onCommentCreate } = props;
+
+  // 모든 훅은 early return 이전에 선언
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [savedComment, setSavedComment] = useState<string | null>(null);
@@ -46,14 +49,11 @@ export function DashedComment(props: DashedCommentProps) {
     }
   }, [isEditing]);
 
-  const handleCreateClick = () => {
-    setIsEditing(true);
-  };
+  const handleCreateClick = () => setIsEditing(true);
 
   const handleSave = () => {
     const trimmedValue = inputValue.trim();
     if (!trimmedValue) return;
-
     setSavedComment(trimmedValue);
     onCommentCreate?.(trimmedValue);
     setIsEditing(false);
@@ -86,22 +86,21 @@ export function DashedComment(props: DashedCommentProps) {
     );
   }
 
-  // Create 상태
   if (isCreateMode === true) {
     if (isEditing) {
       return (
         <div className="flex items-center justify-center rounded bg-white px-3 py-1 outline outline-1 outline-offset-[-1px] outline-primary-40">
-            <input
-              ref={inputRef}
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              onBlur={handleBlur}
-              maxLength={50}
-              placeholder="코멘트를 입력해주세요"
-              className="w-full border-none bg-transparent text-caption-1 font-medium text-label-neutral outline-none placeholder:text-label-neutral/60"
-            />
+          <input
+            ref={inputRef}
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onBlur={handleBlur}
+            maxLength={50}
+            placeholder="코멘트를 입력해주세요"
+            className="w-full border-none bg-transparent text-caption-1 font-medium text-label-neutral outline-none placeholder:text-label-neutral/60"
+          />
         </div>
       );
     }
@@ -119,7 +118,6 @@ export function DashedComment(props: DashedCommentProps) {
     );
   }
 
-  // Default 상태 (코멘트가 있는 경우)
   const { edge } = props;
 
   return (

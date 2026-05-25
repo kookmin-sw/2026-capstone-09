@@ -1,0 +1,25 @@
+{
+  "name": "wss",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.mjs"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "y-websocket": "^3.0.0",
+    "yjs": "^13.6.29"
+  },
+  "devDependencies": {
+    "lib0": "^0.2.117",
+    "wait-on": "^9.0.4",
+    "ws": "^8.20.0",
+    "y-protocols": "^1.0.7"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.18.2"
+}

@@ -1,70 +1,58 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import StarterKit from '@tiptap/starter-kit';
-import { Placeholder } from '@tiptap/extensions';
+import { Collaboration } from '@tiptap/extension-collaboration';
 import { Extension } from '@tiptap/core';
+import { Placeholder } from '@tiptap/extensions';
 import { useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+
+import { YJS_FIELDS, useYjsContext } from '@/contexts/YjsContext';
+import { useYjsFragmentInit } from '@/hooks/useYjsFragmentInit';
+import { stripNewlinesPaste } from '@/utils/tiptapPaste';
 
 export function useDescriptionEditor(
   description: string | undefined,
   onSave: (value: string) => void,
 ) {
-  const descriptionRef = useRef(description);
   const onSaveRef = useRef(onSave);
-
-  useEffect(() => {
-    descriptionRef.current = description;
-  }, [description]);
-
   useEffect(() => {
     onSaveRef.current = onSave;
   }, [onSave]);
 
-  return useEditor(
+  const yjsCtx = useYjsContext();
+  const fragment = yjsCtx?.ydoc.getXmlFragment(YJS_FIELDS.description) ?? null;
+
+  const editor = useEditor(
     {
       extensions: [
-        StarterKit,
-        Placeholder.configure({
-          placeholder: '설명을 추가해 주세요',
-        }),
+        StarterKit.configure({ undoRedo: false }),
+        Placeholder.configure({ placeholder: '설명을 추가해 주세요' }),
         Extension.create({
-          name: 'preventEnterRevertOnEscape',
+          name: 'descriptionKeyboardShortcuts',
           addKeyboardShortcuts() {
             return {
-              Enter: ({ editor }) => {
-                editor.view.dom.blur();
-                return true;
-              },
-              Escape: ({ editor }) => {
-                editor.commands.setContent(descriptionRef.current ?? '');
-                editor.commands.blur();
-                return true;
-              },
+              Enter: ({ editor: e }) => { e.view.dom.blur(); return true; },
+              Escape: ({ editor: e }) => { e.commands.blur(); return true; },
             };
           },
         }),
+        ...(fragment ? [Collaboration.configure({ fragment })] : []),
       ],
-      content: description ?? '',
-      onBlur({ editor }) {
-        onSaveRef.current(editor.getText());
+      content: fragment ? undefined : (description ?? ''),
+      onBlur({ editor: e }) {
+        onSaveRef.current(e.getText());
       },
       editorProps: {
-        handlePaste(view, event) {
-          const text = event.clipboardData?.getData('text/plain');
-          if (text) {
-            event.preventDefault();
-            view.dispatch(view.state.tr.insertText(text.replace(/\n/g, ' ')));
-            return true;
-          }
-          return false;
-        },
-        attributes: {
-          class: 'prose focus:outline-none text-sm',
-        },
+        handlePaste: stripNewlinesPaste,
+        attributes: { class: 'prose focus:outline-none text-sm' },
       },
       immediatelyRender: false,
     },
-    [description],
+    [fragment],
   );
+
+  useYjsFragmentInit(editor, fragment, description);
+
+  return editor;
 }

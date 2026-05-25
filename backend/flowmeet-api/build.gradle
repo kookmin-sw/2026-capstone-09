@@ -17,7 +17,15 @@ dependencies {
 
     // Web
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework:spring-tx'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.data:spring-data-commons'
+
+    // Actuator (health check — management 포트로 비공개 운영)
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    //Swagger
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2'
 
     // Thymeleaf (미사용, 추후 활용 예정)
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
@@ -25,6 +33,10 @@ dependencies {
 
     // Mail (미사용, 추후 활용 예정)
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    // SQS (LlmResponseListener에서 @SqsListener 사용)
+    implementation platform('io.awspring.cloud:spring-cloud-aws-dependencies:4.0.0')
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter-sqs'
 
     // H2 Console
     implementation 'org.springframework.boot:spring-boot-h2console'

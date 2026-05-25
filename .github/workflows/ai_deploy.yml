@@ -1,0 +1,84 @@
+name: Deploy to AWS Lambda
+
+on:
+  push:
+    branches: [ai/develop]
+    paths:
+      - 'ai/app/**'
+      - '.github/workflows/ai_deploy.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Python 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          
+      - name: AWS CLI 설정
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: 패키지 설치
+        run: |
+          cd ai
+          pip install --upgrade pip
+          pip install -r requirements.txt -t ./package
+          cp -r app ./package/
+          cp lambda_sqs.py ./package/
+
+      - name: zip 패키징
+        run: |
+          cd ai/package
+          zip -r ../function.zip .
+
+      - name: Lambda 배포
+        run: |
+          if aws lambda get-function --function-name llm_summary_func --region ap-northeast-2 2>/dev/null; then
+            echo "함수 업데이트"
+            aws lambda update-function-code \
+              --function-name llm_summary_func \
+              --zip-file fileb://ai/function.zip \
+              --region ap-northeast-2
+          else
+            echo "함수 신규 생성"
+            aws lambda create-function \
+              --function-name llm_summary_func \
+              --runtime python3.11 \
+              --role arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/llm-summary-lambda-role \
+              --handler app.main.handler \
+              --zip-file fileb://ai/function.zip \
+              --region ap-northeast-2
+          fi
+
+      - name: Lambda 배포 - SQS
+        run: |
+          if aws lambda get-function --function-name llm_sqs_func --region ap-northeast-2 2>/dev/null; then
+            echo "함수 업데이트"
+            aws lambda update-function-code \
+              --function-name llm_sqs_func \
+              --zip-file fileb://ai/function.zip \
+              --region ap-northeast-2
+          else
+            echo "함수 신규 생성"
+            aws lambda create-function \
+              --function-name llm_sqs_func \
+              --runtime python3.11 \
+              --role arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/llm-summary-lambda-role \
+              --handler lambda_sqs.handler \
+              --zip-file fileb://ai/function.zip \
+              --region ap-northeast-2
+          fi

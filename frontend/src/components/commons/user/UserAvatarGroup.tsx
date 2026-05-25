@@ -1,6 +1,7 @@
 import {
   Avatar,
   AvatarGroup,
+  type Theme,
   Tooltip,
   TooltipContent,
   TooltipGroup,
@@ -8,38 +9,65 @@ import {
   Typography,
 } from '@wanteddev/wds';
 
+import { normalizeImageUrl } from '@/utils/normalizeImageUrl';
+
+const IMAGE_AVATAR_SX = (_theme: Theme) => ({
+  padding: '0',
+});
+
 export interface UserInfo {
   userId?: number;
   email?: string;
   nickname?: string;
   profileImageUrl?: string | null;
+  color?: string;
 }
 
 interface UsersProps {
   users: readonly UserInfo[];
   maxVisible?: number;
   compact?: boolean; // true면 "+n", false면 "외 n명"
+  size?: 'xsmall' | 'small';
 }
 
 interface UserAvatarWithTooltipProps {
   user: UserInfo;
   position: 'bottom-center' | 'bottom-end';
+  size: 'xsmall' | 'small';
 }
 
-const UserAvatarWithTooltip = ({ user, position }: UserAvatarWithTooltipProps) => {
+const UserAvatarWithTooltip = ({ user, position, size }: UserAvatarWithTooltipProps) => {
+  const profileImageUrl = normalizeImageUrl(user.profileImageUrl ?? undefined);
+  const borderStyle =
+    !profileImageUrl && user.color
+      ? { outline: `2.5px solid ${user.color}`, borderRadius: '50%' }
+      : undefined;
+
   return (
     <Tooltip>
       <TooltipTrigger>
-        <div>
-          <Avatar variant="person" size="xsmall" src={user.profileImageUrl ?? undefined} />
+        <div style={borderStyle}>
+          <Avatar
+            variant="person"
+            size={size}
+            src={profileImageUrl}
+            sx={profileImageUrl ? IMAGE_AVATAR_SX : undefined}
+          />
         </div>
       </TooltipTrigger>
 
       <TooltipContent size="small" position={position}>
         <div className="flex min-w-35 items-center gap-2 px-1 py-1.5">
-          <Avatar variant="person" size="xsmall" />
+          <Avatar
+            variant="person"
+            size="xsmall"
+            src={profileImageUrl}
+            sx={profileImageUrl ? IMAGE_AVATAR_SX : undefined}
+          />
           <div className="flex flex-col">
-            <span className="text-caption-1 font-medium text-neutral-100">{user.nickname ?? ''}</span>
+            <span className="text-caption-1 font-medium text-neutral-100">
+              {user.nickname ?? ''}
+            </span>
             <span className="text-caption-2 font-normal text-neutral-100">{user.email ?? ''}</span>
           </div>
         </div>
@@ -78,28 +106,41 @@ const AllUsersTooltip = ({ users, maxVisible = 5, compact = false }: AllUsersToo
 
       <TooltipContent size="small" position="bottom-end">
         <div className="flex min-w-40 flex-col gap-2 px-1 py-1.5">
-          {users.map((user, idx) => (
-            <div key={user.email ?? idx} className="flex items-center gap-2">
-              <Avatar variant="person" size="xsmall" />
-              <div className="flex flex-col">
-                <span className="text-caption-1 font-medium text-neutral-100">{user.nickname ?? ''}</span>
-                <span className="text-caption-2 font-normal text-neutral-100">{user.email ?? ''}</span>
+          {users.map((user, idx) => {
+            const profileImageUrl = normalizeImageUrl(user.profileImageUrl ?? undefined);
+
+            return (
+              <div key={user.email ?? idx} className="flex items-center gap-2">
+                <Avatar
+                  variant="person"
+                  size="xsmall"
+                  src={profileImageUrl}
+                  sx={profileImageUrl ? IMAGE_AVATAR_SX : undefined}
+                />
+                <div className="flex flex-col">
+                  <span className="text-caption-1 font-medium text-neutral-100">
+                    {user.nickname ?? ''}
+                  </span>
+                  <span className="text-caption-2 font-normal text-neutral-100">
+                    {user.email ?? ''}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </TooltipContent>
     </Tooltip>
   );
 };
 
-export const Users = ({ users, maxVisible = 5, compact = false }: UsersProps) => {
+export const Users = ({ users, maxVisible = 5, compact = false, size = 'small' }: UsersProps) => {
   const visibleUsers = users.slice(0, maxVisible);
 
   return (
     <TooltipGroup>
       <AvatarGroup
-        size="small"
+        size={size}
         trailingContent={
           users.length > maxVisible ? (
             <AllUsersTooltip users={users} maxVisible={maxVisible} compact={compact} />
@@ -110,6 +151,7 @@ export const Users = ({ users, maxVisible = 5, compact = false }: UsersProps) =>
           <div key={`${user.userId}-${index}`} className={index === 0 ? '' : '-ml-1'}>
             <UserAvatarWithTooltip
               user={user}
+              size={size}
               position={index === visibleUsers.length - 1 ? 'bottom-end' : 'bottom-center'}
             />
           </div>
