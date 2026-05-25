@@ -12,7 +12,16 @@ class Agent:
     def __init__(self, mcp_client: MCPClient, project_id: str):
         self.mcp_client = mcp_client
         self.project_id = project_id
-        self.client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+        self.client = genai.Client(
+            api_key=os.environ["GEMINI_API_KEY"],
+            http_options=types.HttpOptions(
+                retry_options=types.HttpRetryOptions(
+                    attempts=4,       # 최초 1회 + 재시도 3회
+                    initial_delay=2.0,
+                    max_delay=30.0,
+                )
+            ),
+        )
         self.model = "gemini-2.5-flash"
         self.conversation_history = []
         self._tools = None
@@ -47,7 +56,7 @@ class Agent:
  
         return [types.Tool(function_declarations=function_declarations)]
  
-    async def _execute_tool(self, fc) -> types.Part:
+    async def _execute_tool(self, fc: types.FunctionCall) -> types.Part:
         all_args = {**dict(fc.args), "projectId": int(self.project_id)}
         print(f"[Agent] 툴 호출: {fc.name}({all_args})")
         try:
