@@ -1,4 +1,5 @@
 import os
+import asyncio
 from google import genai
 from google.genai import types
  
@@ -46,6 +47,18 @@ class Agent:
  
         return [types.Tool(function_declarations=function_declarations)]
  
+    async def _execute_tool(self, fc) -> types.Part:
+        all_args = {**dict(fc.args), "projectId": int(self.project_id)}
+        print(f"[Agent] 툴 호출: {fc.name}({all_args})")
+        try:
+            result = await self.mcp_client.call_tool(tool_name=fc.name, arguments=all_args)
+        except Exception as e:
+            result = f"Tool execution failed: {str(e)}"
+        print(f"[Agent] 툴 결과: {result}")
+        return types.Part(
+            function_response=types.FunctionResponse(name=fc.name, response={"result": result})
+        )
+
     async def run(self, user_message: str) -> str:
 
         self.conversation_history = self.conversation_history[-MAX_HISTORY:]
@@ -103,36 +116,10 @@ class Agent:
                         return part.text
                 return ""  # 텍스트 부분이 없는 경우 빈 문자열 반환(LLM 오류처리)
 
-            # 툴 호출이 있으면 실행 후 결과를 히스토리에 추가
-            tool_results = []
-            for part in tool_calls:
-                fc = part.function_call
-
-                all_args = {
-                    **dict(fc.args),
-                    "projectId": int(self.project_id),
-                }
-
-                print(f"[Agent] 툴 호출: {fc.name}({all_args})")
-                
-                try:
-                    result = await self.mcp_client.call_tool(
-                        tool_name=fc.name,
-                        arguments=all_args,
-                    )
-                except Exception as e:
-                    result = f"Tool execution failed: {str(e)}"
-
-                print(f"[Agent] 툴 결과: {result}")
-
-                tool_results.append(
-                    types.Part(
-                        function_response=types.FunctionResponse(
-                            name=fc.name,
-                            response={"result": result},
-                        )
-                    )
-                )
+            # 툴 호출이 있으면 병렬 실행 후 결과를 히스토리에 추가
+            tool_results = await asyncio.gather(*[
+                self._execute_tool(part.function_call) for part in tool_calls
+            ])
 
             # 툴 결과를 히스토리에 추가 후 다시 Gemini 호출
             # Gemini는 여러 tool 결과를 반드시 하나의 Content에 묶어서 전달해야 함
