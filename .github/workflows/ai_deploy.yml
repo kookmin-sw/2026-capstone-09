@@ -2,7 +2,7 @@ name: Deploy to AWS Lambda
 
 on:
   push:
-    branches: [ai/develop]
+    branches: [ai/develop-]
     paths:
       - 'ai/app/**'
       - '.github/workflows/ai_deploy.yml'
