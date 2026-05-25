@@ -3,7 +3,7 @@ import asyncio
 from google import genai
 from google.genai import types
  
-from client import MCPClient
+from client import MCPClient, MCPConnectionError
  
 MAX_TOOL_ROUNDS = 10
 MAX_HISTORY = 30
@@ -61,6 +61,8 @@ class Agent:
         print(f"[Agent] 툴 호출: {fc.name}({all_args})")
         try:
             result = await self.mcp_client.call_tool(tool_name=fc.name, arguments=all_args)
+        except MCPConnectionError:
+            raise
         except Exception as e:
             result = f"Tool execution failed: {str(e)}"
         print(f"[Agent] 툴 결과: {result}")

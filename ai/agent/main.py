@@ -8,7 +8,7 @@ from fastapi import FastAPI, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from client import MCPClient
+from client import MCPClient, MCPConnectionError
 from agent import Agent
 
 MCP_SERVER_URL = os.environ.get("MCP_SERVER_URL", "http://localhost:8082/mcp")
@@ -92,7 +92,8 @@ class ChatResponse(BaseModel):
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "active_sessions": len(sessions)}
+    connected = sum(1 for s in sessions.values() if s["mcp_client"].session is not None)
+    return {"status": "ok", "active_sessions": len(sessions), "mcp_connected": connected}
 
 
 @app.post("/chat", response_model=ChatResponse)
@@ -108,16 +109,20 @@ async def chat(body: ChatRequest, authorization: str = Header(None)):
 
     if semaphore._value == 0:
         raise HTTPException(status_code=429, detail="현재 요청이 많아 처리가 지연되고 있습니다. 잠시 후 다시 시도해주세요.")
-    async with semaphore:
-        async with session["lock"]:
-            is_new_session = len(session["agent"].conversation_history) == 0
-            if is_new_session:
-                response_text, session_name = await asyncio.gather(
-                    session["agent"].run(body.message),
-                    session["agent"].generate_session_name(body.message)
-                )
-            else:
-                response_text = await session["agent"].run(body.message)
-                session_name = None
+    try:
+        async with semaphore:
+            async with session["lock"]:
+                is_new_session = len(session["agent"].conversation_history) == 0
+                if is_new_session:
+                    response_text, session_name = await asyncio.gather(
+                        session["agent"].run(body.message),
+                        session["agent"].generate_session_name(body.message)
+                    )
+                else:
+                    response_text = await session["agent"].run(body.message)
+                    session_name = None
+    except MCPConnectionError:
+        sessions.pop(session_id, None)
+        raise HTTPException(status_code=503, detail="AI 연결이 끊어졌습니다. 페이지를 새로고침 후 다시 시도해주세요.")
 
     return ChatResponse(response=response_text, session_id=session_id, session_name=session_name)
