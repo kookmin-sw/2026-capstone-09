@@ -106,6 +106,8 @@ async def chat(body: ChatRequest, authorization: str = Header(None)):
     session_id = body.session_id or str(uuid.uuid4())
     session = await get_or_create_session(session_id, token, body.project_id)
 
+    if semaphore._value == 0:
+        raise HTTPException(status_code=429, detail="현재 요청이 많아 처리가 지연되고 있습니다. 잠시 후 다시 시도해주세요.")
     async with semaphore:
         async with session["lock"]:
             is_new_session = len(session["agent"].conversation_history) == 0
