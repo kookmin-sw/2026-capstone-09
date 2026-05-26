@@ -17,7 +17,11 @@ import { authStorage } from '@/api/authStorage';
 import { userStorage } from '@/api/userStorage';
 import { useModal } from '@/components/commons/modal/ModalContext';
 import { notificationKeys } from '@/queries/keys/notificationKeys';
-import { prefetchNotificationSetting, useUnreadCountQuery } from '@/queries/notification';
+import {
+  prefetchNotificationSetting,
+  useNotificationSettingQuery,
+  useUnreadCountQuery,
+} from '@/queries/notification';
 import { useProjectListQuery, useProjectQuery } from '@/queries/project';
 import { useCurrentUserQuery } from '@/queries/user';
 import { cn } from '@/utils/cn';
@@ -91,6 +95,15 @@ export const ProjectSidebar = ({
   // SSE로 새로 수신한 알림 여부 (알림창 열면 초기화)
   const [hasNewSseNotification, setHasNewSseNotification] = useState(false);
 
+  const { data: notificationSetting } = useNotificationSettingQuery(
+    isProjectIdValid ? (projectId as number) : 0,
+  );
+  // SSE 재연결 없이 최신 설정값을 읽기 위해 ref로 관리
+  const desktopEnabledRef = useRef(false);
+  useEffect(() => {
+    desktopEnabledRef.current = notificationSetting?.desktopEnabled ?? false;
+  }, [notificationSetting?.desktopEnabled]);
+
   useEffect(() => {
     if (!isProjectIdValid || projectId === undefined) return;
 
@@ -128,6 +141,22 @@ export const ProjectSidebar = ({
             } else if (line.startsWith('data:')) {
               // 'notification' 이벤트만 카운트 (connected, heartbeat 등은 무시)
               if (currentEventType === 'notification') {
+                if (window.desktop && desktopEnabledRef.current) {
+                  try {
+                    const notif = JSON.parse(line.slice('data:'.length).trim()) as {
+                      title?: string;
+                      content?: string;
+                    };
+                    if (notif.title) {
+                      void window.desktop.showNotification({
+                        title: notif.title,
+                        body: notif.content ?? '',
+                      });
+                    }
+                  } catch {
+                    // JSON 파싱 실패 시 무시
+                  }
+                }
                 setSseExtra((prev) => prev + 1);
                 setHasNewSseNotification(true);
               }

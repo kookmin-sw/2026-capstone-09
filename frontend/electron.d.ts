@@ -7,6 +7,7 @@ declare global {
       downloadUpdate: () => Promise<void>
       onUpdateAvailable: (callback: (version: string) => void) => void
       onDownloadProgress: (callback: (percent: number) => void) => void
+      showNotification: (payload: { title: string; body: string }) => Promise<void>
     }
   }
 }

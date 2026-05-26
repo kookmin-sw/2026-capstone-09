@@ -9,4 +9,5 @@ contextBridge.exposeInMainWorld('desktop', {
   onDownloadProgress: (callback) => {
     ipcRenderer.on('update:progress', (_event, percent) => callback(percent))
   },
+  showNotification: (payload) => ipcRenderer.invoke('notification:show', payload),
 })
