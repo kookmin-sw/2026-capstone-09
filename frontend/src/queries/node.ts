@@ -65,9 +65,13 @@ export function useUpdateNodeDescriptionMutation(projectId: number, nodeId: numb
 }
 
 export function useUpdateNodeStatusMutation(projectId: number, nodeId: number) {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (status: NodeStatusType) =>
       privateApi.node.updateNodeStatus(projectId, nodeId, { status }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: nodeKeys.detail(projectId, nodeId) });
+    },
   });
 }
 
