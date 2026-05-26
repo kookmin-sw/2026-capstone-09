@@ -11,6 +11,8 @@ public record NodeAnalysisResult(
         ActionItemsAnalysis actionItemsAnalysis,
         @JsonProperty("development_ideas")
         String developmentIdeas,
+        @JsonProperty("notes_summary")
+        String notesSummary,
         @JsonProperty("mermaid_code")
         String mermaidCode
 ) {

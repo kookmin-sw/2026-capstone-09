@@ -291,7 +291,6 @@ public class NodeFacade {
         return RequestNodeSummaryResponse.from(aiTask.getId());
     }
 
-    // TODO: 추후 노트(noteContent) 포함 여부 검토
     public AnalyzeDraggedNodesResponse analyzeDraggedNodes(
             final Long userId,
             final Long projectId,
@@ -317,11 +316,21 @@ public class NodeFacade {
         int count = 0;
         for (Node node : nodes) {
             Meeting meeting = meetingByNodeId.get(node.getId());
-            if (meeting == null) {
+            boolean hasSummary = meeting != null;
+            boolean hasNote = node.getNoteContent() != null && !node.getNoteContent().isBlank();
+
+            if (!hasSummary && !hasNote) {
                 continue;
             }
-            sb.append("name: ").append(node.getTitle()).append("\n")
-                    .append("\"").append(meeting.getSummary()).append("\"\n\n");
+
+            sb.append("name: ").append(node.getTitle()).append("\n");
+            if (hasSummary) {
+                sb.append("meeting: \"").append(meeting.getSummary()).append("\"\n");
+            }
+            if (hasNote) {
+                sb.append("note: \"").append(node.getNoteContent()).append("\"\n");
+            }
+            sb.append("\n");
             count++;
         }
 

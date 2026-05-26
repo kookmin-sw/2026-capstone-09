@@ -14,6 +14,8 @@ public record AnalyzeDraggedNodesResponse(
         ActionItemsAnalysisItem actionItemsAnalysis,
         @Schema(description = "회의 내용 기반 AI 발전 아이디어 제안 (마크다운)")
         String developmentIdeas,
+        @Schema(description = "노트 내용 기반 AI 요약")
+        String notesSummary,
         @Schema(description = "회의 관계 시각화 Mermaid 코드")
         String mermaidCode
 ) {
@@ -25,6 +27,7 @@ public record AnalyzeDraggedNodesResponse(
                         .toList(),
                 ActionItemsAnalysisItem.from(result.actionItemsAnalysis()),
                 result.developmentIdeas(),
+                result.notesSummary(),
                 result.mermaidCode()
         );
     }
