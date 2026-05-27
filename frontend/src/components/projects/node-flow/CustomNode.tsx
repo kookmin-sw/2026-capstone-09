@@ -33,6 +33,7 @@ function CustomFlowNodeComponent({ id, data, selected }: NodeProps<CustomNodeDat
     projectId: data.projectId,
     nodeTitle: data.title ?? undefined,
     nodeNumber,
+    isMeetingEnded: data.isMeetingEnded,
     onBeforeAction: () => {
       if (data.nodeId !== undefined) data.onSelectNode?.(data.nodeId);
     },

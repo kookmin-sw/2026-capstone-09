@@ -1813,6 +1813,11 @@ export interface NodeItem {
    */
   hasMeeting?: boolean;
   /**
+   * 회의 종료 여부 (회의가 없는 경우 false)
+   * @example false
+   */
+  isMeetingEnded?: boolean;
+  /**
    * 하위 노드 ID 목록
    * @example [110,111]
    */
@@ -2632,14 +2637,7 @@ export interface NotificationSummaryResponse {
    * 알림 유형
    * @example "MEETING_CREATED"
    */
-  type?:
-    | "MEETING_CREATED"
-    | "MEETING_INVITE"
-    | "MEETING_REMINDER"
-    | "MEETING_ENDED"
-    | "MEMBER_INVITE"
-    | "NODE_ASSIGNED"
-    | "NODE_UPDATED";
+  type?: "MEETING_INVITE" | "MEETING_REMINDER" | "NODE_ASSIGNED";
   /**
    * 알림 제목
    * @example "새 회의"

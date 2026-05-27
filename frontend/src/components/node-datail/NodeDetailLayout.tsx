@@ -87,6 +87,7 @@ export function NodeDetailLayout({
     projectId,
     nodeTitle: nodeDetail?.title,
     nodeNumber: nodeDetail?.number,
+    isMeetingEnded: nodeDetail?.meeting?.status === 'ENDED',
     onDeleteSuccess,
   });
 

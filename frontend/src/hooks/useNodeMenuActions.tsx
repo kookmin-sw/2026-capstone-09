@@ -211,6 +211,7 @@ interface NodeMenuActionsOptions {
   projectId: number;
   nodeTitle?: string;
   nodeNumber?: number | string;
+  isMeetingEnded?: boolean;
   onBeforeAction?: () => void;
   onDeleteSuccess?: () => void;
 }
@@ -220,6 +221,7 @@ export function useNodeMenuActions({
   projectId,
   nodeTitle = '',
   nodeNumber,
+  isMeetingEnded,
   onBeforeAction,
   onDeleteSuccess,
 }: NodeMenuActionsOptions) {
@@ -250,15 +252,17 @@ export function useNodeMenuActions({
         ),
       });
     },
-    onEditMeeting: () => {
-      before();
-      openModal({
-        closeOnBackdrop: true,
-        content: (
-          <ConnectedMeetingEditModal projectId={projectId} nodeId={nodeId} onClose={closeModal} />
-        ),
-      });
-    },
+    ...(!isMeetingEnded && {
+      onEditMeeting: () => {
+        before();
+        openModal({
+          closeOnBackdrop: true,
+          content: (
+            <ConnectedMeetingEditModal projectId={projectId} nodeId={nodeId} onClose={closeModal} />
+          ),
+        });
+      },
+    }),
     onDeleteMeeting: () => {
       before();
       openModal({

@@ -31,6 +31,7 @@ interface ListCardProps {
   assignees?: ListCardAssignee[];
   isMainNode?: boolean;
   hasMeeting?: boolean;
+  isMeetingEnded?: boolean;
   onDoubleClick?: () => void;
 }
 
@@ -45,6 +46,7 @@ export function ListCard({
   assignees = [],
   isMainNode = false,
   hasMeeting = false,
+  isMeetingEnded = false,
   onDoubleClick,
 }: ListCardProps) {
   const { visibleTags, remainingTagsCount } = getVisibleTags(tags, 8);
@@ -55,7 +57,7 @@ export function ListCard({
       ? 'sub-with-meeting'
       : 'sub-without-meeting';
 
-  const menuActions = useNodeMenuActions({ nodeId, projectId, nodeTitle: title, nodeNumber });
+  const menuActions = useNodeMenuActions({ nodeId, projectId, nodeTitle: title, nodeNumber, isMeetingEnded });
 
   return (
     <div
