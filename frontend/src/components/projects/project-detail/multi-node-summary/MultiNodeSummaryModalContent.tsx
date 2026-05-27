@@ -8,6 +8,7 @@ import { buildMermaidCode, parseDevelopmentIdeas } from '@/utils/mermaid';
 import { ActionItemsSection } from './ActionItemsSection';
 import { DevelopmentIdeasSection } from './DevelopmentIdeasSection';
 import { MeetingRelationshipsSection } from './MeetingRelationshipsSection';
+import { NotesSummarySection } from './NotesSummarySection';
 import { ReferenceNodesSection } from './ReferenceNodesSection';
 import { RelationDiagramSection } from './RelationDiagramSection';
 import type { MultiNodeSummaryNode, MultiNodeSummaryResult } from './types';
@@ -84,6 +85,7 @@ export const MultiNodeSummaryModalContent = ({
           className="custom-scrollbar flex max-h-150 w-full flex-col gap-6 overflow-y-auto pr-2"
         >
           <ReferenceNodesSection nodes={nodes} />
+          <NotesSummarySection summary={result.notesSummary} />
           <ActionItemsSection analysis={result.actionItemsAnalysis} />
           <MeetingRelationshipsSection relationships={result.meetingRelationships} />
           <DevelopmentIdeasSection ideas={ideas} />

@@ -6,7 +6,7 @@ import { ContentBadge, Tab, TabList, TabListItem, TabPanel, Typography } from '@
 import { IconDocumentText, IconFire, IconPersons, IconTag } from '@wanteddev/wds-icon';
 import { useEffect } from 'react';
 
-import { GetNodeResponse } from '@/api/Api';
+import { GetFlowchartResponse, GetNodeResponse } from '@/api/Api';
 import { GoogleMeetIcon } from '@/assets/svgs/GoogleMeetIcon';
 import { Loading } from '@/components/commons/loading/Loading';
 import { NodeStatusType } from '@/constants/nodeStatus';
@@ -77,6 +77,9 @@ export function NodeDetailLayout({
 
   const handleDescriptionUpdate = (description: string) => {
     updateCache((prev) => ({ ...prev, description }));
+    queryClient.setQueryData<GetFlowchartResponse>(nodeKeys.flowchart(projectId), (old) =>
+      old ? { ...old, nodes: old.nodes?.map((n) => (n.nodeId === nodeId ? { ...n, description } : n)) } : old,
+    );
   };
 
   const menuActions = useNodeMenuActions({

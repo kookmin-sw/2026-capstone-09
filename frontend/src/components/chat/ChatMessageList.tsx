@@ -74,7 +74,6 @@ export function ChatMessageList({ messages, isLoading }: ChatMessageListProps) {
               key={message.id}
               role={message.role}
               content={message.content}
-              timestamp={message.timestamp}
               shouldAnimate={message.shouldAnimate}
             />
           ))}

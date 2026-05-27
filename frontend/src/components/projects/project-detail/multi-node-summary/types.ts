@@ -23,5 +23,6 @@ export interface MultiNodeSummaryResult {
   meetingRelationships?: readonly MeetingRelationship[];
   actionItemsAnalysis?: ActionItemsAnalysis;
   developmentIdeas?: string;
+  notesSummary?: string;
   mermaidCode?: string;
 }

@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { privateApi } from '@/api';
 import { memberKeys } from './keys/memberKeys';
+import { nodeKeys } from './keys/nodeKeys';
 
 export function useProjectMembersQuery(projectId: number) {
   return useQuery({
@@ -15,16 +16,24 @@ export function useProjectMembersQuery(projectId: number) {
 }
 
 export function useAddAssigneeMutation(projectId: number, nodeId: number) {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (userId: number) =>
       privateApi.nodeAssignee.createAssignee(projectId, nodeId, { userId }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: nodeKeys.detail(projectId, nodeId) });
+    },
   });
 }
 
 export function useRemoveAssigneeMutation(projectId: number, nodeId: number) {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (assigneeId: number) =>
       privateApi.nodeAssignee.deleteAssignee(projectId, nodeId, assigneeId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: nodeKeys.detail(projectId, nodeId) });
+    },
   });
 }
 

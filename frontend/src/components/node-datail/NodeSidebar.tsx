@@ -34,6 +34,7 @@ export function NodeSidebar({ nodeId, projectId, onClose }: NodeSidebarProps) {
 
   useEffect(() => {
     if (nodeId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsClosing(false);
       sessionStorage.setItem(SESSION_KEY, nodeId.toString());
       setSidebarState(true);
@@ -73,6 +74,7 @@ export function NodeSidebar({ nodeId, projectId, onClose }: NodeSidebarProps) {
         className={`fixed top-0 right-0 z-90 flex h-full w-2/5 flex-col border-l border-white bg-white ${isClosing ? 'animate-slide-out' : 'animate-slide-in'}`}
         onClick={(e) => e.stopPropagation()}
         onAnimationEnd={handleAnimationEnd}
+        data-node-sidebar="true"
       >
         {/* TODO : 전체 페이지의 경우 페이지 닫는 아이콘으로 변경 필요 */}
         {/* TODO : 사이드바 닫는 아이콘 필요 */}

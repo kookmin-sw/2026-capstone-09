@@ -23,7 +23,7 @@ interface ChatListItemProps {
   onSelect: (chatId: number | null) => void;
   onHoverChange: (chatId: number | null) => void;
   onMenuOpenChange: (chatId: number | null) => void;
-  onCurrentChatClear: () => void;
+  onCurrentChatClear: (deletedChatSessionId?: number) => void;
 }
 
 export function ChatListItem({
@@ -96,13 +96,22 @@ export function ChatListItem({
               },
               {
                 onSuccess: async () => {
-                  if (selectedChatId === chat.chatSessionId) {
-                    onSelect(null);
-                  }
-                  if (currentChatSessionId === chat.chatSessionId) {
-                    onCurrentChatClear();
+                  const deletedChatSessionId = chat.chatSessionId || 0;
+
+                  // 삭제된 채팅의 detail 캐시 제거
+                  queryClient.removeQueries({
+                    queryKey: chatKeys.detail(projectId, deletedChatSessionId),
+                  });
+
+                  // 삭제한 채팅이 현재 보고 있는 채팅이면 상태 초기화
+                  if (
+                    deletedChatSessionId === selectedChatId ||
+                    deletedChatSessionId === currentChatSessionId
+                  ) {
+                    onCurrentChatClear(deletedChatSessionId);
                   }
 
+                  // 목록 새로고침
                   await queryClient.refetchQueries({
                     queryKey: chatKeys.lists(),
                     exact: false,
