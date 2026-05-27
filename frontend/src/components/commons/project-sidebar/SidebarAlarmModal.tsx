@@ -47,13 +47,9 @@ const NOTIFICATION_TYPE_LABELS: Record<
   NonNullable<NotificationSummaryResponse['type']>,
   string
 > = {
-  MEETING_CREATED: '회의 생성',
   MEETING_INVITE: '회의 초대',
   MEETING_REMINDER: '회의 알림',
-  MEETING_ENDED: '회의 종료',
-  MEMBER_INVITE: '멤버 초대',
   NODE_ASSIGNED: '노드 담당자 배정',
-  NODE_UPDATED: '노드 업데이트',
 };
 
 const formatNotificationTime = (createdAt?: string) => {
