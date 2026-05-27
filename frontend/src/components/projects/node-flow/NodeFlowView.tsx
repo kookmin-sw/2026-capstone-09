@@ -495,7 +495,7 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
                 : undefined
             }
             onAddMeeting={
-              selectedNodeId && !isMultiNodeSelected
+              selectedNodeId && !isMultiNodeSelected && !selectedNodes[0]?.data.isMainNode
                 ? () => {
                     clearSelection();
                     /* TODO: 모달 열기 */
