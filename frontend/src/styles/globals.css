@@ -453,6 +453,13 @@ body {
   font-style: italic;
 }
 
+/* 이미지: 컨테이너 너비에 맞게 */
+.ProseMirror img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 /* 인라인 코드: GitHub 스타일 */
 .ProseMirror code:not(pre > code) {
   background: var(--color-primary-99);

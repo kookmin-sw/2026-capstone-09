@@ -66,7 +66,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
   };
 
   return (
-    <div className="border-line-normal-neutral sticky top-0 z-10 flex flex-wrap items-center gap-y-1 border-b px-3 py-2">
+    <div className="border-line-normal-neutral bg-static-white sticky top-0 z-10 flex w-full flex-wrap items-center gap-y-1 border-b px-3 py-2">
       <Group>
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
