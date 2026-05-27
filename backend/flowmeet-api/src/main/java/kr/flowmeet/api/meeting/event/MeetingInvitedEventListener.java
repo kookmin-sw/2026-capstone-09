@@ -5,10 +5,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 import kr.flowmeet.domain.node.service.NodeService;
 import kr.flowmeet.domain.notification.entity.NotificationSetting;
 import kr.flowmeet.domain.notification.service.NotificationService;
@@ -26,8 +26,8 @@ public class MeetingInvitedEventListener {
     private final NodeService nodeService;
     private final UserService userService;
 
-    @EventListener
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(final MeetingInvitedEvent event) {
         if (event.participantUserIds() == null || event.participantUserIds().isEmpty()) {
             return;

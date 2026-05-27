@@ -3,8 +3,7 @@ package kr.flowmeet.api.node.event;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import kr.flowmeet.domain.node.service.NodeService;
@@ -24,8 +23,8 @@ public class NodeAssignedEventListener {
     private final ProjectService projectService;
     private final NodeService nodeService;
 
+    @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handle(final NodeAssignedEvent event) {
         try {
             notificationSettingService.findOptionalByUserIdAndProjectId(event.assigneeUserId(), event.projectId())
