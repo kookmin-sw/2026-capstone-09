@@ -11,7 +11,7 @@ import {
 } from '@wanteddev/wds-icon';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useParams, usePathname, useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { authStorage } from '@/api/authStorage';
 import { userStorage } from '@/api/userStorage';
@@ -85,19 +85,10 @@ export const ProjectSidebar = ({
   const storedUser = userStorage.get();
 
   // 읽지 않은 알림 개수 — 최초 1회 fetch 후 SSE notification 이벤트의 unreadCount로 갱신.
+  // 수신함을 열면 SidebarAlarmModal이 목록 쿼리 결과로 이 캐시를 직접 동기화한다.
   const { data: unreadCount = 0 } = useUnreadCountQuery();
   // SSE로 새로 수신한 알림 여부 (알림창 열면 초기화)
   const [hasNewSseNotification, setHasNewSseNotification] = useState(false);
-
-  // 알림 리스트 기반 실제 unread 개수로 캐시 동기화.
-  // useCallback으로 참조를 고정해야 SidebarAlarmModal의 fetch effect가 매 렌더마다
-  // 재실행되는 무한 요청 루프를 막을 수 있다.
-  const handleListLoaded = useCallback(
-    (unreadInList: number) => {
-      queryClient.setQueryData(notificationKeys.unreadCount(), unreadInList);
-    },
-    [queryClient],
-  );
 
   useEffect(() => {
     if (!isProjectIdValid || projectId === undefined) return;
@@ -526,7 +517,6 @@ export const ProjectSidebar = ({
             projectId={projectId}
             onClose={() => setIsAlarmModalOpen(false)}
             onNotificationClick={handleNotificationClick}
-            onListLoaded={handleListLoaded}
           />
         )}
       </AnimatePresence>
