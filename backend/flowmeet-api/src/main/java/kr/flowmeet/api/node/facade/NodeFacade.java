@@ -36,6 +36,7 @@ import kr.flowmeet.api.node.dto.response.SearchNodeResponse;
 import kr.flowmeet.domain.common.exception.BusinessException;
 import kr.flowmeet.domain.meeting.entity.Meeting;
 import kr.flowmeet.domain.meeting.entity.MeetingParticipant;
+import kr.flowmeet.domain.meeting.entity.MeetingStatus;
 import kr.flowmeet.domain.meeting.service.MeetingService;
 import kr.flowmeet.domain.node.entity.Edge;
 import kr.flowmeet.domain.node.entity.Node;
@@ -82,14 +83,14 @@ public class NodeFacade {
 
         Map<Long, List<NodeTag>> nodeTagMap = nodeTagService.findAllByNodeIdsAsMap(nodeIds);
         Map<Long, List<NodeAssignee>> assigneeMap = nodeAssigneeService.findAllByNodeIdsAsMap(nodeIds);
-        Set<Long> meetingNodeIds = meetingService.findAllMeetingNodeIds(nodeIds);
+        Map<Long, MeetingStatus> meetingStatusByNodeId = meetingService.findMeetingStatusByNodeIds(nodeIds);
         Map<Long, List<Long>> childIdMap = nodeService.getChildNodeIdMap(nodes);
 
         List<Node> sortedNodes = nodes.stream()
                 .sorted(NODE_NUMBER_ORDER)
                 .toList();
 
-        return GetFlowchartResponse.of(sortedNodes, edges, nodeTagMap, assigneeMap, meetingNodeIds, childIdMap);
+        return GetFlowchartResponse.of(sortedNodes, edges, nodeTagMap, assigneeMap, meetingStatusByNodeId, childIdMap);
     }
 
     public GetNodeResponse getNode(final Long userId, final Long projectId, final Long nodeId) {

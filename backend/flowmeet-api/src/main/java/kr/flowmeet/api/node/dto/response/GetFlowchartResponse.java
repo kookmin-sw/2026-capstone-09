@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import kr.flowmeet.domain.meeting.entity.MeetingStatus;
 import kr.flowmeet.domain.node.entity.Edge;
 import kr.flowmeet.domain.node.entity.Node;
 import kr.flowmeet.domain.node.entity.NodeAssignee;
@@ -24,7 +24,7 @@ public record GetFlowchartResponse(
             final List<Edge> edges,
             final Map<Long, List<NodeTag>> nodeTagMap,
             final Map<Long, List<NodeAssignee>> assigneeMap,
-            final Set<Long> meetingNodeIds,
+            final Map<Long, MeetingStatus> meetingStatusByNodeId,
             final Map<Long, List<Long>> childMap
     ) {
         List<NodeItem> nodeItems = nodes.stream()
@@ -32,7 +32,8 @@ public record GetFlowchartResponse(
                         node,
                         nodeTagMap.getOrDefault(node.getId(), List.of()),
                         assigneeMap.getOrDefault(node.getId(), List.of()),
-                        meetingNodeIds.contains(node.getId()),
+                        meetingStatusByNodeId.containsKey(node.getId()),
+                        meetingStatusByNodeId.get(node.getId()) == MeetingStatus.ENDED,
                         childMap.getOrDefault(node.getId(), List.of())
                 ))
                 .toList();
@@ -66,6 +67,8 @@ public record GetFlowchartResponse(
             List<AssigneeItem> assignees,
             @Schema(description = "연결된 회의 존재 여부", example = "true")
             boolean hasMeeting,
+            @Schema(description = "회의 종료 여부 (회의가 없는 경우 false)", example = "false")
+            boolean isMeetingEnded,
             @Schema(description = "하위 노드 ID 목록", example = "[110, 111]")
             List<Long> childNodeIds,
             @Schema(description = "마지막 수정 시각", example = "2026-04-19T10:15:30")
@@ -77,6 +80,7 @@ public record GetFlowchartResponse(
                 final List<NodeTag> nodeTags,
                 final List<NodeAssignee> nodeAssignees,
                 final boolean hasMeeting,
+                final boolean isMeetingEnded,
                 final List<Long> childNodeIds
         ) {
             return new NodeItem(
@@ -90,6 +94,7 @@ public record GetFlowchartResponse(
                     nodeTags.stream().map(nt -> TagItem.from(nt.getTag())).toList(),
                     nodeAssignees.stream().map(AssigneeItem::from).toList(),
                     hasMeeting,
+                    isMeetingEnded,
                     childNodeIds,
                     node.getUpdatedAt()
             );
