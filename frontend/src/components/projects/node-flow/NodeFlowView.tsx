@@ -505,7 +505,7 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
                 : undefined
             }
             onAddMeeting={
-              selectedNodeId && !isMultiNodeSelected && !selectedNodes[0]?.data.isMainNode
+              selectedNodeId && !isMultiNodeSelected && !selectedNodes[0]?.data.isMainNode && !selectedNodes[0]?.data.hasMeeting
                 ? onCreateMeeting
                 : undefined
             }
