@@ -4,8 +4,21 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { privateApi } from '@/api';
-import { type MultiSelectInputValue, type NodeOption, type UserOption } from '@/components/commons/custom-input/MultiSelectInput';
-import { useStartChat, useSendMessage, useGetAllChatSessions, useGetChatSessionDetail, useGetReferenceNodes, useGetReferenceUsers, useAddChatNode, useRemoveChatNode } from '@/queries/chat';
+import {
+  type MultiSelectInputValue,
+  type NodeOption,
+  type UserOption,
+} from '@/components/commons/custom-input/MultiSelectInput';
+import {
+  useStartChat,
+  useSendMessage,
+  useGetAllChatSessions,
+  useGetChatSessionDetail,
+  useGetReferenceNodes,
+  useGetReferenceUsers,
+  useAddChatNode,
+  useRemoveChatNode,
+} from '@/queries/chat';
 import { chatKeys } from '@/queries/keys/chatKeys';
 import { nodeKeys } from '@/queries/keys/nodeKeys';
 import { ChatHeader } from './ChatHeader';
@@ -99,7 +112,7 @@ export function ChatWindow({ onClose, isNodeSidebarOpen, sidebarWidth }: ChatWin
 
   const chatSessions = chatSessionsData?.data?.content || [];
 
-  // 선택된 채팅 상세 조회 
+  // 선택된 채팅 상세 조회
   const { data: chatDetail } = useGetChatSessionDetail({
     projectId,
     chatSessionId: selectedChatId ?? chatSessionId ?? 0,
@@ -240,7 +253,10 @@ export function ChatWindow({ onClose, isNodeSidebarOpen, sidebarWidth }: ChatWin
               try {
                 const flowchartResponse = await privateApi.node.getFlowchart(projectId);
                 if (flowchartResponse.data.data) {
-                  queryClient.setQueryData(nodeKeys.flowchart(projectId), flowchartResponse.data.data);
+                  queryClient.setQueryData(
+                    nodeKeys.flowchart(projectId),
+                    flowchartResponse.data.data,
+                  );
                 }
               } catch (error) {
                 console.error('Failed to update flowchart:', error);
@@ -260,7 +276,7 @@ export function ChatWindow({ onClose, isNodeSidebarOpen, sidebarWidth }: ChatWin
             };
             setMessages((prev) => [...prev, errorMessage]);
           },
-        }
+        },
       );
     } else {
       // 기존 세션에 메시지 추가
@@ -289,7 +305,10 @@ export function ChatWindow({ onClose, isNodeSidebarOpen, sidebarWidth }: ChatWin
             try {
               const flowchartResponse = await privateApi.node.getFlowchart(projectId);
               if (flowchartResponse.data.data) {
-                queryClient.setQueryData(nodeKeys.flowchart(projectId), flowchartResponse.data.data);
+                queryClient.setQueryData(
+                  nodeKeys.flowchart(projectId),
+                  flowchartResponse.data.data,
+                );
               }
             } catch (error) {
               console.error('Failed to update flowchart:', error);
@@ -298,9 +317,15 @@ export function ChatWindow({ onClose, isNodeSidebarOpen, sidebarWidth }: ChatWin
             // 선택된 채팅의 메시지 목록도 백그라운드에서 조용히 업데이트
             if (currentChatSessionId) {
               try {
-                const chatDetailResponse = await privateApi.chat.getChatSessionDetail(projectId, currentChatSessionId);
+                const chatDetailResponse = await privateApi.chat.getChatSessionDetail(
+                  projectId,
+                  currentChatSessionId,
+                );
                 if (chatDetailResponse.data.data) {
-                  queryClient.setQueryData(chatKeys.detail(projectId, currentChatSessionId), chatDetailResponse.data.data);
+                  queryClient.setQueryData(
+                    chatKeys.detail(projectId, currentChatSessionId),
+                    chatDetailResponse.data.data,
+                  );
                 }
               } catch (error) {
                 console.error('Failed to update chat detail:', error);
@@ -320,7 +345,7 @@ export function ChatWindow({ onClose, isNodeSidebarOpen, sidebarWidth }: ChatWin
             };
             setMessages((prev) => [...prev, errorMessage]);
           },
-        }
+        },
       );
     }
   };
@@ -341,13 +366,13 @@ export function ChatWindow({ onClose, isNodeSidebarOpen, sidebarWidth }: ChatWin
     <>
       <div
         ref={chatWindowRef}
-        className={`fixed bottom-6 z-50 pointer-events-auto ${isSidebarOpen ? 'shadow-normal-small' : ''}`}
+        className={`pointer-events-auto fixed bottom-6 z-50 ${isSidebarOpen ? 'shadow-normal-small' : ''}`}
         style={{
           right: isNodeSidebarOpen ? 24 + sidebarWidth : 24,
           transition: 'right 0.25s ease',
         }}
       >
-        <div className="relative w-96 h-[563px]">
+        <div className="relative h-[563px] w-96">
           <ChatSidebar
             isOpen={isSidebarOpen}
             onClose={() => setIsSidebarOpen(false)}
@@ -372,10 +397,13 @@ export function ChatWindow({ onClose, isNodeSidebarOpen, sidebarWidth }: ChatWin
             }}
           />
 
-          <div className={`relative w-full h-full bg-white flex flex-col transition-all duration-300 ${isSidebarOpen ? 'rounded-r-xl' : 'rounded-xl shadow-normal-small'}`}>
+          <div
+            className={`relative flex h-full w-full flex-col bg-white transition-all duration-300 ${isSidebarOpen ? 'rounded-r-xl' : 'shadow-normal-small rounded-xl'}`}
+          >
             <ChatHeader
               isSidebarOpen={isSidebarOpen}
               onOpenSidebar={() => setIsSidebarOpen(true)}
+              onClose={onClose}
             />
 
             <ChatMessageList
@@ -389,13 +417,17 @@ export function ChatWindow({ onClose, isNodeSidebarOpen, sidebarWidth }: ChatWin
                 const addedNodes = newValue.mentions.filter(
                   (mention) =>
                     mention.type === 'node' &&
-                    !inputValue.mentions.some((prev) => prev.id === mention.id && prev.type === 'node')
+                    !inputValue.mentions.some(
+                      (prev) => prev.id === mention.id && prev.type === 'node',
+                    ),
                 );
 
                 const removedNodes = inputValue.mentions.filter(
                   (mention) =>
                     mention.type === 'node' &&
-                    !newValue.mentions.some((next) => next.id === mention.id && next.type === 'node')
+                    !newValue.mentions.some(
+                      (next) => next.id === mention.id && next.type === 'node',
+                    ),
                 );
 
                 if (currentChatSessionId) {

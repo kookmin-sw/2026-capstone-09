@@ -15,6 +15,11 @@ export interface YjsAwarenessState {
     profileImageUrl: string | null;
     color: string;
     activeNodeId?: number | null;
+    typing?: {
+      field: string;
+      head: number;
+      updatedAt: number;
+    } | null;
   };
 }
 
@@ -111,7 +116,8 @@ function YjsInstance({
     });
   }, [value, currentUser]);
 
-  const ContextProvider = context === 'project' ? ProjectPresenceContext.Provider : YjsContext.Provider;
+  const ContextProvider =
+    context === 'project' ? ProjectPresenceContext.Provider : YjsContext.Provider;
 
   return <ContextProvider value={value}>{children}</ContextProvider>;
 }
@@ -126,9 +132,7 @@ export function useProjectAwarenessUsers(): YjsAwarenessState['user'][] {
   return useAwarenessUsersFromContext(yjsCtx);
 }
 
-function useAwarenessUsersFromContext(
-  yjsCtx: YjsContextValue | null,
-): YjsAwarenessState['user'][] {
+function useAwarenessUsersFromContext(yjsCtx: YjsContextValue | null): YjsAwarenessState['user'][] {
   const [users, setUsers] = useState<YjsAwarenessState['user'][]>([]);
 
   useEffect(() => {
@@ -205,9 +209,7 @@ export function useSetActiveAwarenessNode(nodeId?: number | null) {
     const { provider } = yjsCtx;
 
     const setActiveNodeId = (activeNodeId: number | null) => {
-      const localState = provider.awareness.getLocalState() as
-        | Partial<YjsAwarenessState>
-        | null;
+      const localState = provider.awareness.getLocalState() as Partial<YjsAwarenessState> | null;
       const user = localState?.user;
       if (!user) return;
 
@@ -219,9 +221,7 @@ export function useSetActiveAwarenessNode(nodeId?: number | null) {
 
     setActiveNodeId(nodeId ?? null);
     return () => {
-      const localState = provider.awareness.getLocalState() as
-        | Partial<YjsAwarenessState>
-        | null;
+      const localState = provider.awareness.getLocalState() as Partial<YjsAwarenessState> | null;
       if (localState?.user?.activeNodeId === nodeId) {
         setActiveNodeId(null);
       }
