@@ -25,6 +25,7 @@ dependencyManagement {
 
 dependencies {
     implementation 'org.springframework.ai:spring-ai-starter-mcp-server-webmvc'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
