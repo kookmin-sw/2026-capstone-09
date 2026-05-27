@@ -44,7 +44,7 @@ const ROLE_LABEL_MAP: Record<ProjectMemberRole, string> = {
   VIEWER: '뷰어',
 };
 
-const ASSIGNABLE_ROLES: readonly ProjectMemberRole[] = ['MEMBER', 'VIEWER'];
+const ASSIGNABLE_ROLES: readonly ProjectMemberRole[] = ['OWNER', 'MEMBER', 'VIEWER'];
 
 interface MembersSettingsPanelProps {
   projectId: number;
@@ -87,8 +87,8 @@ export const MembersSettingsPanel = ({ projectId, myRole }: MembersSettingsPanel
       role: m.role as ProjectMemberRole,
     }));
 
-  const isViewer = myRole === 'VIEWER';
   const isOwner = myRole === 'OWNER';
+  const isMember = myRole === 'MEMBER';
 
   const handleEmailKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key !== 'Enter') return;
@@ -234,8 +234,10 @@ export const MembersSettingsPanel = ({ projectId, myRole }: MembersSettingsPanel
         <ul className="custom-scrollbar flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto pr-2">
           {members.map((member) => {
             const rowIsOwner = member.role === 'OWNER';
-            const showRoleDropdown = !isViewer && !rowIsOwner;
-            const showDeleteButton = isOwner && !rowIsOwner;
+            // 관리자(OWNER): 모든 멤버 권한 변경 가능 / 멤버(MEMBER): 관리자 행 제외하고 변경 가능 / 뷰어: 변경 불가
+            const showRoleDropdown = isOwner || (isMember && !rowIsOwner);
+            // 관리자(OWNER)는 관리자 행을 포함한 모든 멤버를 삭제할 수 있다.
+            const showDeleteButton = isOwner;
             return (
               <li
                 key={member.memberId}

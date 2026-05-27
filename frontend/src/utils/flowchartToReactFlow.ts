@@ -8,6 +8,15 @@ export interface FlowchartNode extends Node {
 }
 
 /**
+ * 노드를 number 필드 기준으로 정렬하는 헬퍼 함수
+ */
+function sortByNumber(a: NodeItem, b: NodeItem): number {
+  const numA = a.number ?? '';
+  const numB = b.number ?? '';
+  return numA.localeCompare(numB, undefined, { numeric: true });
+}
+
+/**
  * API 응답(GetFlowchartResponse)을 React Flow 형식으로 변환
  */
 export function convertToReactFlow(flowchart: GetFlowchartResponse | null): {
@@ -34,8 +43,10 @@ export function convertToReactFlow(flowchart: GetFlowchartResponse | null): {
     }
   });
 
-  // 메인 노드 찾기
-  const mainNodes = flowchart.nodes.filter((node) => !node.parentId);
+  // 메인 노드 찾기 및 정렬
+  const mainNodes = flowchart.nodes
+    .filter((node) => !node.parentId)
+    .sort(sortByNumber);
 
   // 각 메인 노드별 depth 1 자식들의 Y 위치
   const depth1YPositions = new Map<number, number>();
@@ -130,7 +141,15 @@ export function convertToReactFlow(flowchart: GetFlowchartResponse | null): {
     });
 
     if (node.childNodeIds && node.childNodeIds.length > 0) {
-      node.childNodeIds.forEach((childId, childIndex) => {
+      // 자식 노드를 number 필드 기준으로 정렬
+      const sortedChildIds = [...node.childNodeIds].sort((a, b) => {
+        const nodeA = nodeMap.get(a);
+        const nodeB = nodeMap.get(b);
+        if (!nodeA || !nodeB) return 0;
+        return sortByNumber(nodeA, nodeB);
+      });
+
+      sortedChildIds.forEach((childId, childIndex) => {
         const childNode = nodeMap.get(childId);
         if (childNode) {
           const isParentMain = depth === 0;
@@ -195,23 +214,14 @@ export function convertToReactFlow(flowchart: GetFlowchartResponse | null): {
   if (flowchart.edges) {
     flowchart.edges.forEach((edge) => {
       if (edge.startNodeId && edge.endNodeId) {
-        const startNode = nodeMap.get(edge.startNodeId);
-        const endNode = nodeMap.get(edge.endNodeId);
-
-        // 메인 노드가 포함되어 있는지 확인
-        const isStartMain = startNode && !startNode.parentId;
-        const isEndMain = endNode && !endNode.parentId;
-        const hasMainNode = isStartMain || isEndMain;
-
         edges.push({
           id: `edge-${edge.edgeId}`,
           source: String(edge.startNodeId),
           target: String(edge.endNodeId),
           type: 'reference',
-          // 메인 노드 포함: ref handle 사용 (왼쪽→오른쪽)
-          // 서브 노드끼리: 일반 handle 사용 (오른쪽→왼쪽)
-          sourceHandle: hasMainNode ? 'ref-source' : 'source',
-          targetHandle: hasMainNode ? 'ref-target' : 'target',
+          // 참조 관계: 시작 노드 오른쪽 → 끝 노드 왼쪽
+          sourceHandle: 'source',
+          targetHandle: 'target',
           data: { edgeData: edge },
         });
       }

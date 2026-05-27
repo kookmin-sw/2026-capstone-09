@@ -6,12 +6,7 @@ import { FloatingChatButton } from './FloatingChatButton';
 
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
-
-  const [isNodeSidebarOpen, setIsNodeSidebarOpen] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return !!sessionStorage.getItem('node_sidebar_open');
-  });
-
+  const [isNodeSidebarOpen, setIsNodeSidebarOpen] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     if (typeof window === 'undefined') return 0;
     return window.innerWidth * 0.4;

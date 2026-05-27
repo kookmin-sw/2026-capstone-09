@@ -49,13 +49,13 @@ export function NodeSidebar({ nodeId, projectId, onClose }: NodeSidebarProps) {
   useSetActiveAwarenessNode(awarenessNodeId);
 
   const handleClose = useCallback(() => {
+    setSidebarState(false);
     setIsClosing(true);
   }, []);
 
   const handleAnimationEnd = useCallback(() => {
     if (isClosing) {
       sessionStorage.removeItem(SESSION_KEY);
-      setSidebarState(false);
       onClose();
     }
   }, [isClosing, onClose]);

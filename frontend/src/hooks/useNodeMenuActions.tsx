@@ -1,5 +1,6 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
 import { Loading } from '@/components/commons/loading/Loading';
@@ -9,13 +10,22 @@ import { MeetingEditModalContent } from '@/components/projects/node-flow/Meeting
 import { MeetingDeleteConfirmContent } from '@/components/projects/project-detail/meeting-delete/MeetingDeleteConfirmContent';
 import { NodeDeleteConfirmContent } from '@/components/projects/project-detail/node-delete/NodeDeleteConfirmContent';
 import { ReferenceNodeModalContent } from '@/components/projects/project-detail/reference-node/ReferenceNodeModalContent';
-import { useCreateEdgeMutation, useDeleteEdgeMutation, useLinkedNodesQuery, useNodeListQuery } from '@/queries/edge';
+import {
+  useCreateEdgeMutation,
+  useDeleteEdgeMutation,
+  useLinkedNodesQuery,
+  useNodeListQuery,
+} from '@/queries/edge';
+import { edgeKeys } from '@/queries/keys/edgeKeys';
+import { nodeKeys } from '@/queries/keys/nodeKeys';
 import { useCreateMeetingMutation, useUpdateMeetingMutation } from '@/queries/meeting';
 import { useDeleteMeetingMutation } from '@/queries/meetingDelete';
 import { useProjectMembersQuery } from '@/queries/member';
 import { useNodeDetailQuery } from '@/queries/node';
 import { useDeleteNodeMutation } from '@/queries/nodeDelete';
 import { useErrorToast } from './useErrorToast';
+
+const REFERENCE_EDGE_CREATED_EVENT = 'flowmeet:reference-edge-created';
 
 // 리스트를 받아야 하기 때문에 모달이 열릴 때만 마운트되어 쿼리를 실행
 function ConnectedMeetingCreateModal({
@@ -110,11 +120,7 @@ function ConnectedMeetingEditModal({
   const meeting = nodeDetail?.meeting;
   const meetingId = meeting?.meetingId;
 
-  const { mutate: updateMeeting } = useUpdateMeetingMutation(
-    projectId,
-    nodeId,
-    meetingId ?? 0,
-  );
+  const { mutate: updateMeeting } = useUpdateMeetingMutation(projectId, nodeId, meetingId ?? 0);
 
   useEffect(() => {
     if (!isLoading && !meetingId) onClose();
@@ -166,6 +172,7 @@ function ConnectedReferenceNodeModal({
   const { data: nodeList = [] } = useNodeListQuery(projectId);
   const { mutate: createEdge } = useCreateEdgeMutation(projectId);
   const { mutate: deleteEdge } = useDeleteEdgeMutation(projectId);
+  const queryClient = useQueryClient();
   const showErrorToast = useErrorToast();
 
   const nodeOptions = nodeList
@@ -180,8 +187,13 @@ function ConnectedReferenceNodeModal({
       currentNode={{ number: nodeNumber, title: nodeTitle }}
       onClose={onClose}
       onCreate={(payload) => {
+        window.dispatchEvent(new Event(REFERENCE_EDGE_CREATED_EVENT));
         createEdge(payload, {
-          onSuccess: onClose,
+          onSuccess: () => {
+            void queryClient.invalidateQueries({ queryKey: nodeKeys.flowchart(projectId) });
+            void queryClient.invalidateQueries({ queryKey: edgeKeys.linked(projectId, nodeId) });
+            onClose();
+          },
           onError: (err) => showErrorToast(err, '참조 노드 연결에 실패했어요.'),
         });
       }}

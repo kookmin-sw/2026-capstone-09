@@ -36,6 +36,7 @@ import { useFlowchartQuery } from '@/queries/node';
 import { useAnalyzeDraggedNodesMutation } from '@/queries/nodeAnalysis';
 import { convertToReactFlow } from '@/utils/flowchartToReactFlow';
 import { CustomNode } from './CustomNode';
+import { EdgeHoverProvider } from './EdgeHoverContext';
 import { NodeButton } from './NodeButton';
 import { ReferenceEdge } from './ReferenceEdge';
 
@@ -52,6 +53,7 @@ const SUMMARY_LOADING_MESSAGES = [
 ];
 
 const SUMMARY_MESSAGE_INTERVAL_MS = 3000;
+const REFERENCE_EDGE_CREATED_EVENT = 'flowmeet:reference-edge-created';
 
 const nodeTypes: NodeTypes = {
   mainNode: CustomNode,
@@ -87,9 +89,7 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
       return;
     }
     const interval = setInterval(() => {
-      setSummaryMessageIndex((prev) =>
-        Math.min(prev + 1, SUMMARY_LOADING_MESSAGES.length - 1),
-      );
+      setSummaryMessageIndex((prev) => Math.min(prev + 1, SUMMARY_LOADING_MESSAGES.length - 1));
     }, SUMMARY_MESSAGE_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [isSummaryPending]);
@@ -147,6 +147,15 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
   useEffect(() => {
     localStorage.setItem('showDashedLines', JSON.stringify(showDashedLines));
   }, [showDashedLines]);
+
+  useEffect(() => {
+    const handleReferenceEdgeCreated = () => setShowDashedLines(true);
+
+    window.addEventListener(REFERENCE_EDGE_CREATED_EVENT, handleReferenceEdgeCreated);
+    return () => {
+      window.removeEventListener(REFERENCE_EDGE_CREATED_EVENT, handleReferenceEdgeCreated);
+    };
+  }, []);
 
   // 뷰포트 위치 복원 (refetch 후에도 마지막 위치 유지)
   useEffect(() => {
@@ -283,12 +292,12 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
               y: topPadding - newFlowNode.position.y * currentViewport.zoom,
               zoom: currentViewport.zoom,
             },
-            { duration: 800 }
+            { duration: 800 },
           );
         }
       }, 100);
     },
-    [setNodes, setEdges, setSelectedNodeId, getViewport, setViewport]
+    [setNodes, setEdges, setSelectedNodeId, getViewport, setViewport],
   );
 
   // 서브 노드 생성
@@ -325,7 +334,7 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
         setIsCreating(false);
       }
     },
-    [flowChart, updateFlowAndMoveToNode, projectId, isCreating, queryClient, clearSelection]
+    [flowChart, updateFlowAndMoveToNode, projectId, isCreating, queryClient, clearSelection],
   );
 
   // 메인 노드 생성
@@ -504,13 +513,13 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
 
       {isSummaryPending && (
         <div
-          className="fixed inset-0 z-9998 flex items-center justify-center bg-material-dimmer"
+          className="bg-material-dimmer fixed inset-0 z-9998 flex items-center justify-center"
           role="status"
           aria-live="polite"
         >
           <div className="flex flex-col items-center gap-4">
             <div
-              className="h-12 w-12 animate-spin rounded-full border-4 border-primary-90 border-t-primary-40"
+              className="border-primary-90 border-t-primary-40 h-12 w-12 animate-spin rounded-full border-4"
               aria-label="AI 요약 생성 중"
             />
             <span className="text-body-1 text-static-white font-medium">
@@ -520,7 +529,11 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
         </div>
       )}
 
-      <NodeSidebar projectId={projectId} nodeId={sidebarNodeId} onClose={() => setSidebarNodeId(null)} />
+      <NodeSidebar
+        projectId={projectId}
+        nodeId={sidebarNodeId}
+        onClose={() => setSidebarNodeId(null)}
+      />
     </div>
   );
 }
@@ -528,7 +541,9 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
 export function NodeFlowView({ projectId }: NodeFlowViewProps) {
   return (
     <ReactFlowProvider>
-      <NodeFlowContent projectId={projectId} />
+      <EdgeHoverProvider>
+        <NodeFlowContent projectId={projectId} />
+      </EdgeHoverProvider>
     </ReactFlowProvider>
   );
 }
