@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCP Server — k6 Performance Report</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg:       #0f172a;
+    --surface:  #1e293b;
+    --border:   #334155;
+    --muted:    #64748b;
+    --text:     #f1f5f9;
+    --subtext:  #94a3b8;
+    --blue:     #3b82f6;
+    --green:    #22c55e;
+    --red:      #ef4444;
+    --yellow:   #f59e0b;
+    --purple:   #8b5cf6;
+    --cyan:     #06b6d4;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+  }
+
+  /* ── Header ─────────────────────────────────────── */
+  header {
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  header h1 { font-size: 18px; font-weight: 600; }
+  header span { color: var(--muted); font-size: 13px; }
+  .badge {
+    background: var(--blue);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  /* ── Drop zone ───────────────────────────────────── */
+  #drop-zone {
+    margin: 32px auto;
+    max-width: 600px;
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 48px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+  }
+  #drop-zone:hover, #drop-zone.over {
+    border-color: var(--blue);
+    background: rgba(59,130,246,.06);
+  }
+  #drop-zone .icon { font-size: 40px; margin-bottom: 12px; }
+  #drop-zone p { color: var(--subtext); line-height: 1.8; }
+  #drop-zone strong { color: var(--text); }
+  #file-input { display: none; }
+
+  /* ── Tabs ────────────────────────────────────────── */
+  #tabs-bar {
+    display: none;
+    padding: 0 32px;
+    border-bottom: 1px solid var(--border);
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    color: var(--subtext);
+    padding: 10px 18px;
+    cursor: pointer;
+    font-size: 13px;
+    border-bottom: 2px solid transparent;
+    transition: color .15s, border-color .15s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+  .tab-btn .tab-close {
+    margin-left: 6px;
+    opacity: .5;
+    font-size: 11px;
+  }
+  .tab-btn .tab-close:hover { opacity: 1; }
+
+  /* ── Report panel ────────────────────────────────── */
+  .report-panel { display: none; padding: 28px 32px; }
+  .report-panel.active { display: block; }
+
+  /* ── Summary cards ───────────────────────────────── */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+  .card-label { color: var(--subtext); font-size: 12px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: .05em; }
+  .card-value { font-size: 26px; font-weight: 700; line-height: 1; }
+  .card-sub { color: var(--muted); font-size: 11px; margin-top: 4px; }
+  .card.ok   .card-value { color: var(--green); }
+  .card.warn .card-value { color: var(--yellow); }
+  .card.bad  .card-value { color: var(--red); }
+  .card.neu  .card-value { color: var(--blue); }
+
+  /* ── Chart grid ──────────────────────────────────── */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .chart-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 900px) {
+    .chart-grid, .chart-grid.cols-3 { grid-template-columns: 1fr; }
+  }
+  .chart-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .chart-box h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--subtext);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin-bottom: 14px;
+  }
+  .chart-box canvas { max-height: 220px; }
+
+  /* ── Checks table ────────────────────────────────── */
+  .checks-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .checks-box h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--subtext);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin-bottom: 14px;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 8px 12px; font-size: 13px; }
+  th { color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: rgba(255,255,255,.03); }
+  .pass { color: var(--green); }
+  .fail { color: var(--red); }
+  .rate-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .bar-track {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width .3s;
+  }
+
+  /* ── Error banner ────────────────────────────────── */
+  .error-banner {
+    background: rgba(239,68,68,.1);
+    border: 1px solid rgba(239,68,68,.3);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--red);
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+
+  /* ── Empty state ─────────────────────────────────── */
+  #empty { text-align: center; padding: 80px 20px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>MCP Server</h1>
+  <span>k6 Performance Report</span>
+  <div style="flex:1"></div>
+  <span class="badge">k6</span>
+</header>
+
+<!-- Drop Zone -->
+<div id="drop-zone" onclick="document.getElementById('file-input').click()">
+  <div class="icon">📂</div>
+  <p>
+    <strong>결과 파일을 드래그하거나 클릭하여 선택하세요</strong><br>
+    <code>results/load.json</code>, <code>results/stress.json</code> 등<br>
+    여러 파일을 동시에 올릴 수 있습니다
+  </p>
+</div>
+<input type="file" id="file-input" accept=".json" multiple>
+
+<!-- Tabs -->
+<div id="tabs-bar" style="display:none; display:flex"></div>
+
+<!-- Panels container -->
+<div id="panels"></div>
+
+<script>
+// ── Chart.js 전역 기본값 ─────────────────────────────────────
+Chart.defaults.color = '#94a3b8';
+Chart.defaults.borderColor = '#334155';
+Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+Chart.defaults.font.size = 12;
+
+const PALETTE = ['#3b82f6','#22c55e','#f59e0b','#8b5cf6','#06b6d4','#f97316','#ec4899','#10b981'];
+
+// ── 등록된 차트 인스턴스 (패널 제거 시 destroy) ───────────────
+const chartRegistry = {};
+
+// ── NDJSON 파싱 ───────────────────────────────────────────────
+function parseNDJSON(text) {
+  const lines = text.split('\n').filter(l => l.trim());
+  const result = [];
+  for (const line of lines) {
+    try { result.push(JSON.parse(line)); } catch (_) {}
+  }
+  return result;
+}
+
+// ── 시간 포맷 (상대 시간 MM:SS) ──────────────────────────────
+function relLabel(ms, startMs) {
+  const s = Math.round((ms - startMs) / 1000);
+  const m = Math.floor(s / 60);
+  return `+${m}:${String(s % 60).padStart(2, '0')}`;
+}
+
+// ── 백분위 ────────────────────────────────────────────────────
+function pct(arr, p) {
+  if (!arr.length) return 0;
+  const s = [...arr].sort((a, b) => a - b);
+  return s[Math.max(0, Math.ceil(p / 100 * s.length) - 1)];
+}
+
+// ── 시계열 버킷 ───────────────────────────────────────────────
+function bucketSeries(points, metricName, tagFilter, bucketMs, startMs) {
+  const filtered = points.filter(p =>
+    p.type === 'Point' && p.metric === metricName &&
+    (!tagFilter || Object.entries(tagFilter).every(([k, v]) => p.data.tags?.[k] === v))
+  );
+  if (!filtered.length) return null;
+
+  const buckets = new Map();
+  for (const p of filtered) {
+    const t = new Date(p.data.time).getTime();
+    const key = Math.floor((t - startMs) / bucketMs) * bucketMs + startMs;
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push(p.data.value);
+  }
+  const keys = [...buckets.keys()].sort((a, b) => a - b);
+  return { keys, buckets };
+}
+
+// ── 데이터 처리 ───────────────────────────────────────────────
+function processData(entries) {
+  const points = entries.filter(e => e.type === 'Point');
+  if (!points.length) return null;
+
+  const times = points.map(p => new Date(p.data.time).getTime()).filter(t => !isNaN(t));
+  const startMs = Math.min(...times);
+  const endMs   = Math.max(...times);
+  const durationSec = Math.round((endMs - startMs) / 1000);
+  const BUCKET = Math.max(10000, Math.floor(durationSec / 40) * 1000); // ~40 버킷
+
+  // ── VUs ────────────────────────────────────────────────────
+  const vusBucket = bucketSeries(points, 'vus', null, BUCKET, startMs);
+  const vusSeries = vusBucket
+    ? { labels: vusBucket.keys.map(k => relLabel(k, startMs)),
+        data:   vusBucket.keys.map(k => Math.max(...vusBucket.buckets.get(k))) }
+    : { labels: [], data: [] };
+  const peakVUs = vusSeries.data.length ? Math.max(...vusSeries.data) : 0;
+
+  // ── 응답 시간 ───────────────────────────────────────────────
+  const durBucket = bucketSeries(points, 'http_req_duration', null, BUCKET, startMs);
+  const p50Series = { labels: [], data: [] };
+  const p95Series = { labels: [], data: [] };
+  if (durBucket) {
+    for (const k of durBucket.keys) {
+      const vals = durBucket.buckets.get(k).filter(v => v > 0);
+      p50Series.labels.push(relLabel(k, startMs));
+      p50Series.data.push(vals.length ? Math.round(pct(vals, 50)) : 0);
+      p95Series.data.push(vals.length ? Math.round(pct(vals, 95)) : 0);
+    }
+    p95Series.labels = [...p50Series.labels];
+  }
+  const allDurVals = points
+    .filter(p => p.metric === 'http_req_duration' && p.data.value > 0)
+    .map(p => p.data.value);
+  const globalP95 = allDurVals.length ? Math.round(pct(allDurVals, 95)) : 0;
+  const globalP99 = allDurVals.length ? Math.round(pct(allDurVals, 99)) : 0;
+
+  // ── 처리량(RPS) ────────────────────────────────────────────
+  const rpsBucket = bucketSeries(points, 'http_reqs', null, BUCKET, startMs);
+  const rpsSeries = rpsBucket
+    ? { labels: rpsBucket.keys.map(k => relLabel(k, startMs)),
+        data:   rpsBucket.keys.map(k => +(rpsBucket.buckets.get(k).reduce((a,b)=>a+b,0) / (BUCKET/1000)).toFixed(2)) }
+    : { labels: [], data: [] };
+  const totalReqs = points.filter(p => p.metric === 'http_reqs').reduce((a, p) => a + p.data.value, 0);
+
+  // ── 오류율 ─────────────────────────────────────────────────
+  const errBucket = bucketSeries(points, 'http_req_failed', null, BUCKET, startMs);
+  const errSeries = { labels: [], data: [] };
+  if (errBucket) {
+    for (const k of errBucket.keys) {
+      const vals = errBucket.buckets.get(k);
+      errSeries.labels.push(relLabel(k, startMs));
+      errSeries.data.push(+(vals.reduce((a,b)=>a+b,0) / vals.length * 100).toFixed(1));
+    }
+  }
+  const failPts  = points.filter(p => p.metric === 'http_req_failed');
+  const errorRate = failPts.length
+    ? +(failPts.reduce((a, p) => a + p.data.value, 0) / failPts.length * 100).toFixed(1)
+    : 0;
+
+  // ── Tool별 응답 시간 ────────────────────────────────────────
+  const toolDurPts = points.filter(p => p.metric === 'mcp_tool_duration' && p.data.value > 0);
+  const toolGroups = {};
+  for (const p of toolDurPts) {
+    const t = p.data.tags?.tool || 'unknown';
+    if (!toolGroups[t]) toolGroups[t] = [];
+    toolGroups[t].push(p.data.value);
+  }
+  const toolNames   = Object.keys(toolGroups).sort();
+  const toolAvg     = toolNames.map(t => Math.round(toolGroups[t].reduce((a,b)=>a+b,0)/toolGroups[t].length));
+  const toolP95vals = toolNames.map(t => Math.round(pct(toolGroups[t], 95)));
+
+  // ── Tool별 오류 수 ─────────────────────────────────────────
+  const toolErrPts = points.filter(p => p.metric === 'mcp_tool_errors');
+  const toolErrMap = {};
+  for (const p of toolErrPts) {
+    const t = p.data.tags?.tool || 'unknown';
+    toolErrMap[t] = (toolErrMap[t] || 0) + p.data.value;
+  }
+
+  // ── Checks ─────────────────────────────────────────────────
+  const checkPts = points.filter(p => p.metric === 'checks');
+  const checkMap = {};
+  for (const p of checkPts) {
+    const name = p.data.tags?.check || '?';
+    if (!checkMap[name]) checkMap[name] = { pass: 0, fail: 0 };
+    if (p.data.value === 1) checkMap[name].pass++;
+    else checkMap[name].fail++;
+  }
+
+  return {
+    startMs, endMs, durationSec,
+    peakVUs, totalReqs, errorRate, globalP95, globalP99,
+    vusSeries, p50Series, p95Series, rpsSeries, errSeries,
+    toolNames, toolAvg, toolP95vals, toolErrMap,
+    checkMap,
+  };
+}
+
+// ── 차트 헬퍼 ────────────────────────────────────────────────
+function lineChart(ctx, datasets, labels, yLabel) {
+  return new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: datasets.map((d, i) => ({
+        label: d.label,
+        data: d.data,
+        borderColor: d.color || PALETTE[i],
+        backgroundColor: (d.color || PALETTE[i]) + '22',
+        borderWidth: 2,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        fill: d.fill ?? false,
+        tension: 0.3,
+      })),
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { labels: { boxWidth: 12, padding: 12 } } },
+      scales: {
+        x: { ticks: { maxTicksLimit: 8 } },
+        y: { title: { display: !!yLabel, text: yLabel }, beginAtZero: true },
+      },
+    },
+  });
+}
+
+function barChart(ctx, labels, datasets, horizontal) {
+  return new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: datasets.map((d, i) => ({
+        label: d.label,
+        data: d.data,
+        backgroundColor: (d.color || PALETTE[i]) + 'cc',
+        borderColor:      d.color || PALETTE[i],
+        borderWidth: 1,
+        borderRadius: 4,
+      })),
+    },
+    options: {
+      indexAxis: horizontal ? 'y' : 'x',
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: { legend: { labels: { boxWidth: 12 } } },
+      scales: {
+        x: { beginAtZero: true },
+        y: { beginAtZero: true },
+      },
+    },
+  });
+}
+
+// ── 파일명 → 표시 이름 ───────────────────────────────────────
+function displayName(filename) {
+  const base = filename.replace(/\.json$/i, '');
+  const map = { load: 'Load Test', stress: 'Stress Test', soak: 'Soak Test', spike: 'Spike Test' };
+  for (const [k, v] of Object.entries(map)) {
+    if (base.toLowerCase().includes(k)) return v;
+  }
+  return base;
+}
+
+// ── 패널 렌더링 ───────────────────────────────────────────────
+function renderPanel(id, filename, d) {
+  const panels = document.getElementById('panels');
+
+  const panel = document.createElement('div');
+  panel.id = `panel-${id}`;
+  panel.className = 'report-panel active';
+
+  // 다른 패널 비활성화
+  panels.querySelectorAll('.report-panel').forEach(p => p.classList.remove('active'));
+  panels.appendChild(panel);
+
+  // 오류율 기반 카드 색상
+  const errColor = d.errorRate > 10 ? 'bad' : d.errorRate > 1 ? 'warn' : 'ok';
+  const p95Color = d.globalP95 > 3000 ? 'bad' : d.globalP95 > 1000 ? 'warn' : 'ok';
+
+  const durationStr = `${Math.floor(d.durationSec/60)}분 ${d.durationSec%60}초`;
+
+  // ── 카드 섹션 ────────────────────────────────────────────
+  panel.innerHTML = `
+    <div class="cards">
+      <div class="card neu">
+        <div class="card-label">Total Requests</div>
+        <div class="card-value">${d.totalReqs.toLocaleString()}</div>
+        <div class="card-sub">테스트 전체</div>
+      </div>
+      <div class="card ${errColor}">
+        <div class="card-label">Error Rate</div>
+        <div class="card-value">${d.errorRate}%</div>
+        <div class="card-sub">http_req_failed</div>
+      </div>
+      <div class="card ${p95Color}">
+        <div class="card-label">p95 Response</div>
+        <div class="card-value">${d.globalP95 > 0 ? d.globalP95 + 'ms' : 'N/A'}</div>
+        <div class="card-sub">p99: ${d.globalP99 > 0 ? d.globalP99 + 'ms' : 'N/A'}</div>
+      </div>
+      <div class="card neu">
+        <div class="card-label">Peak VUs</div>
+        <div class="card-value">${d.peakVUs}</div>
+        <div class="card-sub">최대 동시 사용자</div>
+      </div>
+      <div class="card neu">
+        <div class="card-label">Duration</div>
+        <div class="card-value" style="font-size:20px">${durationStr}</div>
+        <div class="card-sub">${new Date(d.startMs).toLocaleTimeString()}</div>
+      </div>
+    </div>
+
+    <!-- 시계열 차트 -->
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h3>VUs / RPS</h3>
+        <canvas id="chart-vus-${id}"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>응답 시간 (ms)</h3>
+        <canvas id="chart-dur-${id}"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>오류율 (%)</h3>
+        <canvas id="chart-err-${id}"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>Tool 응답 시간 (ms)</h3>
+        <canvas id="chart-tool-dur-${id}"></canvas>
+      </div>
+    </div>
+
+    <!-- Tool 오류 + Checks -->
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h3>Tool 오류 횟수</h3>
+        <canvas id="chart-tool-err-${id}"></canvas>
+      </div>
+      <div class="checks-box" style="border:none;padding:0;background:none">
+        <!-- checks는 아래에서 동적 주입 -->
+        <div id="checks-container-${id}"></div>
+      </div>
+    </div>
+  `;
+
+  // ── 차트 그리기 ─────────────────────────────────────────
+
+  // VUs + RPS (축 공유 X, 두 데이터셋)
+  chartRegistry[`vus-${id}`] = lineChart(
+    document.getElementById(`chart-vus-${id}`),
+    [
+      { label: 'VUs',  data: d.vusSeries.data,  color: '#8b5cf6', fill: true },
+      { label: 'RPS',  data: d.rpsSeries.data,  color: '#22c55e' },
+    ],
+    d.vusSeries.labels.length ? d.vusSeries.labels : d.rpsSeries.labels,
+    ''
+  );
+
+  // 응답 시간
+  chartRegistry[`dur-${id}`] = lineChart(
+    document.getElementById(`chart-dur-${id}`),
+    [
+      { label: 'p50', data: d.p50Series.data, color: '#3b82f6' },
+      { label: 'p95', data: d.p95Series.data, color: '#f59e0b' },
+    ],
+    d.p50Series.labels,
+    'ms'
+  );
+
+  // 오류율
+  chartRegistry[`err-${id}`] = lineChart(
+    document.getElementById(`chart-err-${id}`),
+    [{ label: 'Error Rate (%)', data: d.errSeries.data, color: '#ef4444', fill: true }],
+    d.errSeries.labels,
+    '%'
+  );
+
+  // Tool 응답 시간 (가로 bar)
+  if (d.toolNames.length) {
+    chartRegistry[`tool-dur-${id}`] = barChart(
+      document.getElementById(`chart-tool-dur-${id}`),
+      d.toolNames,
+      [
+        { label: 'avg (ms)', data: d.toolAvg,     color: '#3b82f6' },
+        { label: 'p95 (ms)', data: d.toolP95vals, color: '#f59e0b' },
+      ],
+      true
+    );
+  } else {
+    document.getElementById(`chart-tool-dur-${id}`).parentElement.innerHTML =
+      '<h3>Tool 응답 시간 (ms)</h3><p style="color:var(--muted);text-align:center;padding:40px 0">데이터 없음</p>';
+  }
+
+  // Tool 오류 횟수
+  const toolErrNames = Object.keys(d.toolErrMap);
+  if (toolErrNames.length) {
+    chartRegistry[`tool-err-${id}`] = barChart(
+      document.getElementById(`chart-tool-err-${id}`),
+      toolErrNames,
+      [{ label: '오류 횟수', data: toolErrNames.map(t => d.toolErrMap[t]), color: '#ef4444' }],
+      true
+    );
+  } else {
+    document.getElementById(`chart-tool-err-${id}`).parentElement.innerHTML =
+      '<h3>Tool 오류 횟수</h3><p style="color:var(--muted);text-align:center;padding:40px 0">오류 없음 🎉</p>';
+  }
+
+  // Checks 테이블
+  const checksContainer = document.getElementById(`checks-container-${id}`);
+  const checkNames = Object.keys(d.checkMap);
+  if (checkNames.length) {
+    const rows = checkNames.map(name => {
+      const { pass, fail } = d.checkMap[name];
+      const total = pass + fail;
+      const rate  = total ? (pass / total * 100) : 0;
+      const fillColor = rate >= 99 ? '#22c55e' : rate >= 80 ? '#f59e0b' : '#ef4444';
+      return `
+        <tr>
+          <td>${name}</td>
+          <td class="pass">${pass.toLocaleString()}</td>
+          <td class="fail">${fail.toLocaleString()}</td>
+          <td>
+            <div class="rate-bar">
+              <div class="bar-track">
+                <div class="bar-fill" style="width:${rate.toFixed(1)}%;background:${fillColor}"></div>
+              </div>
+              <span style="min-width:40px;color:${fillColor}">${rate.toFixed(0)}%</span>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+
+    checksContainer.innerHTML = `
+      <div class="checks-box">
+        <h3>Checks</h3>
+        <table>
+          <thead><tr><th>Check</th><th class="pass">Pass</th><th class="fail">Fail</th><th>Pass rate</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  } else {
+    checksContainer.innerHTML = '';
+  }
+}
+
+// ── 탭 관리 ──────────────────────────────────────────────────
+let tabCounter = 0;
+const loadedFiles = new Set();
+
+function activateTab(id) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.id === id));
+  document.querySelectorAll('.report-panel').forEach(p => p.classList.toggle('active', p.id === `panel-${id}`));
+}
+
+function removeTab(id) {
+  // 차트 destroy
+  Object.keys(chartRegistry).filter(k => k.endsWith(`-${id}`)).forEach(k => {
+    chartRegistry[k].destroy();
+    delete chartRegistry[k];
+  });
+  document.getElementById(`panel-${id}`)?.remove();
+  document.querySelector(`.tab-btn[data-id="${id}"]`)?.remove();
+
+  const remaining = document.querySelectorAll('.tab-btn');
+  if (remaining.length) {
+    activateTab(remaining[remaining.length - 1].dataset.id);
+  } else {
+    document.getElementById('tabs-bar').style.display = 'none';
+    document.getElementById('drop-zone').style.display = 'block';
+  }
+}
+
+function addTab(filename, data) {
+  const id = String(++tabCounter);
+  const name = displayName(filename);
+
+  const tabsBar = document.getElementById('tabs-bar');
+  tabsBar.style.display = 'flex';
+  document.getElementById('drop-zone').style.display = 'none';
+
+  // 기존 탭 비활성화
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+  const btn = document.createElement('button');
+  btn.className = 'tab-btn active';
+  btn.dataset.id = id;
+  btn.innerHTML = `${name}<span class="tab-close" title="닫기">✕</span>`;
+  btn.addEventListener('click', e => {
+    if (e.target.classList.contains('tab-close')) { removeTab(id); return; }
+    activateTab(id);
+  });
+  tabsBar.appendChild(btn);
+
+  renderPanel(id, filename, data);
+}
+
+// ── 파일 처리 ────────────────────────────────────────────────
+function handleFile(file) {
+  if (!file.name.endsWith('.json')) return;
+  if (loadedFiles.has(file.name + file.size)) return; // 중복 방지
+  loadedFiles.add(file.name + file.size);
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    const entries = parseNDJSON(e.target.result);
+    const data = processData(entries);
+    if (!data) {
+      alert(`${file.name}: 유효한 k6 결과 파일이 아닙니다.`);
+      return;
+    }
+    addTab(file.name, data);
+  };
+  reader.readAsText(file);
+}
+
+// ── 이벤트 바인딩 ────────────────────────────────────────────
+document.getElementById('file-input').addEventListener('change', e => {
+  [...e.target.files].forEach(handleFile);
+  e.target.value = '';
+});
+
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault();
+  dz.classList.remove('over');
+  [...e.dataTransfer.files].forEach(handleFile);
+});
+</script>
+</body>
+</html>
