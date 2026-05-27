@@ -59,7 +59,7 @@ export function DocsSection() {
           >
             <div className="relative aspect-video w-full">
               <iframe
-                src="https://www.youtube.com/embed/eSjDWheBlbU?rel=0"
+                src="https://www.youtube.com/embed/iW_d6qFlhsM?rel=0"
                 title="flowMeet 발표 영상"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
