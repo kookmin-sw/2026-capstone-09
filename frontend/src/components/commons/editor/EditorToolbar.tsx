@@ -4,13 +4,16 @@ import type { Editor } from '@tiptap/react';
 import {
   IconBold,
   IconCode,
+  IconImage,
   IconLineHorizontal,
   IconList,
   IconListOrdered,
   IconQuote,
   IconStrikethrough,
 } from '@wanteddev/wds-icon';
-import type { ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
+
+import { uploadImage } from './uploadImage';
 
 interface ToolbarButtonProps {
   onClick: () => void;
@@ -52,7 +55,15 @@ interface EditorToolbarProps {
 }
 
 export function EditorToolbar({ editor }: EditorToolbarProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   if (!editor) return null;
+
+  const handleImageFile = (file: File) => {
+    uploadImage(file).then((url) => {
+      editor.chain().focus().setImage({ src: url }).run();
+    });
+  };
 
   return (
     <div className="border-line-normal-neutral sticky top-0 z-10 flex flex-wrap items-center gap-y-1 border-b px-3 py-2">
@@ -164,6 +175,26 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
           <IconLineHorizontal width={15} height={15} />
         </ToolbarButton>
       </Group>
+
+      <Divider />
+
+      <Group>
+        <ToolbarButton onClick={() => fileInputRef.current?.click()} active={false} title="이미지">
+          <IconImage width={15} height={15} />
+        </ToolbarButton>
+      </Group>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleImageFile(file);
+          e.target.value = '';
+        }}
+      />
     </div>
   );
 }

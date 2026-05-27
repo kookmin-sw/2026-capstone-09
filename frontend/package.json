@@ -50,6 +50,7 @@
     "@tanstack/react-query-devtools": "^5.100.9",
     "@tiptap/core": "^3.22.4",
     "@tiptap/extension-collaboration": "^3.20.1",
+    "@tiptap/extension-image": "^3.20.1",
     "@tiptap/extensions": "^3.20.4",
     "@tiptap/react": "^3.20.1",
     "@tiptap/starter-kit": "^3.20.1",
