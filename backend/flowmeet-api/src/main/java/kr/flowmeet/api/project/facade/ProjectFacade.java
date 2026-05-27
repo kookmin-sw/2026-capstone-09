@@ -55,6 +55,7 @@ public class ProjectFacade {
         Long projectId = project.getId();
 
         projectMemberService.create(userId, projectId, ProjectMemberRole.OWNER);
+        projectService.issueRootNodeSeq(projectId);
         nodeService.createFirstMainNode(projectId);
 
         return CreateProjectResponse.from(project);
