@@ -73,9 +73,10 @@ export function ReferenceEdge({
   const positions = [
     { x: midX, y: midY + MIN_OFFSET },           // 아래
     { x: midX, y: midY - MIN_OFFSET },           // 위
+    { x: midX - MIN_OFFSET, y: midY },           // 왼쪽
+    { x: midX + MIN_OFFSET, y: midY },           // 오른쪽
     { x: midX, y: midY + MIN_OFFSET + OFFSET_STEP }, // 더 아래
     { x: midX, y: midY - MIN_OFFSET - OFFSET_STEP }, // 더 위
-    { x: midX, y: midY + MIN_OFFSET + OFFSET_STEP * 2 }, // 훨씬 아래
   ];
 
   for (const pos of positions) {
@@ -100,7 +101,7 @@ export function ReferenceEdge({
     targetX: referenceNodeX,
     targetY: referenceNodeY,
     targetPosition: getOppositePosition(sourcePosition),
-    curvature: 0.25,
+    curvature: 0.5,
   });
 
   const [path2] = getBezierPath({
@@ -110,7 +111,7 @@ export function ReferenceEdge({
     targetX,
     targetY,
     targetPosition,
-    curvature: 0.25,
+    curvature: 0.5,
   });
 
   const commentX = mousePos?.x ?? referenceNodeX;

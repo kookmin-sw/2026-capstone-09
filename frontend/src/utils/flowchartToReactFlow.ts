@@ -208,10 +208,9 @@ export function convertToReactFlow(flowchart: GetFlowchartResponse | null): {
           source: String(edge.startNodeId),
           target: String(edge.endNodeId),
           type: 'reference',
-          // 메인 노드 포함: ref handle 사용 (왼쪽→오른쪽)
-          // 서브 노드끼리: 일반 handle 사용 (오른쪽→왼쪽)
-          sourceHandle: hasMainNode ? 'ref-source' : 'source',
-          targetHandle: hasMainNode ? 'ref-target' : 'target',
+          // 모든 참조 관계: ref handle 사용 (왼쪽→오른쪽)
+          sourceHandle: 'ref-source',
+          targetHandle: 'ref-target',
           data: { edgeData: edge },
         });
       }
