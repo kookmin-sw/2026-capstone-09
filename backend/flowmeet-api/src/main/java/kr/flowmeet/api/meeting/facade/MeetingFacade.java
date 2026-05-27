@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import kr.flowmeet.api.meeting.dto.request.CreateMeetingRequest;
 import kr.flowmeet.api.meeting.dto.request.UpdateMeetingRequest;
 import kr.flowmeet.api.meeting.dto.response.EndMeetingResponse;
+import kr.flowmeet.api.meeting.event.MeetingEndedEvent;
+import kr.flowmeet.api.meeting.event.MeetingInvitedEvent;
 import kr.flowmeet.domain.ai.entity.AiTask;
 import kr.flowmeet.domain.ai.entity.AiTaskType;
 import kr.flowmeet.domain.ai.service.AiTaskService;
@@ -18,10 +20,9 @@ import kr.flowmeet.domain.project.entity.ProjectMember;
 import kr.flowmeet.domain.project.entity.ProjectMemberRole;
 import kr.flowmeet.domain.project.service.ProjectMemberService;
 import kr.flowmeet.domain.project.service.ProjectPermissionValidator;
+import kr.flowmeet.domain.transcript.service.MeetingTranscriptService;
 import kr.flowmeet.domain.user.entity.User;
 import kr.flowmeet.domain.user.service.UserService;
-import kr.flowmeet.api.meeting.event.MeetingEndedEvent;
-import kr.flowmeet.domain.transcript.service.MeetingTranscriptService;
 import kr.flowmeet.external.meeting.MeetingRoomProvider;
 import kr.flowmeet.external.meeting.dto.CreateMeetingRoomCommand;
 import kr.flowmeet.external.meeting.dto.MeetingRoom;
@@ -73,6 +74,8 @@ public class MeetingFacade {
             rollbackMeetingRoom(room.externalEventId(), e);
             throw e;
         }
+
+        eventPublisher.publishEvent(MeetingInvitedEvent.of(userId, projectId, nodeId, request.participantUserIds()));
     }
 
     @Transactional
