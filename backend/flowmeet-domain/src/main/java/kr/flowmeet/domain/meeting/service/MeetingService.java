@@ -168,10 +168,6 @@ public class MeetingService {
 
     @Transactional
     public void delete(final ProjectMember projectMember, final Meeting meeting) {
-        if (meeting.isInProgress()) {
-            throw new BusinessException(MeetingErrorCode.MEETING_IN_PROGRESS);
-        }
-
         validateCreatorOrOwner(meeting, projectMember);
 
         meetingParticipantRepository.deleteAllByMeetingId(meeting.getId());
