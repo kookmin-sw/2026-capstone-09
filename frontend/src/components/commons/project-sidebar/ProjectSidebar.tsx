@@ -84,10 +84,9 @@ export const ProjectSidebar = ({
   const { data: currentUser } = useCurrentUserQuery();
   const storedUser = userStorage.get();
 
-  // 읽지 않은 알림 개수 — 최초 1회 fetch + SSE로 +1씩 누적
-  const { data: initialUnreadCount = 0 } = useUnreadCountQuery();
-  const [sseExtra, setSseExtra] = useState(0);
-  const unreadCount = initialUnreadCount + sseExtra;
+  // 읽지 않은 알림 개수 — 최초 1회 fetch 후 SSE notification 이벤트의 unreadCount로 갱신.
+  // 수신함을 열면 SidebarAlarmModal이 목록 쿼리 결과로 이 캐시를 직접 동기화한다.
+  const { data: unreadCount = 0 } = useUnreadCountQuery();
   // SSE로 새로 수신한 알림 여부 (알림창 열면 초기화)
   const [hasNewSseNotification, setHasNewSseNotification] = useState(false);
 
@@ -98,55 +97,111 @@ export const ProjectSidebar = ({
     if (!token) return;
 
     const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL ?? '').replace(/\/$/, '');
-    const controller = new AbortController();
     const subscribeUrl = new URL(`${baseUrl}/v1/notifications/subscribe`, window.location.origin);
     subscribeUrl.searchParams.set('projectId', String(projectId));
 
+    // 서버는 30분 후 연결을 정상 종료하고, 그 외 네트워크 끊김/절전 등으로도 끊길 수 있다.
+    // fetch 기반 SSE는 EventSource와 달리 자동 재연결이 없으므로 백오프로 직접 재연결한다.
+    const INITIAL_DELAY = 1000;
+    const MAX_DELAY = 30_000;
+    // 서버 heartbeat가 30초 주기이므로, 60초간 아무 신호가 없으면 죽은 연결로 보고 강제 재연결.
+    const HEARTBEAT_TIMEOUT = 60_000;
+
+    let stopped = false;
+    let controller: AbortController | null = null;
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    let watchdogTimer: ReturnType<typeof setTimeout> | null = null;
+    let retryDelay = INITIAL_DELAY;
+
+    const clearWatchdog = () => {
+      if (watchdogTimer !== null) {
+        clearTimeout(watchdogTimer);
+        watchdogTimer = null;
+      }
+    };
+
+    const armWatchdog = () => {
+      clearWatchdog();
+      watchdogTimer = setTimeout(() => controller?.abort(), HEARTBEAT_TIMEOUT);
+    };
+
+    const scheduleReconnect = () => {
+      if (stopped) return;
+      reconnectTimer = setTimeout(() => void connect(), retryDelay);
+      retryDelay = Math.min(retryDelay * 2, MAX_DELAY);
+    };
+
     const connect = async () => {
+      if (stopped) return;
+      controller = new AbortController();
       try {
         const response = await fetch(subscribeUrl, {
           headers: { Authorization: `Bearer ${token}` },
           signal: controller.signal,
         });
 
-        if (!response.ok || !response.body) return;
+        if (response.ok && response.body) {
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = '';
+          let currentEventType: string | null = null;
+          armWatchdog();
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
-        let currentEventType: string | null = null;
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() ?? '';
-          for (const line of lines) {
-            if (line.startsWith('event:')) {
-              currentEventType = line.slice('event:'.length).trim();
-            } else if (line.startsWith('data:')) {
-              // 'notification' 이벤트만 카운트 (connected, heartbeat 등은 무시)
-              if (currentEventType === 'notification') {
-                setSseExtra((prev) => prev + 1);
-                setHasNewSseNotification(true);
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            retryDelay = INITIAL_DELAY; // 정상 수신 → 백오프 리셋
+            armWatchdog(); // 신호 받음 → watchdog 갱신
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() ?? '';
+            for (const line of lines) {
+              if (line.startsWith('event:')) {
+                currentEventType = line.slice('event:'.length).trim();
+              } else if (line.startsWith('data:')) {
+                // 'notification' 이벤트만 처리 (connect, heartbeat 등은 무시)
+                if (currentEventType === 'notification') {
+                  setHasNewSseNotification(true);
+                  // 서버 payload의 실제 unreadCount를 그대로 반영해 카운트 드리프트 방지.
+                  try {
+                    const payload = JSON.parse(line.slice('data:'.length).trim()) as {
+                      unreadCount?: number;
+                    };
+                    if (typeof payload.unreadCount === 'number') {
+                      queryClient.setQueryData(
+                        notificationKeys.unreadCount(),
+                        payload.unreadCount,
+                      );
+                    }
+                  } catch {
+                    // payload 파싱 실패 — dot만 표시
+                  }
+                }
+              } else if (line.trim() === '') {
+                // 빈 줄은 메시지 구분자 — event 타입 초기화
+                currentEventType = null;
               }
-            } else if (line === '') {
-              // 빈 줄은 메시지 구분자 — event 타입 초기화
-              currentEventType = null;
             }
           }
         }
       } catch {
-        // SSE 연결 종료 또는 오류 — 무시
+        // abort 또는 네트워크 오류 — 아래 재연결로 처리
+      } finally {
+        clearWatchdog();
       }
+
+      // 정상 종료(타임아웃)·오류·watchdog abort 모두 재연결 (effect cleanup 제외)
+      scheduleReconnect();
     };
 
     void connect();
     return () => {
-      controller.abort();
+      stopped = true;
+      controller?.abort();
+      if (reconnectTimer !== null) clearTimeout(reconnectTimer);
+      clearWatchdog();
     };
-  }, [isProjectIdValid, projectId]);
+  }, [isProjectIdValid, projectId, queryClient]);
 
   // prop > query > storage > 빈 문자열 우선순위로 합성
   const projectName = projectNameProp ?? projectData?.name ?? '';
@@ -462,11 +517,6 @@ export const ProjectSidebar = ({
             projectId={projectId}
             onClose={() => setIsAlarmModalOpen(false)}
             onNotificationClick={handleNotificationClick}
-            onListLoaded={(unreadInList) => {
-              // 알림 리스트 기반 실제 unread 개수로 캐시 동기화 + SSE 누적값 초기화
-              queryClient.setQueryData(notificationKeys.unreadCount(), unreadInList);
-              setSseExtra(0);
-            }}
           />
         )}
       </AnimatePresence>
