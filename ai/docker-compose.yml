@@ -8,6 +8,8 @@ services:
         required: false
     environment:
       BACKEND_URL: ${BACKEND_URL}
+    ports:
+      - "8082:8082"
     networks:
       - ai-net
 
