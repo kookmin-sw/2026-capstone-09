@@ -48,7 +48,7 @@ docker run --rm \
   -v $(pwd)/k6/results:/results \
   --env-file k6/.env \
   grafana/k6 run /scripts/load-test.js \
-  --out json=/results/load.json
+  --out json=/results/load_before.json
 
 # Stress Test만
 docker run --rm \
@@ -56,7 +56,7 @@ docker run --rm \
   -v $(pwd)/k6/results:/results \
   --env-file k6/.env \
   grafana/k6 run /scripts/stress-test.js \
-  --out json=/results/stress.json
+  --out json=/results/stress_before.json
 ```
 
 ## 테스트 시나리오

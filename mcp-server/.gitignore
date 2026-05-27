@@ -41,3 +41,5 @@ out/
 .env.*
 !.env.example
 **/application-local.yaml
+
+k6/results/
