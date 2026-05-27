@@ -10,6 +10,7 @@ import type { XmlFragment } from 'yjs';
 
 import { useYjsContext } from '@/contexts/YjsContext';
 import { useYjsFragmentInit } from '@/hooks/useYjsFragmentInit';
+import { EditorToolbar } from './EditorToolbar';
 import { TypingProfilePresence } from './TypingProfilePresence';
 
 const SAVE_DEBOUNCE_MS = 1000;
@@ -82,6 +83,7 @@ export default function Editor({
       className="prose relative [&_.ProseMirror]:leading-[1.4] [&_.ProseMirror_p]:my-0"
       data-typing-profile-container
     >
+      {editable && <EditorToolbar editor={editor} />}
       <EditorContent editor={editor} />
       {fragment && collaborationField && editable && (
         <TypingProfilePresence editor={editor} yjsCtx={yjsCtx} field={collaborationField} />
