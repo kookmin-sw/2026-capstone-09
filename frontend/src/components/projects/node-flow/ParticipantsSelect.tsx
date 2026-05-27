@@ -11,6 +11,7 @@ export interface ParticipantOption {
   id: number;
   name: string;
   email?: string;
+  profileImageUrl?: string;
 }
 
 interface ParticipantsSelectProps {
@@ -136,7 +137,7 @@ export const ParticipantsSelect = ({
                   onClick={() => addParticipant(option)}
                   className="hover:bg-fill-normal flex w-full items-center gap-3 border-none bg-transparent px-5 py-2 text-left"
                 >
-                  <Avatar variant="person" size="xsmall" alt={option.name} />
+                  <Avatar variant="person" size="xsmall" src={option.profileImageUrl} alt={option.name} />
                   <span className="text-body-1 text-label-normal flex-1 truncate font-normal">
                     {option.name}
                   </span>
@@ -164,7 +165,7 @@ export const ParticipantsSelect = ({
           inputRef.current?.focus();
         }}
         className={cn(
-          'border-line-normal-neutral shadow-normal-xsmall flex h-12 w-full cursor-text items-center gap-2 overflow-hidden rounded-xl border bg-transparent focus-within:border-primary-40',
+          'border-line-normal-neutral shadow-normal-xsmall focus-within:border-primary-40 flex h-12 w-full cursor-text items-center gap-2 overflow-hidden rounded-xl border bg-transparent',
           open && 'border-primary-40',
         )}
       >
@@ -175,7 +176,7 @@ export const ParticipantsSelect = ({
                 size="medium"
                 variant="solid"
                 disableInteraction
-                leadingContent={<Avatar variant="person" size="xsmall" alt={item.name} />}
+                leadingContent={<Avatar variant="person" size="xsmall" src={item.profileImageUrl} alt={item.name} />}
                 trailingContent={
                   <span
                     role="button"

@@ -53,6 +53,7 @@ function ConnectedMeetingCreateModal({
         id: m.userId ?? 0,
         name: m.nickname ?? '',
         email: m.email,
+        profileImageUrl: m.profileImageUrl ?? undefined,
       }))}
       onClose={onClose}
       onCreate={async (payload) => {
@@ -142,6 +143,7 @@ function ConnectedMeetingEditModal({
         id: m.userId ?? 0,
         name: m.nickname ?? '',
         email: m.email ?? '',
+        profileImageUrl: m.profileImageUrl ?? undefined,
       }))}
       initialValues={initialValues}
       onClose={onClose}
