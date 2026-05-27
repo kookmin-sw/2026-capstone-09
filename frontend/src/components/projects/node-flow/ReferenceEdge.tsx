@@ -1,13 +1,164 @@
-import { useState, useCallback } from 'react';
-import { EdgeProps, getBezierPath, EdgeLabelRenderer, useNodes, useReactFlow, Position } from 'reactflow';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  EdgeLabelRenderer,
+  EdgeProps,
+  type Node as FlowNode,
+  Position,
+  useReactFlow,
+  useStore,
+} from 'reactflow';
 import type { Edge as FlowChartEdge } from '@/types/FlowChartTypes';
 import { DashedComment } from './DashedComment';
+import { useEdgeHover } from './EdgeHoverContext';
 
-/**
- * 참조 관계를 위한 점선 edge + DashedComment
- * React Flow의 getBezierPath를 활용하여 두 개의 곡선으로 구성
- */
+const EDGE_COLOR = 'var(--color-neutral-70)';
+const EDGE_COLOR_HOVER = 'var(--color-primary-40)';
+const EDGE_OPACITY = 0.5;
+const EDGE_OPACITY_HOVER = 1;
+const EDGE_CURVE_RATIO = 0.32;
+const EDGE_BEND_RATIO = 0.18;
+const EDGE_MIN_BEND = 64;
+const EDGE_MAX_BEND = 180;
+
+interface Point {
+  x: number;
+  y: number;
+}
+
+interface Rect {
+  width: number;
+  height: number;
+  cx: number;
+  cy: number;
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}
+
+function getNodeRect(node: FlowNode): Rect {
+  const x = node.positionAbsolute?.x ?? node.position.x;
+  const y = node.positionAbsolute?.y ?? node.position.y;
+  const width = node.width ?? 0;
+  const height = node.height ?? 0;
+
+  return {
+    width,
+    height,
+    cx: x + width / 2,
+    cy: y + height / 2,
+    left: x,
+    right: x + width,
+    top: y,
+    bottom: y + height,
+  };
+}
+
+function getNodeIntersection(node: Rect, towards: Rect): Point {
+  const w = node.width / 2;
+  const h = node.height / 2;
+  const x2 = node.cx;
+  const y2 = node.cy;
+  const x1 = towards.cx;
+  const y1 = towards.cy;
+
+  const xx1 = (x1 - x2) / (2 * w) - (y1 - y2) / (2 * h);
+  const yy1 = (x1 - x2) / (2 * w) + (y1 - y2) / (2 * h);
+  const a = 1 / (Math.abs(xx1) + Math.abs(yy1) || 1);
+  const xx3 = a * xx1;
+  const yy3 = a * yy1;
+
+  return { x: w * (xx3 + yy3) + x2, y: h * (-xx3 + yy3) + y2 };
+}
+
+function getEdgePosition(rect: Rect, point: Point): Position {
+  if (Math.round(point.x) <= Math.round(rect.left) + 1) return Position.Left;
+  if (Math.round(point.x) >= Math.round(rect.right) - 1) return Position.Right;
+  if (Math.round(point.y) <= Math.round(rect.top) + 1) return Position.Top;
+  if (Math.round(point.y) >= Math.round(rect.bottom) - 1) return Position.Bottom;
+  return Position.Top;
+}
+
+function getBendSign(sourcePosition: Position, targetPosition: Position): number {
+  if (sourcePosition === Position.Top || targetPosition === Position.Top) return -1;
+  if (sourcePosition === Position.Bottom || targetPosition === Position.Bottom) return 1;
+  return sourcePosition === Position.Left ? -1 : 1;
+}
+
+function getCubicPoint(
+  start: Point,
+  control1: Point,
+  control2: Point,
+  end: Point,
+  t: number,
+): Point {
+  const mt = 1 - t;
+  const x =
+    mt * mt * mt * start.x +
+    3 * mt * mt * t * control1.x +
+    3 * mt * t * t * control2.x +
+    t * t * t * end.x;
+  const y =
+    mt * mt * mt * start.y +
+    3 * mt * mt * t * control1.y +
+    3 * mt * t * t * control2.y +
+    t * t * t * end.y;
+
+  return { x, y };
+}
+
+function getStraightControlPoint(point: Point, position: Position, offset: number): Point {
+  if (position === Position.Left) return { x: point.x - offset, y: point.y };
+  if (position === Position.Right) return { x: point.x + offset, y: point.y };
+  if (position === Position.Top) return { x: point.x, y: point.y - offset };
+  return { x: point.x, y: point.y + offset };
+}
+
+function getReferencePath({
+  source,
+  target,
+  sourcePosition,
+  targetPosition,
+}: {
+  source: Point;
+  target: Point;
+  sourcePosition: Position;
+  targetPosition: Position;
+}) {
+  const dx = target.x - source.x;
+  const dy = target.y - source.y;
+  const distance = Math.hypot(dx, dy) || 1;
+  const curveOffset = Math.min(
+    Math.max(distance * EDGE_CURVE_RATIO, EDGE_MIN_BEND),
+    EDGE_MAX_BEND,
+  );
+  const bendOffset = Math.min(Math.max(distance * EDGE_BEND_RATIO, EDGE_MIN_BEND), EDGE_MAX_BEND);
+  const normal = {
+    x: -dy / distance,
+    y: dx / distance,
+  };
+  const bendSign = getBendSign(sourcePosition, targetPosition);
+
+  const control1 = {
+    x: source.x + dx * EDGE_CURVE_RATIO + normal.x * bendOffset * bendSign,
+    y: source.y + dy * EDGE_CURVE_RATIO + normal.y * bendOffset * bendSign,
+  };
+  const control2 = getStraightControlPoint(target, targetPosition, curveOffset);
+  const label = getCubicPoint(source, control1, control2, target, 0.5);
+
+  return {
+    path: `M ${source.x},${source.y} C ${control1.x},${control1.y} ${control2.x},${control2.y} ${target.x},${target.y}`,
+    labelX: label.x,
+    labelY: label.y,
+    control1,
+    control2,
+  };
+}
+
 export function ReferenceEdge({
+  id,
+  source,
+  target,
   sourceX,
   sourceY,
   targetX,
@@ -20,10 +171,19 @@ export function ReferenceEdge({
   const onDeleteEdgeFn = data?.onDeleteEdge as
     | ((edgeId: number, startNodeId: number, endNodeId: number) => void)
     | undefined;
-  const nodes = useNodes();
   const { screenToFlowPosition } = useReactFlow();
+  const { setHighlightedNodes } = useEdgeHover();
+  const sourceNode = useStore(useCallback((s) => s.nodeInternals.get(source), [source]));
+  const targetNode = useStore(useCallback((s) => s.nodeInternals.get(target), [target]));
   const [hovered, setHovered] = useState(false);
-  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
+  const [mousePos, setMousePos] = useState<Point | null>(null);
+  const hoveredRef = useRef(false);
+
+  useEffect(() => {
+    return () => {
+      if (hoveredRef.current) setHighlightedNodes(null);
+    };
+  }, [setHighlightedNodes]);
 
   const handleEdgeClick = () => {
     if (onDeleteEdgeFn && edgeData) {
@@ -39,124 +199,93 @@ export function ReferenceEdge({
     [screenToFlowPosition],
   );
 
-  const midX = (sourceX + targetX) / 2;
-  const midY = (sourceY + targetY) / 2;
-
-  // 노드들과 겹치지 않는 위치 찾기
-  const NODE_WIDTH = 280;
-  const NODE_HEIGHT = 120;
-  const COMMENT_WIDTH = 250;
-  const COMMENT_HEIGHT = 90;
-  const MIN_OFFSET = 120;
-  const OFFSET_STEP = 80;
-
-  function isOverlapping(x: number, y: number): boolean {
-    return nodes.some((node) => {
-      const nodeX = node.position.x;
-      const nodeY = node.position.y;
-
-      // 코멘트 박스와 노드가 겹치는지 확인
-      return (
-        x - COMMENT_WIDTH / 2 < nodeX + NODE_WIDTH &&
-        x + COMMENT_WIDTH / 2 > nodeX &&
-        y - COMMENT_HEIGHT / 2 < nodeY + NODE_HEIGHT &&
-        y + COMMENT_HEIGHT / 2 > nodeY
-      );
-    });
-  }
-
-  // 여러 위치를 시도 (아래 → 위 → 더 아래 → 더 위)
-  let referenceNodeX = midX;
-  let referenceNodeY = midY + MIN_OFFSET;
-
-  const positions = [
-    { x: midX, y: midY + MIN_OFFSET },           // 아래
-    { x: midX, y: midY - MIN_OFFSET },           // 위
-    { x: midX - MIN_OFFSET, y: midY },           // 왼쪽
-    { x: midX + MIN_OFFSET, y: midY },           // 오른쪽
-    { x: midX, y: midY + MIN_OFFSET + OFFSET_STEP }, // 더 아래
-    { x: midX, y: midY - MIN_OFFSET - OFFSET_STEP }, // 더 위
-  ];
-
-  for (const pos of positions) {
-    if (!isOverlapping(pos.x, pos.y)) {
-      referenceNodeX = pos.x;
-      referenceNodeY = pos.y;
-      break;
-    }
-  }
-
-  const getOppositePosition = (pos: Position) => {
-    if (pos === Position.Left) return Position.Right;
-    if (pos === Position.Right) return Position.Left;
-    if (pos === Position.Top) return Position.Bottom;
-    return Position.Top;
+  const handleMouseEnter = () => {
+    hoveredRef.current = true;
+    setHovered(true);
+    setHighlightedNodes([source, target]);
   };
 
-  const [path1] = getBezierPath({
-    sourceX,
-    sourceY,
-    sourcePosition,
-    targetX: referenceNodeX,
-    targetY: referenceNodeY,
-    targetPosition: getOppositePosition(sourcePosition),
-    curvature: 0.25,
+  const handleMouseLeave = () => {
+    hoveredRef.current = false;
+    setHovered(false);
+    setMousePos(null);
+    setHighlightedNodes(null);
+  };
+
+  let sx = sourceX;
+  let sy = sourceY;
+  let tx = targetX;
+  let ty = targetY;
+  let sPos = sourcePosition;
+  let tPos = targetPosition;
+
+  if (sourceNode?.width != null && targetNode?.width != null) {
+    const sourceRect = getNodeRect(sourceNode);
+    const targetRect = getNodeRect(targetNode);
+    const sourcePoint = getNodeIntersection(sourceRect, targetRect);
+    const targetPoint = getNodeIntersection(targetRect, sourceRect);
+
+    sx = sourcePoint.x;
+    sy = sourcePoint.y;
+    tx = targetPoint.x;
+    ty = targetPoint.y;
+    sPos = getEdgePosition(sourceRect, sourcePoint);
+    tPos = getEdgePosition(targetRect, targetPoint);
+  }
+
+  const {
+    path: edgePath,
+    labelX,
+    labelY,
+  } = getReferencePath({
+    source: { x: sx, y: sy },
+    target: { x: tx, y: ty },
+    sourcePosition: sPos,
+    targetPosition: tPos,
   });
 
-  const [path2] = getBezierPath({
-    sourceX: referenceNodeX,
-    sourceY: referenceNodeY,
-    sourcePosition: getOppositePosition(targetPosition),
-    targetX,
-    targetY,
-    targetPosition,
-    curvature: 0.25,
-  });
-
-  const commentX = mousePos?.x ?? referenceNodeX;
-  const commentY = mousePos?.y ?? referenceNodeY;
+  const strokeColor = hovered ? EDGE_COLOR_HOVER : EDGE_COLOR;
+  const strokeOpacity = hovered ? EDGE_OPACITY_HOVER : EDGE_OPACITY;
+  const markerId = `ref-arrow-${id}`;
+  const commentX = mousePos?.x ?? labelX;
+  const commentY = mousePos?.y ?? labelY;
 
   const sharedHoverProps = {
-    onMouseEnter: () => setHovered(true),
-    onMouseLeave: () => { setHovered(false); setMousePos(null); },
+    onMouseEnter: handleMouseEnter,
+    onMouseLeave: handleMouseLeave,
     onMouseMove: handleMouseMove,
   };
 
   return (
     <>
-      {/* 첫 번째 점선: 시작 노드 → 참조노드 (시각) */}
+      <defs>
+        <marker
+          id={markerId}
+          viewBox="0 0 10 10"
+          refX="9"
+          refY="5"
+          markerWidth="10"
+          markerHeight="10"
+          markerUnits="userSpaceOnUse"
+          orient="auto"
+        >
+          <path d="M 1 1 L 9 5 L 1 9 z" style={{ fill: strokeColor, opacity: strokeOpacity }} />
+        </marker>
+      </defs>
       <path
-        d={path1}
+        d={edgePath}
         fill="none"
+        markerEnd={`url(#${markerId})`}
         style={{
-          stroke: hovered ? 'var(--color-primary-40)' : 'var(--color-primary-50)',
+          stroke: strokeColor,
+          strokeOpacity,
           strokeWidth: 1,
           strokeDasharray: '5,5',
-          transition: 'stroke 0.15s',
+          transition: 'stroke 0.15s, stroke-opacity 0.15s',
         }}
       />
-      {/* 두 번째 점선: 참조노드 → 끝 노드 (시각) */}
       <path
-        d={path2}
-        fill="none"
-        style={{
-          stroke: hovered ? 'var(--color-primary-40)' : 'var(--color-primary-50)',
-          strokeWidth: 1,
-          strokeDasharray: '5,5',
-          transition: 'stroke 0.15s',
-        }}
-      />
-      {/* 투명 히트영역: path1 클릭/호버/마우스 감지 */}
-      <path
-        d={path1}
-        fill="none"
-        style={{ stroke: 'transparent', strokeWidth: 14, cursor: 'pointer' }}
-        onClick={handleEdgeClick}
-        {...sharedHoverProps}
-      />
-      {/* 투명 히트영역: path2 클릭/호버/마우스 감지 */}
-      <path
-        d={path2}
+        d={edgePath}
         fill="none"
         style={{ stroke: 'transparent', strokeWidth: 14, cursor: 'pointer' }}
         onClick={handleEdgeClick}

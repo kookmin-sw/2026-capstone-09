@@ -8,6 +8,7 @@ import { useActiveNodeUsers } from '@/contexts/YjsContext';
 import { useNodeMenuActions } from '@/hooks/useNodeMenuActions';
 import { getColorToken } from '@/utils/getBadgeColorInfo';
 import { formatDate, getVisibleTags } from '@/utils/nodeUtils';
+import { useEdgeHover } from './EdgeHoverContext';
 import { NodeMenu } from './NodeMenu';
 
 interface CustomNodeData extends NodeItem {
@@ -17,11 +18,15 @@ interface CustomNodeData extends NodeItem {
   onSelectNode?: (nodeId: number) => void;
 }
 
-function CustomFlowNodeComponent({ data, selected }: NodeProps<CustomNodeData>) {
+function CustomFlowNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) {
   const { visibleTags, remainingTagsCount } = getVisibleTags(data.tags ?? []);
   const activeUsers = useActiveNodeUsers(data.nodeId);
   const isMain = data.isMainNode;
   const nodeNumber = data.number ?? data.nodeId;
+
+  // 참조 점선 호버 시 연결된 노드를 포커스된 것처럼 보이게 (실제 선택 아님)
+  const { highlightedNodeIds } = useEdgeHover();
+  const focused = selected || highlightedNodeIds.has(id);
 
   const menuActions = useNodeMenuActions({
     nodeId: data.nodeId ?? 0,
@@ -50,10 +55,10 @@ function CustomFlowNodeComponent({ data, selected }: NodeProps<CustomNodeData>) 
     <div
       data-node-id={data.nodeId ?? ''}
       className={`flex cursor-pointer flex-col overflow-hidden rounded-xl bg-white p-4 outline outline-1 outline-offset-[-1px] transition-all ${isMain ? 'w-64 gap-5' : 'w-60 gap-3'} ${
-        selected ? 'outline-primary-40' : 'hover:outline-primary-40 outline-neutral-200'
+        focused ? 'outline-primary-40' : 'hover:outline-primary-40 outline-neutral-200'
       }`}
       style={
-        selected
+        focused
           ? {
               boxShadow:
                 '-2px -2px 4px 0px color-mix(in srgb, var(--color-primary-40) 20%, transparent), 2px 2px 4px 0px color-mix(in srgb, var(--color-primary-40) 20%, transparent)',
