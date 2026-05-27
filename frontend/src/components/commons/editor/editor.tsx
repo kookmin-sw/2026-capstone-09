@@ -79,15 +79,14 @@ export default function Editor({
   }, [content, editor, fragment]);
 
   return (
-    <div
-      className="prose relative [&_.ProseMirror]:leading-[1.4] [&_.ProseMirror_p]:my-0"
-      data-typing-profile-container
-    >
+    <div className="relative" data-typing-profile-container>
       {editable && <EditorToolbar editor={editor} />}
-      <EditorContent editor={editor} />
-      {fragment && collaborationField && editable && (
-        <TypingProfilePresence editor={editor} yjsCtx={yjsCtx} field={collaborationField} />
-      )}
+      <div className="prose relative [&_.ProseMirror]:leading-[1.4] [&_.ProseMirror_p]:my-0">
+        <EditorContent editor={editor} />
+        {fragment && collaborationField && editable && (
+          <TypingProfilePresence editor={editor} yjsCtx={yjsCtx} field={collaborationField} />
+        )}
+      </div>
     </div>
   );
 }
