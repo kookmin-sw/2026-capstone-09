@@ -25,6 +25,73 @@ const readCssToken = (name: string): string => {
 // 라벨은 foreignObject 대신 순수 SVG text로 그린다 (htmlLabels:false).
 // mermaid 기본 CSS가 엣지 라벨을 반투명/검정 text로 그리는 걸 막기 위해, 토큰을 쓰는 !important
 // 스타일 태그를 head에 한 번 주입한다. 한 번만 실행되도록 flag로 가드.
+
+// flowchart/graph 다이어그램에서 노드 ID로 한글·공백·특수문자를 사용하면
+// mermaid 파서가 'UNICODE_TEXT' 토큰 오류를 낸다. 렌더링 전에 안전하지 않은
+// 노드 ID를 n1, n2, … 로 치환하고 라벨 텍스트는 원본을 유지한다.
+const sanitizeMermaidCode = (code: string): string => {
+  const firstLine = code.split('\n')[0].trim();
+  if (!firstLine.startsWith('graph ') && !firstLine.startsWith('flowchart ')) return code;
+
+  try {
+    // quotedMap, idMap 은 라인 간 공유 (같은 텍스트 → 같은 safe ID)
+    const quotedMap = new Map<string, string>();
+    let qn = 0;
+    const idMap = new Map<string, string>();
+    let seq = 0;
+
+    return code
+      .split('\n')
+      .map((line, i) => {
+        if (i === 0) return line;
+        const t = line.trim();
+        if (!t || t.startsWith('%%') || /^(subgraph|end)\b/.test(t)) return line;
+
+        // ── Step A: 기존 라벨/엣지 레이블 마스킹 (DEL \x7f 사용) ──────────────
+        // "quoted" 변환 전에 먼저 마스킹해야 A["라벨"] 안의 "..." 가 오인되지 않음
+        const slots: string[] = [];
+        const ph = (prefix: string) => (m: string) => {
+          const idx = slots.push(m) - 1;
+          return `\x7f${prefix}${idx}\x7f`;
+        };
+        let s = line
+          .replace(/\|[^|\n]+\|/g, ph('E'))
+          .replace(/\[[^\]\n]*\]/g, ph('L'))
+          .replace(/\([^)\n]*\)/g, ph('L'))
+          .replace(/\{[^}\n]*\}/g, ph('L'));
+
+        // ── Step B: "quoted text" 노드 ID → qnN["text"] ──────────────────────
+        // 기존 라벨은 이미 마스킹됐으므로 남은 "..." 는 모두 노드 ID
+        // 새로 생성한 ["text"] 라벨도 즉시 슬롯에 추가해 Step C 에서 오인 방지
+        s = s.replace(/"([^"\n\x7f]+)"/g, (_, nodeText) => {
+          if (!quotedMap.has(nodeText)) quotedMap.set(nodeText, `qn${++qn}`);
+          const label = `["${nodeText}"]`;
+          const idx = slots.push(label) - 1;
+          return `${quotedMap.get(nodeText)!}\x7fL${idx}\x7f`;
+        });
+
+        // ── Step C: 비안전 노드 ID → nN 치환 ────────────────────────────────
+        // \x7f 를 양쪽 문자 클래스에서 제외해 플레이스홀더 내부가 오인되지 않게 함
+        // Group 2: 후행 공백 재출력으로 edge 마커 앞 간격 유지
+        s = s.replace(
+          /([^\s\x7f[\](){}>|;,\-=\n][^\x7f[\](){}>|;,\-=\n]*?)(\s*)(?=[\x7f\[({>]|--+|==+|$)/g,
+          (_, id, space) => {
+            const raw = id.trim();
+            if (!raw || /^[a-zA-Z_][a-zA-Z0-9_-]*$/.test(raw)) return id + space;
+            if (!idMap.has(raw)) idMap.set(raw, `n${++seq}`);
+            return idMap.get(raw)! + space;
+          },
+        );
+
+        // ── Step D: 마스킹 복원 ───────────────────────────────────────────────
+        return s.replace(/\x7f[EL](\d+)\x7f/g, (_, idx) => slots[+idx]);
+      })
+      .join('\n');
+  } catch {
+    return code;
+  }
+};
+
 let mermaidReady = false;
 const ensureMermaidReady = () => {
   if (mermaidReady || typeof window === 'undefined') return;
@@ -99,7 +166,7 @@ export const MermaidDiagram = ({ code }: MermaidDiagramProps) => {
     if (!container) return;
 
     const run = async () => {
-      const { svg } = await mermaid.render(`mermaid-${reactId}`, code);
+      const { svg } = await mermaid.render(`mermaid-${reactId}`, sanitizeMermaidCode(code));
       if (cancelled) return;
       container.innerHTML = svg;
 

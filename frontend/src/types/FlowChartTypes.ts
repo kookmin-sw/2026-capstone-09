@@ -54,6 +54,7 @@ export interface Edge {
   endNodeId: number;
   createdBy: EdgeCreator;
   comment: string | null;
+  createdAt: string;
 }
 
 export interface FlowChart {

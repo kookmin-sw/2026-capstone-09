@@ -1,5 +1,6 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
 import { Loading } from '@/components/commons/loading/Loading';
@@ -9,13 +10,22 @@ import { MeetingEditModalContent } from '@/components/projects/node-flow/Meeting
 import { MeetingDeleteConfirmContent } from '@/components/projects/project-detail/meeting-delete/MeetingDeleteConfirmContent';
 import { NodeDeleteConfirmContent } from '@/components/projects/project-detail/node-delete/NodeDeleteConfirmContent';
 import { ReferenceNodeModalContent } from '@/components/projects/project-detail/reference-node/ReferenceNodeModalContent';
-import { useCreateEdgeMutation, useDeleteEdgeMutation, useLinkedNodesQuery, useNodeListQuery } from '@/queries/edge';
+import {
+  useCreateEdgeMutation,
+  useDeleteEdgeMutation,
+  useLinkedNodesQuery,
+  useNodeListQuery,
+} from '@/queries/edge';
+import { edgeKeys } from '@/queries/keys/edgeKeys';
+import { nodeKeys } from '@/queries/keys/nodeKeys';
 import { useCreateMeetingMutation, useUpdateMeetingMutation } from '@/queries/meeting';
 import { useDeleteMeetingMutation } from '@/queries/meetingDelete';
 import { useProjectMembersQuery } from '@/queries/member';
 import { useNodeDetailQuery } from '@/queries/node';
 import { useDeleteNodeMutation } from '@/queries/nodeDelete';
 import { useErrorToast } from './useErrorToast';
+
+const REFERENCE_EDGE_CREATED_EVENT = 'flowmeet:reference-edge-created';
 
 // 리스트를 받아야 하기 때문에 모달이 열릴 때만 마운트되어 쿼리를 실행
 function ConnectedMeetingCreateModal({
@@ -43,6 +53,7 @@ function ConnectedMeetingCreateModal({
         id: m.userId ?? 0,
         name: m.nickname ?? '',
         email: m.email,
+        profileImageUrl: m.profileImageUrl ?? undefined,
       }))}
       onClose={onClose}
       onCreate={async (payload) => {
@@ -110,11 +121,7 @@ function ConnectedMeetingEditModal({
   const meeting = nodeDetail?.meeting;
   const meetingId = meeting?.meetingId;
 
-  const { mutate: updateMeeting } = useUpdateMeetingMutation(
-    projectId,
-    nodeId,
-    meetingId ?? 0,
-  );
+  const { mutate: updateMeeting } = useUpdateMeetingMutation(projectId, nodeId, meetingId ?? 0);
 
   useEffect(() => {
     if (!isLoading && !meetingId) onClose();
@@ -136,6 +143,7 @@ function ConnectedMeetingEditModal({
         id: m.userId ?? 0,
         name: m.nickname ?? '',
         email: m.email ?? '',
+        profileImageUrl: m.profileImageUrl ?? undefined,
       }))}
       initialValues={initialValues}
       onClose={onClose}
@@ -166,10 +174,19 @@ function ConnectedReferenceNodeModal({
   const { data: nodeList = [] } = useNodeListQuery(projectId);
   const { mutate: createEdge } = useCreateEdgeMutation(projectId);
   const { mutate: deleteEdge } = useDeleteEdgeMutation(projectId);
+  const queryClient = useQueryClient();
   const showErrorToast = useErrorToast();
 
+  // 이미 (현재 노드 -> 상대) 방향의 참조가 있는 노드는 중복 생성을 막기 위해 드롭다운에서 제외한다.
+  // 반대 방향(상대 -> 현재)만 존재하는 경우는 새 참조를 만들 수 있어야 하므로 제외하지 않는다.
+  const outgoingTargetIds = new Set(
+    linkedNodes
+      .filter((link) => link.linkType === 'START' && link.linkedNodeId !== undefined)
+      .map((link) => link.linkedNodeId as number),
+  );
+
   const nodeOptions = nodeList
-    .filter((n) => n.nodeId !== nodeId)
+    .filter((n) => n.nodeId !== nodeId && (n.nodeId === undefined || !outgoingTargetIds.has(n.nodeId)))
     .map((n) => ({ nodeId: n.nodeId ?? 0, nodeNumber: n.number ?? '', nodeTitle: n.title ?? '' }));
 
   return (
@@ -180,8 +197,13 @@ function ConnectedReferenceNodeModal({
       currentNode={{ number: nodeNumber, title: nodeTitle }}
       onClose={onClose}
       onCreate={(payload) => {
+        window.dispatchEvent(new Event(REFERENCE_EDGE_CREATED_EVENT));
         createEdge(payload, {
-          onSuccess: onClose,
+          onSuccess: () => {
+            void queryClient.invalidateQueries({ queryKey: nodeKeys.flowchart(projectId) });
+            void queryClient.invalidateQueries({ queryKey: edgeKeys.linked(projectId, nodeId) });
+            onClose();
+          },
           onError: (err) => showErrorToast(err, '참조 노드 연결에 실패했어요.'),
         });
       }}
@@ -199,6 +221,7 @@ interface NodeMenuActionsOptions {
   projectId: number;
   nodeTitle?: string;
   nodeNumber?: number | string;
+  isMeetingEnded?: boolean;
   onBeforeAction?: () => void;
   onDeleteSuccess?: () => void;
 }
@@ -208,6 +231,7 @@ export function useNodeMenuActions({
   projectId,
   nodeTitle = '',
   nodeNumber,
+  isMeetingEnded,
   onBeforeAction,
   onDeleteSuccess,
 }: NodeMenuActionsOptions) {
@@ -238,15 +262,17 @@ export function useNodeMenuActions({
         ),
       });
     },
-    onEditMeeting: () => {
-      before();
-      openModal({
-        closeOnBackdrop: true,
-        content: (
-          <ConnectedMeetingEditModal projectId={projectId} nodeId={nodeId} onClose={closeModal} />
-        ),
-      });
-    },
+    ...(!isMeetingEnded && {
+      onEditMeeting: () => {
+        before();
+        openModal({
+          closeOnBackdrop: true,
+          content: (
+            <ConnectedMeetingEditModal projectId={projectId} nodeId={nodeId} onClose={closeModal} />
+          ),
+        });
+      },
+    }),
     onDeleteMeeting: () => {
       before();
       openModal({

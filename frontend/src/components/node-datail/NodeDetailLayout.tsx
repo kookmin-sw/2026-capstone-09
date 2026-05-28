@@ -6,11 +6,12 @@ import { ContentBadge, Tab, TabList, TabListItem, TabPanel, Typography } from '@
 import { IconDocumentText, IconFire, IconPersons, IconTag } from '@wanteddev/wds-icon';
 import { useEffect } from 'react';
 
-import { GetNodeResponse } from '@/api/Api';
+import { GetFlowchartResponse, GetNodeResponse } from '@/api/Api';
 import { GoogleMeetIcon } from '@/assets/svgs/GoogleMeetIcon';
+import { TypingProfilePresence } from '@/components/commons/editor/TypingProfilePresence';
 import { Loading } from '@/components/commons/loading/Loading';
 import { NodeStatusType } from '@/constants/nodeStatus';
-import { useAwarenessUsers } from '@/contexts/YjsContext';
+import { YJS_FIELDS, useAwarenessUsers, useYjsContext } from '@/contexts/YjsContext';
 import { useErrorToast } from '@/hooks/useErrorToast';
 import { useNodeMenuActions } from '@/hooks/useNodeMenuActions';
 import { nodeKeys } from '@/queries/keys/nodeKeys';
@@ -50,6 +51,7 @@ export function NodeDetailLayout({
   const queryClient = useQueryClient();
   const { data: nodeDetail, error, isLoading } = useNodeDetailQuery(projectId, nodeId);
   const activeUsers = useAwarenessUsers();
+  const yjsCtx = useYjsContext();
   const showErrorToast = useErrorToast();
 
   useEffect(() => {
@@ -77,6 +79,14 @@ export function NodeDetailLayout({
 
   const handleDescriptionUpdate = (description: string) => {
     updateCache((prev) => ({ ...prev, description }));
+    queryClient.setQueryData<GetFlowchartResponse>(nodeKeys.flowchart(projectId), (old) =>
+      old
+        ? {
+            ...old,
+            nodes: old.nodes?.map((n) => (n.nodeId === nodeId ? { ...n, description } : n)),
+          }
+        : old,
+    );
   };
 
   const menuActions = useNodeMenuActions({
@@ -84,6 +94,7 @@ export function NodeDetailLayout({
     projectId,
     nodeTitle: nodeDetail?.title,
     nodeNumber: nodeDetail?.number,
+    isMeetingEnded: nodeDetail?.meeting?.status === 'ENDED',
     onDeleteSuccess,
   });
 
@@ -129,7 +140,10 @@ export function NodeDetailLayout({
       </div>
 
       <div className="flex flex-col gap-6 pb-5">
-        <EditorContent editor={titleEditor} />
+        <div className="relative" data-typing-profile-container>
+          <EditorContent editor={titleEditor} />
+          <TypingProfilePresence editor={titleEditor} yjsCtx={yjsCtx} field={YJS_FIELDS.title} />
+        </div>
 
         <div className="flex flex-col gap-5">
           <MetaRow icon={<IconTag />} label="태그">

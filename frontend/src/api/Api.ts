@@ -352,6 +352,8 @@ export interface AnalyzeDraggedNodesResponse {
   actionItemsAnalysis?: ActionItemsAnalysisItem;
   /** 회의 내용 기반 AI 발전 아이디어 제안 (마크다운) */
   developmentIdeas?: string;
+  /** 노트 내용 기반 AI 요약 */
+  notesSummary?: string;
   /** 회의 관계 시각화 Mermaid 코드 */
   mermaidCode?: string;
 }
@@ -1811,6 +1813,11 @@ export interface NodeItem {
    */
   hasMeeting?: boolean;
   /**
+   * 회의 종료 여부 (회의가 없는 경우 false)
+   * @example false
+   */
+  isMeetingEnded?: boolean;
+  /**
    * 하위 노드 ID 목록
    * @example [110,111]
    */
@@ -2630,14 +2637,7 @@ export interface NotificationSummaryResponse {
    * 알림 유형
    * @example "MEETING_CREATED"
    */
-  type?:
-    | "MEETING_CREATED"
-    | "MEETING_INVITE"
-    | "MEETING_REMINDER"
-    | "MEETING_ENDED"
-    | "MEMBER_INVITE"
-    | "NODE_ASSIGNED"
-    | "NODE_UPDATED";
+  type?: "MEETING_INVITE" | "MEETING_REMINDER" | "NODE_ASSIGNED";
   /**
    * 알림 제목
    * @example "새 회의"

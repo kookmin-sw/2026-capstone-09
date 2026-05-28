@@ -24,7 +24,7 @@ interface ChatSidebarProps {
   onSelectChat: (chatId: number | null) => void;
   onHoverChange: (chatId: number | null) => void;
   onMenuOpenChange: (chatId: number | null) => void;
-  onCurrentChatClear: () => void;
+  onCurrentChatClear: (deletedChatSessionId?: number) => void;
 }
 
 export function ChatSidebar({

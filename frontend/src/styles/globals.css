@@ -448,6 +448,35 @@ body {
   max-width: none;
 }
 
+/* WDS CSS 리셋이 em { font: inherit } 으로 font-style을 초기화하므로 복원 */
+.ProseMirror em {
+  font-style: italic;
+}
+
+/* 이미지: 컨테이너 너비에 맞게 */
+.ProseMirror img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* 인라인 코드: GitHub 스타일 */
+.ProseMirror code:not(pre > code) {
+  background: var(--color-primary-99);
+  color: var(--color-primary-20);
+  border-radius: 4px;
+  padding: 0.15em 0.4em;
+  font-size: 85%;
+  font-family: var(--font-mono);
+  font-weight: 400;
+}
+
+/* prose 플러그인이 code 앞뒤에 붙이는 백틱 제거 */
+.ProseMirror code::before,
+.ProseMirror code::after {
+  content: '' !important;
+}
+
 /* placeholder용 스타일 */
 .tiptap p.is-editor-empty:first-child::before {
   color: #adb5bd;

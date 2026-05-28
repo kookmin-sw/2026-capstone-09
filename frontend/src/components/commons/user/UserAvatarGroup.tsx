@@ -11,7 +11,8 @@ import {
 
 import { normalizeImageUrl } from '@/utils/normalizeImageUrl';
 
-const IMAGE_AVATAR_SX = (_theme: Theme) => ({
+const IMAGE_AVATAR_SX = (theme: Theme) => ({
+  backgroundColor: theme.semantic.background.normal.normal,
   padding: '0',
 });
 
@@ -38,15 +39,11 @@ interface UserAvatarWithTooltipProps {
 
 const UserAvatarWithTooltip = ({ user, position, size }: UserAvatarWithTooltipProps) => {
   const profileImageUrl = normalizeImageUrl(user.profileImageUrl ?? undefined);
-  const borderStyle =
-    !profileImageUrl && user.color
-      ? { outline: `2.5px solid ${user.color}`, borderRadius: '50%' }
-      : undefined;
 
   return (
     <Tooltip>
       <TooltipTrigger>
-        <div style={borderStyle}>
+        <div>
           <Avatar
             variant="person"
             size={size}

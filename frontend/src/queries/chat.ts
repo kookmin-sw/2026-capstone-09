@@ -77,6 +77,8 @@ export function useGetChatSessionDetail({ projectId, chatSessionId, cursorId, si
       return response.data;
     },
     enabled: !!projectId && !!chatSessionId,
+    staleTime: 5000,
+    refetchOnMount: false,
   });
 }
 

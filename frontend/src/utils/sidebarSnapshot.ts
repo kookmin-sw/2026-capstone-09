@@ -4,11 +4,14 @@ export const SESSION_KEY = 'node_sidebar_open';
 const SIDEBAR_CHANGE_EVENT = 'sidebar-state-change';
 
 export function subscribeToSession(callback: () => void) {
-  window.addEventListener('storage', callback);
-  window.addEventListener(SIDEBAR_CHANGE_EVENT, callback);
+  const handleEvent = () => {
+    callback();
+  };
+
+  window.addEventListener(SIDEBAR_CHANGE_EVENT, handleEvent);
+
   return () => {
-    window.removeEventListener('storage', callback);
-    window.removeEventListener(SIDEBAR_CHANGE_EVENT, callback);
+    window.removeEventListener(SIDEBAR_CHANGE_EVENT, handleEvent);
   };
 }
 
@@ -26,5 +29,12 @@ export function setSidebarState(isOpen: boolean) {
   } else {
     sessionStorage.removeItem(SESSION_KEY);
   }
-  window.dispatchEvent(new Event(SIDEBAR_CHANGE_EVENT));
+
+  // CustomEvent로 변경 알림
+  const event = new CustomEvent(SIDEBAR_CHANGE_EVENT, {
+    detail: { isOpen },
+    bubbles: true,
+    cancelable: true
+  });
+  window.dispatchEvent(event);
 }

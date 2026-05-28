@@ -112,7 +112,7 @@ export function NodeMenu({
             </CustomMenuItem>
           )}
 
-          {variant === 'sub-with-meeting' && (
+          {variant === 'sub-with-meeting' && !!onEditMeeting && (
             <CustomMenuItem
               value="edit-meeting"
               icon={<IconPencil />}

@@ -1,11 +1,14 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { ContentBadge, ThemeColorsToken, Typography } from '@wanteddev/wds';
 import { IconClose } from '@wanteddev/wds-icon';
+import { useRef } from 'react';
 
 import { TagItem } from '@/api/Api';
 import { ColorType } from '@/constants/badgeColor';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import { tagKeys } from '@/queries/keys/tagKeys';
 import {
   useAddNodeTagMutation,
   useCreateTagMutation,
@@ -45,6 +48,7 @@ export function TagField({ projectId, nodeId, initialTags }: TagFieldProps) {
     setOutsideCloseDisabled,
   } = usePickerState();
 
+  const queryClient = useQueryClient();
   const showErrorToast = useErrorToast();
   const { tags, yAddTag, yRemoveTag } = useYjsTags(initialTags);
   const { data: allTags = [] } = useProjectTagsQuery(projectId);
@@ -53,6 +57,9 @@ export function TagField({ projectId, nodeId, initialTags }: TagFieldProps) {
   const { mutate: createTag } = useCreateTagMutation(projectId);
   const { mutate: deleteTag } = useDeleteTagMutation(projectId);
   const { mutate: updateTagColor } = useUpdateTagColorMutation(projectId);
+
+  const isSubmittingRef = useRef(false);
+  const pendingEnterRef = useRef(false);
 
   const assignedTagIds = new Set(tags.map((t) => t.tagId));
 
@@ -121,8 +128,9 @@ export function TagField({ projectId, nodeId, initialTags }: TagFieldProps) {
     !allTags.some((t) => t.name?.toLowerCase() === inputValue.trim().toLowerCase());
   const totalItems = filteredTags.length + (canCreate ? 1 : 0);
 
-  const handleCreateTag = () => {
-    const trimmed = inputValue.trim();
+  const handleCreateTag = (overrideValue?: string) => {
+    if (isSubmittingRef.current) return;
+    const trimmed = (overrideValue ?? inputValue).trim();
     if (!trimmed) return;
 
     const exactMatch = allTags.find((t) => t.name?.toLowerCase() === trimmed.toLowerCase());
@@ -131,23 +139,38 @@ export function TagField({ projectId, nodeId, initialTags }: TagFieldProps) {
       return;
     }
 
+    isSubmittingRef.current = true;
     createTag(
       { name: trimmed, color: randomColor() },
       {
-        onSuccess: (newTag) => {
-          if (!newTag?.tagId) return;
-          yAddTag(newTag);
-          addTag(newTag.tagId, {
-            onError: (err) => {
-              yRemoveTag(newTag.tagId!);
-              showErrorToast(err, '태그 추가에 실패했어요.');
-            },
-          });
-          resetInput();
+        onSuccess: async (newTag) => {
+          isSubmittingRef.current = false;
+          if (newTag?.tagId) {
+            handleAdd(newTag);
+            return;
+          }
+          // API가 tagId를 응답에 포함하지 않는 경우: tags 목록을 refetch 후 이름으로 탐색
+          await queryClient.refetchQueries({ queryKey: tagKeys.list(projectId) });
+          const freshTags = queryClient.getQueryData<TagItem[]>(tagKeys.list(projectId));
+          const created = freshTags?.find((t) => t.name?.toLowerCase() === trimmed.toLowerCase());
+          if (created?.tagId) handleAdd(created);
         },
-        onError: (err) => showErrorToast(err, '태그 생성에 실패했어요.'),
+        onError: (err) => {
+          isSubmittingRef.current = false;
+          showErrorToast(err, '태그 생성에 실패했어요.');
+        },
       },
     );
+  };
+
+  const handleCompositionEnd = (e: React.CompositionEvent<HTMLInputElement>) => {
+    if (!pendingEnterRef.current) return;
+    pendingEnterRef.current = false;
+    if (selectedIndex >= 0 && selectedIndex < filteredTags.length) {
+      handleAdd(filteredTags[selectedIndex]);
+    } else {
+      handleCreateTag(e.currentTarget.value);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -159,6 +182,10 @@ export function TagField({ projectId, nodeId, initialTags }: TagFieldProps) {
       setSelectedIndex((prev) => Math.max(prev - 1, -1));
     } else if (e.key === 'Enter') {
       e.preventDefault();
+      if (e.nativeEvent.isComposing) {
+        pendingEnterRef.current = true;
+        return;
+      }
       if (selectedIndex >= 0 && selectedIndex < filteredTags.length) {
         handleAdd(filteredTags[selectedIndex]);
       } else if (selectedIndex === filteredTags.length && canCreate) {
@@ -208,6 +235,7 @@ export function TagField({ projectId, nodeId, initialTags }: TagFieldProps) {
             value={inputValue}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
+            onCompositionEnd={handleCompositionEnd}
             className="text-label-normal min-w-20 flex-1 border-0 bg-transparent text-sm outline-none"
             onClick={(e) => e.stopPropagation()}
           />
@@ -256,7 +284,7 @@ export function TagField({ projectId, nodeId, initialTags }: TagFieldProps) {
                 <button
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={handleCreateTag}
+                  onClick={() => handleCreateTag()}
                   className={`text-label-alternative flex w-full items-center gap-2 px-3 py-2 ${selectedIndex === filteredTags.length ? 'bg-gray-100' : 'bg-white hover:bg-gray-50'}`}
                 >
                   <Typography variant="caption1">

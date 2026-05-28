@@ -34,6 +34,7 @@ export default function NodeNoteTab({ nodeId, projectId }: NodeNoteTabProps) {
         <Editor
           content={nodeDetail?.noteContent}
           fragment={fragment}
+          collaborationField={YJS_FIELDS.note}
           onUpdate={handleUpdate}
         />
       )}

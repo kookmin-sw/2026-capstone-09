@@ -2,3 +2,5 @@ node_modules/
 dist/
 .env
 .env.production
+
+flowmeet-extension.zip

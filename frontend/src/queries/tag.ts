@@ -3,7 +3,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { privateApi } from '@/api';
-import { CreateTagRequest, TagItem, UpdateTagRequest } from '@/api/Api';
+import { CreateTagRequest, GetFlowchartResponse, TagItem, UpdateTagRequest } from '@/api/Api';
+import { nodeKeys } from './keys/nodeKeys';
 import { tagKeys } from './keys/tagKeys';
 
 export function useProjectTagsQuery(projectId: number) {
@@ -16,15 +17,37 @@ export function useProjectTagsQuery(projectId: number) {
 }
 
 export function useAddNodeTagMutation(projectId: number, nodeId: number) {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (tagId: number) =>
       privateApi.tag.addNodeTag(projectId, nodeId, { tagId }),
+    onSuccess: (_data, tagId) => {
+      const allTags = queryClient.getQueryData<TagItem[]>(tagKeys.list(projectId));
+      const tag = allTags?.find((t) => t.tagId === tagId);
+      if (tag) {
+        queryClient.setQueryData<GetFlowchartResponse>(nodeKeys.flowchart(projectId), (old) =>
+          old
+            ? { ...old, nodes: old.nodes?.map((n) => (n.nodeId === nodeId ? { ...n, tags: [...(n.tags ?? []), tag] } : n)) }
+            : old,
+        );
+      }
+      void queryClient.invalidateQueries({ queryKey: nodeKeys.detail(projectId, nodeId) });
+    },
   });
 }
 
 export function useRemoveNodeTagMutation(projectId: number, nodeId: number) {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (tagId: number) => privateApi.tag.removeNodeTag(projectId, nodeId, tagId),
+    onSuccess: (_data, tagId) => {
+      queryClient.setQueryData<GetFlowchartResponse>(nodeKeys.flowchart(projectId), (old) =>
+        old
+          ? { ...old, nodes: old.nodes?.map((n) => (n.nodeId === nodeId ? { ...n, tags: n.tags?.filter((t) => t.tagId !== tagId) } : n)) }
+          : old,
+      );
+      void queryClient.invalidateQueries({ queryKey: nodeKeys.detail(projectId, nodeId) });
+    },
   });
 }
 

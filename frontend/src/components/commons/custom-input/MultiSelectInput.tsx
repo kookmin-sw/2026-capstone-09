@@ -1,10 +1,11 @@
 'use client';
 
-import { FormField, List, ListCell, ContentBadge } from '@wanteddev/wds';
+import { FormField, List, ListCell, ContentBadge, MenuList } from '@wanteddev/wds';
 import { Box } from '@wanteddev/wds-engine';
 import type { Theme } from '@wanteddev/wds-engine';
 import { IconCheck, IconPerson, IconFolder, IconSend, IconChevronDownThickSmall, IconChevronUpThickSmall } from '@wanteddev/wds-icon';
 import {ReactNode, useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { normalizeImageUrl } from '@/utils/normalizeImageUrl';
 
 export interface UserOption {
   id: string;
@@ -16,7 +17,6 @@ export interface UserOption {
 export interface NodeOption {
   id: string;
   label: string;
-  nodeId: number;
   number?: string;
   trailingContent?: ReactNode;
 }
@@ -46,23 +46,28 @@ export interface MultiSelectInputProps {
 
 type MenuStage = 'category' | 'user-list' | 'node-list' | 'combined-list' | null;
 
-const MENU_ITEM_STYLES = {
-  padding: '0.75rem 0.75rem',
+// 공통 ListCell 스타일
+const getListCellStyle = (isSelectedIndex: boolean, extraStyles = {}) => (theme: Theme) => ({
+  width: 'calc(100% - 16px)',
+  padding: '12px',
+  borderRadius: '16px',
   cursor: 'pointer',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '0.5rem',
-  border: 'none',
-  width: '100%',
-  textAlign: 'left' as const,
-};
+  ...(isSelectedIndex && {
+    backgroundColor: theme.semantic.background.normal.alternative,
+  }),
+  '&:hover': {
+    backgroundColor: theme.semantic.background.normal.alternative,
+  },
+  ...extraStyles,
+});
 
 // leadingContent 생성 헬퍼 함수
 const createUserLeadingContent = (user: UserOption): ReactNode => {
-  if (user.profileImageUrl) {
+  const normalizedUrl = normalizeImageUrl(user.profileImageUrl);
+  if (normalizedUrl) {
     return (
       <img
-        src={user.profileImageUrl}
+        src={normalizedUrl}
         alt={user.label}
         className="w-6 h-6 rounded-full object-cover"
       />
@@ -79,14 +84,16 @@ const createNodeLeadingContent = (node: NodeOption): ReactNode => {
   const isSubNode = node.number?.includes('.');
 
   return (
-    <ContentBadge
-      size="xsmall"
-      variant={isSubNode ? 'outlined' : 'solid'}
-      color={isSubNode ? 'neutral' : undefined}
-      className={isSubNode ? undefined : '!bg-primary-40/10 !text-primary-40'}
-    >
-      #{node.number}
-    </ContentBadge>
+    <div className="flex items-center h-6">
+      <ContentBadge
+        size="xsmall"
+        variant={isSubNode ? 'outlined' : 'solid'}
+        color={isSubNode ? 'neutral' : undefined}
+        className={isSubNode ? undefined : '!bg-primary-40/10 !text-primary-40'}
+      >
+        #{node.number}
+      </ContentBadge>
+    </div>
   );
 };
 
@@ -106,17 +113,27 @@ export const MultiSelectInput = ({
   const [tempSelectedIds, setTempSelectedIds] = useState<string[]>([]);
   const [currentType, setCurrentType] = useState<'user' | 'node' | null>(null);
   const [isComposing, setIsComposing] = useState(false);
-  const [isListExpanded, setIsListExpanded] = useState(true);
+  const [isListExpanded, setIsListExpanded] = useState(false); // 초기값을 false로 변경 (닫힌 상태로 시작)
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<(HTMLElement | null)[]>([]);
 
-  // autoFocus 처리
   useEffect(() => {
     if (autoFocus && inputRef.current) {
       inputRef.current.focus();
     }
   }, [autoFocus]);
+
+  // 키보드 선택 항목 스크롤
+  useEffect(() => {
+    if (itemRefs.current[selectedIndex]) {
+      itemRefs.current[selectedIndex]?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
+    }
+  }, [selectedIndex]);
 
   const selectedItems: SelectedItem[] = useMemo(() => value.mentions.map((mention) => {
     if (mention.type === 'user') {
@@ -320,9 +337,20 @@ export const MultiSelectInput = ({
     });
 
     setInputText('');
+    setIsListExpanded(false); // 리스트를 닫힌 상태로 변경
     onChange?.({
       text: '',
-      mentions: [],
+      mentions: value.mentions, // 참조 노드/사용자 유지
+    });
+  };
+
+  // 선택된 항목 삭제 핸들러
+  const handleRemoveItem = (item: SelectedItem) => {
+    onChange?.({
+      text: value.text,
+      mentions: value.mentions.filter(
+        (m) => !(m.type === item.type && m.id === item.id)
+      ),
     });
   };
 
@@ -448,17 +476,7 @@ export const MultiSelectInput = ({
             onCompositionStart={() => setIsComposing(true)}
             onCompositionEnd={() => setIsComposing(false)}
             placeholder={placeholder}
-            className={className}
-            style={{
-              flex: 1,
-              height: '100%',
-              padding: '0.75rem',
-              border: 'none',
-              background: 'transparent',
-              outline: 'none',
-              fontSize: '1rem',
-              lineHeight: '1.5rem',
-            }}
+            className={`flex-1 h-full px-3 border-none bg-transparent outline-none text-base leading-6 ${className || ''}`}
           />
           <Box
             as="button"
@@ -567,6 +585,7 @@ export const MultiSelectInput = ({
                             <ListCell
                               key={`${item.type}-${item.id}-${index}`}
                               leadingContent={item.leadingContent}
+                              onClick={() => handleRemoveItem(item)}
                               sx={{
                                 padding: '0.75rem',
                               }}
@@ -596,6 +615,7 @@ export const MultiSelectInput = ({
                             <ListCell
                               key={`${item.type}-${item.id}-${index}`}
                               leadingContent={item.leadingContent}
+                              onClick={() => handleRemoveItem(item)}
                               sx={{
                                 padding: '0.75rem',
                               }}
@@ -630,50 +650,48 @@ export const MultiSelectInput = ({
               sx={(theme: Theme) => ({
                 minWidth: '25rem',
                 backgroundColor: theme.semantic.background.elevated.normal,
-                borderRadius: '0.75rem',
+                borderRadius: '1rem',
                 boxShadow: theme.semantic.elevation.shadow.normal.medium,
                 overflow: 'hidden',
               })}
             >
               {menuStage === 'category' && (
-                <>
-                  <Box
-                    as="button"
-                    type="button"
+                <MenuList
+                  sx={{ padding: '8px 0' }}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                  }}
+                >
+                  <ListCell
                     role="menuitem"
+                    alignItems="center"
+                    disableInteraction={true}
                     onClick={() => handleCategorySelect('user')}
-                    sx={(theme: Theme) => ({
-                      ...MENU_ITEM_STYLES,
-                      background: selectedIndex === 0 ? theme.semantic.background.normal.alternative : 'transparent',
-                      '&:hover': {
-                        backgroundColor: theme.semantic.background.normal.alternative,
-                      },
-                    })}
+                    leadingContent={<IconPerson width={20} height={20} />}
+                    sx={getListCellStyle(selectedIndex === 0)}
                   >
-                    <IconPerson width={20} height={20} />
                     사용자
-                  </Box>
-                  <Box
-                    as="button"
-                    type="button"
+                  </ListCell>
+                  <ListCell
                     role="menuitem"
+                    alignItems="center"
+                    disableInteraction={true}
                     onClick={() => handleCategorySelect('node')}
-                    sx={(theme: Theme) => ({
-                      ...MENU_ITEM_STYLES,
-                      background: selectedIndex === 1 ? theme.semantic.background.normal.alternative : 'transparent',
-                      '&:hover': {
-                        backgroundColor: theme.semantic.background.normal.alternative,
-                      },
-                    })}
+                    leadingContent={<IconFolder width={20} height={20} />}
+                    sx={getListCellStyle(selectedIndex === 1)}
                   >
-                    <IconFolder width={20} height={20} />
                     노드
-                  </Box>
-                </>
+                  </ListCell>
+                </MenuList>
               )}
 
               {(menuStage === 'user-list' || menuStage === 'node-list') && (
-                <Box sx={{ maxHeight: '12.5rem', overflowY: 'auto' }}>
+                <MenuList
+                  sx={{ maxHeight: '12.5rem', overflowY: 'auto' }}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                  }}
+                >
                   {(() => {
                     const options = menuStage === 'user-list' ? filteredUserOptions : filteredNodeOptions;
                     const isUserList = menuStage === 'user-list';
@@ -682,26 +700,24 @@ export const MultiSelectInput = ({
                         const isSelected = tempSelectedIds.includes(item.id);
                         const isSelectedIndex = index === selectedIndex;
                         return (
-                          <Box
-                            as="button"
-                            type="button"
-                            role="menuitemcheckbox"
-                            aria-checked={isSelected}
+                          <ListCell
                             key={item.id}
+                            ref={(el) => { itemRefs.current[index] = el; }}
+                            role="menuitem"
+                            alignItems="center"
+                            disableInteraction={true}
                             onClick={() => handleItemToggle(item.id)}
-                            sx={(theme: Theme) => ({
-                              ...MENU_ITEM_STYLES,
-                              backgroundColor: isSelected || isSelectedIndex ? theme.semantic.background.normal.alternative : 'transparent',
-                              '&:hover': {
-                                backgroundColor: theme.semantic.background.normal.alternative,
-                              },
-                            })}
+                            leadingContent={isUserList ? createUserLeadingContent(item as UserOption) : createNodeLeadingContent(item as NodeOption)}
+                            trailingContent={
+                              <div className="flex items-center gap-2">
+                                {item.trailingContent}
+                                {isSelected && <IconCheck width={16} height={16} className="text-primary-50" />}
+                              </div>
+                            }
+                            sx={getListCellStyle(isSelectedIndex)}
                           >
-                            {isUserList ? createUserLeadingContent(item as UserOption) : createNodeLeadingContent(item as NodeOption)}
-                            <Box sx={{ flex: 1 }}>{item.label}</Box>
-                            {item.trailingContent}
-                            {isSelected && <IconCheck width={16} height={16} style={{ color: '#04E6A2' }} />}
-                          </Box>
+                            {item.label}
+                          </ListCell>
                         );
                       })
                     ) : (
@@ -710,11 +726,16 @@ export const MultiSelectInput = ({
                       </Box>
                     );
                   })()}
-                </Box>
+                </MenuList>
               )}
 
               {menuStage === 'combined-list' && (
-                <Box sx={{ maxHeight: '12.5rem', overflowY: 'auto' }}>
+                <MenuList
+                  sx={{ maxHeight: '12.5rem', overflowY: 'auto' }}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                  }}
+                >
                   {filteredUserOptions.length > 0 && (
                     <>
                       <Box sx={(theme: Theme) => ({
@@ -733,12 +754,12 @@ export const MultiSelectInput = ({
 
                         const isSelectedIndex = index === selectedIndex;
                         return (
-                          <Box
-                            as="button"
-                            type="button"
-                            role="menuitemcheckbox"
-                            aria-checked={isSelected}
+                          <ListCell
                             key={`user-${item.id}`}
+                            ref={(el) => { itemRefs.current[index] = el; }}
+                            role="menuitem"
+                            alignItems="center"
+                            disableInteraction={true}
                             onClick={() => {
                               if (currentType === 'user') {
                                 handleItemToggle(item.id);
@@ -751,19 +772,17 @@ export const MultiSelectInput = ({
                                 : [...otherMentions, { type: 'user' as const, id: item.id }];
                               onChange?.({ text: inputText, mentions: newMentions });
                             }}
-                            sx={(theme: Theme) => ({
-                              ...MENU_ITEM_STYLES,
-                              backgroundColor: isSelected || isSelectedIndex ? theme.semantic.background.normal.alternative : 'transparent',
-                              '&:hover': {
-                                backgroundColor: theme.semantic.background.normal.alternative,
-                              },
-                            })}
+                            leadingContent={createUserLeadingContent(item)}
+                            trailingContent={
+                              <div className="flex items-center gap-2">
+                                {item.trailingContent}
+                                {isSelected && <IconCheck width={16} height={16} className="text-primary-50" />}
+                              </div>
+                            }
+                            sx={getListCellStyle(isSelectedIndex)}
                           >
-                            {createUserLeadingContent(item)}
-                            <Box sx={{ flex: 1 }}>{item.label}</Box>
-                            {item.trailingContent}
-                            {isSelected && <IconCheck width={16} height={16} style={{ color: '#04E6A2' }} />}
-                          </Box>
+                            {item.label}
+                          </ListCell>
                         );
                       })}
                     </>
@@ -788,12 +807,12 @@ export const MultiSelectInput = ({
                         const globalIndex = filteredUserOptions.length + index;
                         const isSelectedIndex = globalIndex === selectedIndex;
                         return (
-                          <Box
-                            as="button"
-                            type="button"
-                            role="menuitemcheckbox"
-                            aria-checked={isSelected}
+                          <ListCell
                             key={`node-${item.id}`}
+                            ref={(el) => { itemRefs.current[globalIndex] = el; }}
+                            role="menuitem"
+                            alignItems="center"
+                            disableInteraction={true}
                             onClick={() => {
                               if (currentType === 'node') {
                                 handleItemToggle(item.id);
@@ -806,24 +825,22 @@ export const MultiSelectInput = ({
                                 : [...otherMentions, { type: 'node' as const, id: item.id }];
                               onChange?.({ text: inputText, mentions: newMentions });
                             }}
-                            sx={(theme: Theme) => ({
-                              ...MENU_ITEM_STYLES,
-                              backgroundColor: isSelected || isSelectedIndex ? theme.semantic.background.normal.alternative : 'transparent',
-                              '&:hover': {
-                                backgroundColor: theme.semantic.background.normal.alternative,
-                              },
-                            })}
+                            leadingContent={createNodeLeadingContent(item)}
+                            trailingContent={
+                              <div className="flex items-center gap-2">
+                                {item.trailingContent}
+                                {isSelected && <IconCheck width={16} height={16} className="text-primary-50" />}
+                              </div>
+                            }
+                            sx={getListCellStyle(isSelectedIndex, { alignItems: 'center' })}
                           >
-                            {createNodeLeadingContent(item)}
-                            <Box sx={{ flex: 1 }}>{item.label}</Box>
-                            {item.trailingContent}
-                            {isSelected && <IconCheck width={16} height={16} style={{ color: '#04E6A2' }} />}
-                          </Box>
+                            {item.label}
+                          </ListCell>
                         );
                       })}
                     </>
                   )}
-                </Box>
+                </MenuList>
               )}
             </Box>
           </Box>

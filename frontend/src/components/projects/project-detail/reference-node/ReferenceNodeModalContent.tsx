@@ -3,7 +3,7 @@
 import { TextButton } from '@wanteddev/wds';
 import { IconClose, IconPlus } from '@wanteddev/wds-icon';
 
-import { ReferencedNodesList } from './ReferencedNodesList';
+import { NodeNumberBadge, ReferencedNodesList } from './ReferencedNodesList';
 import { ReferenceNodeAddForm } from './ReferenceNodeAddForm';
 import {
   type ReferencedNodeItem,
@@ -44,7 +44,12 @@ export const ReferenceNodeModalContent = ({
   return (
     <form className="flex w-full flex-col gap-8" onSubmit={handleCreate} noValidate>
       <header className="flex items-center justify-between overflow-hidden">
-        <h2 className="text-heading-1 text-label-normal font-medium">참조 노드</h2>
+        <h2 className="text-heading-1 text-label-normal flex min-w-0 items-center gap-2 font-medium">
+          {currentNode?.number && <NodeNumberBadge number={currentNode.number} />}
+          <span className="min-w-0 truncate">
+            {currentNode?.title ? `"${currentNode.title}"의 참조 노드` : '참조 노드'}
+          </span>
+        </h2>
         <button
           type="button"
           onClick={onClose}

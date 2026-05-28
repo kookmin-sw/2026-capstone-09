@@ -30,18 +30,31 @@ import { EdgeDeleteConfirmContent } from '@/components/projects/project-detail/e
 import { MultiNodeSummaryModalContent } from '@/components/projects/project-detail/multi-node-summary/MultiNodeSummaryModalContent';
 import type { MultiNodeSummaryNode } from '@/components/projects/project-detail/multi-node-summary/types';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import { useNodeMenuActions } from '@/hooks/useNodeMenuActions';
 import { useDeleteEdgeMutation } from '@/queries/edge';
 import { nodeKeys } from '@/queries/keys/nodeKeys';
 import { useFlowchartQuery } from '@/queries/node';
 import { useAnalyzeDraggedNodesMutation } from '@/queries/nodeAnalysis';
 import { convertToReactFlow } from '@/utils/flowchartToReactFlow';
 import { CustomNode } from './CustomNode';
+import { EdgeHoverProvider } from './EdgeHoverContext';
 import { NodeButton } from './NodeButton';
 import { ReferenceEdge } from './ReferenceEdge';
 
 interface NodeFlowViewProps {
   projectId: number;
 }
+
+const SUMMARY_LOADING_MESSAGES = [
+  '선택한 노드를 모으고 있어요',
+  'AI가 회의 내용을 분석하고 있어요',
+  '회의 간 관계를 정리하고 있어요',
+  '액션 아이템을 추출하고 있어요',
+  '거의 다 됐어요, 잠시만 기다려 주세요',
+];
+
+const SUMMARY_MESSAGE_INTERVAL_MS = 3000;
+const REFERENCE_EDGE_CREATED_EVENT = 'flowmeet:reference-edge-created';
 
 const nodeTypes: NodeTypes = {
   mainNode: CustomNode,
@@ -66,9 +79,25 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
   const { data: flowChart, isFetching: loading } = useFlowchartQuery(projectId);
   const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
   const [sidebarNodeId, setSidebarNodeId] = useState<number | null>(null);
-  const [showDashedLines, setShowDashedLines] = useState(false);
+  const [showDashedLines, setShowDashedLines] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const saved = localStorage.getItem('showDashedLines');
+    return saved !== null ? JSON.parse(saved) : false;
+  });
   const [isCreating, setIsCreating] = useState(false);
   const [selectedNodes, setSelectedNodes] = useState<Node[]>([]);
+  const [summaryMessageIndex, setSummaryMessageIndex] = useState(0);
+
+  useEffect(() => {
+    if (!isSummaryPending) {
+      setSummaryMessageIndex(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setSummaryMessageIndex((prev) => Math.min(prev + 1, SUMMARY_LOADING_MESSAGES.length - 1));
+    }, SUMMARY_MESSAGE_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [isSummaryPending]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -109,20 +138,34 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
     [nodes, setNodes],
   );
 
-  // localStorage에서 점선 표시 상태 불러오기
-  useEffect(() => {
-    const saved = localStorage.getItem('showDashedLines');
-    if (saved !== null) {
-      queueMicrotask(() => {
-        setShowDashedLines(JSON.parse(saved));
-      });
-    }
-  }, []);
-
   // 점선 토글 상태를 localStorage에 저장
   useEffect(() => {
     localStorage.setItem('showDashedLines', JSON.stringify(showDashedLines));
   }, [showDashedLines]);
+
+  useEffect(() => {
+    const handleReferenceEdgeCreated = () => setShowDashedLines(true);
+
+    window.addEventListener(REFERENCE_EDGE_CREATED_EVENT, handleReferenceEdgeCreated);
+    return () => {
+      window.removeEventListener(REFERENCE_EDGE_CREATED_EVENT, handleReferenceEdgeCreated);
+    };
+  }, []);
+
+  // 뷰포트 위치 복원 (refetch 후에도 마지막 위치 유지)
+  useEffect(() => {
+    const saved = localStorage.getItem(`flowchart_viewport_${projectId}`);
+    if (saved) {
+      try {
+        const viewport = JSON.parse(saved);
+        requestAnimationFrame(() => {
+          setViewport(viewport, { duration: 0 });
+        });
+      } catch {
+        // JSON 파싱 실패 시 무시
+      }
+    }
+  }, [projectId, setViewport]);
 
   // 알림 클릭으로 넘어온 openNode param 처리
   useEffect(() => {
@@ -244,12 +287,12 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
               y: topPadding - newFlowNode.position.y * currentViewport.zoom,
               zoom: currentViewport.zoom,
             },
-            { duration: 800 }
+            { duration: 800 },
           );
         }
       }, 100);
     },
-    [setNodes, setEdges, setSelectedNodeId, getViewport, setViewport]
+    [setNodes, setEdges, setSelectedNodeId, getViewport, setViewport],
   );
 
   // 서브 노드 생성
@@ -286,7 +329,7 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
         setIsCreating(false);
       }
     },
-    [flowChart, updateFlowAndMoveToNode, projectId, isCreating, queryClient, clearSelection]
+    [flowChart, updateFlowAndMoveToNode, projectId, isCreating, queryClient, clearSelection],
   );
 
   // 메인 노드 생성
@@ -387,6 +430,16 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
 
   const isMultiNodeSelected = selectedNodes.length > 1;
 
+  const selectedNodeData = !isMultiNodeSelected ? selectedNodes[0]?.data : null;
+  const { onCreateMeeting } = useNodeMenuActions({
+    nodeId: selectedNodeId ?? 0,
+    projectId,
+    nodeTitle: selectedNodeData?.title ?? '',
+    nodeNumber: selectedNodeData?.number,
+    isMeetingEnded: selectedNodeData?.isMeetingEnded,
+    onBeforeAction: clearSelection,
+  });
+
   const visibleEdges = useMemo(() => {
     if (showDashedLines) {
       return edgesWithHandlers;
@@ -410,6 +463,9 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
         onNodeMouseEnter={onNodeMouseEnter}
         onPaneClick={clearSelection}
         onSelectionChange={onSelectionChange}
+        onMove={(_event, viewport) => {
+          localStorage.setItem(`flowchart_viewport_${projectId}`, JSON.stringify(viewport));
+        }}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         nodesDraggable={false}
@@ -444,11 +500,8 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
                 : undefined
             }
             onAddMeeting={
-              selectedNodeId && !isMultiNodeSelected
-                ? () => {
-                    clearSelection();
-                    /* TODO: 모달 열기 */
-                  }
+              selectedNodeId && !isMultiNodeSelected && !selectedNodes[0]?.data.isMainNode && !selectedNodes[0]?.data.hasMeeting
+                ? onCreateMeeting
                 : undefined
             }
             onAISummary={selectedNodes.length > 1 ? handleAISummary : undefined}
@@ -461,15 +514,28 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
       </ReactFlow>
 
       {isSummaryPending && (
-        <div className="fixed inset-0 z-9998 flex items-center justify-center bg-material-dimmer">
-          <div
-            className="h-12 w-12 animate-spin rounded-full border-4 border-primary-90 border-t-primary-40"
-            aria-label="AI 요약 생성 중"
-          />
+        <div
+          className="bg-material-dimmer fixed inset-0 z-9998 flex items-center justify-center"
+          role="status"
+          aria-live="polite"
+        >
+          <div className="flex flex-col items-center gap-4">
+            <div
+              className="border-primary-90 border-t-primary-40 h-12 w-12 animate-spin rounded-full border-4"
+              aria-label="AI 요약 생성 중"
+            />
+            <span className="text-body-1 text-static-white font-medium">
+              {SUMMARY_LOADING_MESSAGES[summaryMessageIndex]}
+            </span>
+          </div>
         </div>
       )}
 
-      <NodeSidebar projectId={projectId} nodeId={sidebarNodeId} onClose={() => setSidebarNodeId(null)} />
+      <NodeSidebar
+        projectId={projectId}
+        nodeId={sidebarNodeId}
+        onClose={() => setSidebarNodeId(null)}
+      />
     </div>
   );
 }
@@ -477,7 +543,9 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
 export function NodeFlowView({ projectId }: NodeFlowViewProps) {
   return (
     <ReactFlowProvider>
-      <NodeFlowContent projectId={projectId} />
+      <EdgeHoverProvider>
+        <NodeFlowContent projectId={projectId} />
+      </EdgeHoverProvider>
     </ReactFlowProvider>
   );
 }

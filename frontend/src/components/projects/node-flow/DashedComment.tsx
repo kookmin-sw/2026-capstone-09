@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from 'react';
 
 import { EXAMPLE_PROJECT_SIDEBAR_PROFILE } from '@/constants/exampleConstant';
 import type { Edge } from '@/types/FlowChartTypes';
+import { getRelativeTime } from '@/utils/timeUtils';
 
 type DashedCommentProps =
   | { isCreateMode: true; edge?: never; onCommentCreate?: (comment: string) => void }
@@ -124,7 +125,7 @@ export function DashedComment(props: DashedCommentProps) {
     <CommentDisplay
       avatarSrc={edge.createdBy.profileImageUrl}
       nickname={edge.createdBy.nickname}
-      timeText="2일 전"
+      timeText={getRelativeTime(edge.createdAt)}
       comment={edge.comment}
     />
   );

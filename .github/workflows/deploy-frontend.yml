@@ -1,0 +1,33 @@
+name: Deploy Frontend to Vercel
+
+on:
+  push:
+    branches:
+      - frontend/develop
+    paths:
+      - "frontend/**"
+      - ".github/workflows/deploy-frontend.yml"
+
+jobs:
+  sync-to-fork:
+    name: Sync frontend/develop to Vercel fork
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout frontend/develop
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.SINJI_DEPLOY_TOKEN }}
+          fetch-depth: 0
+          ref: frontend/develop
+
+      - name: Push to Vercel fork
+        run: |
+          git remote add vercel-fork https://sinji2102:${{ secrets.SINJI_DEPLOY_TOKEN }}@github.com/sinji2102/2026-capstone-09
+          git config user.name sinji2102
+          git config user.email sinji.3010@gmail.com
+          git push -f vercel-fork frontend/develop:frontend/develop
+
+      - name: Clean up
+        run: |
+          git remote remove vercel-fork

@@ -1,7 +1,10 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
 
+import type { GetNotificationSettingResponse } from '@/api/data-contracts';
+import { notificationKeys } from '@/queries/keys/notificationKeys';
 import {
   useNotificationSettingQuery,
   useUpdateNotificationSettingMutation,
@@ -27,6 +30,15 @@ const DEFAULT_SETTINGS: NotificationSettings = {
   emailEnabled: false,
 };
 
+const toSettings = (
+  data: GetNotificationSettingResponse | null | undefined,
+): NotificationSettings => ({
+  meetingEnabled: data?.meetingEnabled ?? false,
+  nodeEnabled: data?.nodeEnabled ?? false,
+  desktopEnabled: data?.desktopEnabled ?? false,
+  emailEnabled: data?.emailEnabled ?? false,
+});
+
 const extractErrorCode = (caught: unknown): string | undefined => {
   if (typeof caught !== 'object' || caught === null) return undefined;
   const obj = caught as { error?: { code?: string }; code?: string };
@@ -38,20 +50,26 @@ export const useProjectNotificationsForm = ({
   onSaveSuccess,
   onSaveError,
 }: UseProjectNotificationsFormParams) => {
+  const queryClient = useQueryClient();
   const { data: queryData, isSuccess } = useNotificationSettingQuery(projectId);
   const updateMutation = useUpdateNotificationSettingMutation(projectId);
 
-  const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_SETTINGS);
-  const [isLoaded, setIsLoaded] = useState(false);
+  // 모달 열기 직전 prefetch 된 경우 캐시에서 바로 초기값을 잡아 토글이 false → 실제값으로
+  // 깜빡이는 문제를 막는다. 캐시가 비어 있으면 기존대로 useEffect 로 채운다.
+  const [settings, setSettings] = useState<NotificationSettings>(() => {
+    const cached = queryClient.getQueryData<GetNotificationSettingResponse | null>(
+      notificationKeys.setting(projectId),
+    );
+    return cached ? toSettings(cached) : DEFAULT_SETTINGS;
+  });
+  const [isLoaded, setIsLoaded] = useState<boolean>(() => {
+    const cached = queryClient.getQueryData(notificationKeys.setting(projectId));
+    return cached !== undefined;
+  });
 
   useEffect(() => {
     if (!isSuccess) return;
-    setSettings({
-      meetingEnabled: queryData?.meetingEnabled ?? false,
-      nodeEnabled: queryData?.nodeEnabled ?? false,
-      desktopEnabled: queryData?.desktopEnabled ?? false,
-      emailEnabled: queryData?.emailEnabled ?? false,
-    });
+    setSettings(toSettings(queryData));
     setIsLoaded(true);
   }, [isSuccess, queryData]);
 

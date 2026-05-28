@@ -4,9 +4,12 @@ import { IconChevronDoubleLeft, IconInbox } from '@wanteddev/wds-icon';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
-import { privateApi } from '@/api';
 import type { NotificationSummaryResponse } from '@/api/Api';
 import { useErrorToast } from '@/hooks/useErrorToast';
+import {
+  useMarkNotificationReadMutation,
+  useNotificationListQuery,
+} from '@/queries/notification';
 
 import { SidebarAlarmModalItem } from './SidebarAlarmModalItem';
 
@@ -14,8 +17,6 @@ interface SidebarAlarmModalProps {
   projectId: number;
   onClose: () => void;
   onNotificationClick?: (notification: NotificationSummaryResponse) => void;
-  /** 리스트 로드 완료 시 실제 unread 개수 동기화용 콜백 */
-  onListLoaded?: (unreadCount: number) => void;
 }
 
 const sidebarVariants = {
@@ -44,13 +45,9 @@ const NOTIFICATION_TYPE_LABELS: Record<
   NonNullable<NotificationSummaryResponse['type']>,
   string
 > = {
-  MEETING_CREATED: '회의 생성',
   MEETING_INVITE: '회의 초대',
   MEETING_REMINDER: '회의 알림',
-  MEETING_ENDED: '회의 종료',
-  MEMBER_INVITE: '멤버 초대',
   NODE_ASSIGNED: '노드 담당자 배정',
-  NODE_UPDATED: '노드 업데이트',
 };
 
 const formatNotificationTime = (createdAt?: string) => {
@@ -82,35 +79,19 @@ export const SidebarAlarmModal = ({
   projectId,
   onClose,
   onNotificationClick,
-  onListLoaded,
 }: SidebarAlarmModalProps) => {
   const showErrorToast = useErrorToast();
   const [hasScrolled, setHasScrolled] = useState(false);
-  const [notifications, setNotifications] = useState<NotificationSummaryResponse[]>([]);
+
+  // isPending인 동안에는 빈 상태('받은 알림이 없어요')를 그리지 않아 깜빡임을 막는다.
+  // 캐시가 남아 있으면 재오픈 시 바로 목록이 보인다.
+  const { data: notifications = [], isPending, isError, error } =
+    useNotificationListQuery(projectId);
+  const markAsRead = useMarkNotificationReadMutation();
 
   useEffect(() => {
-    let cancelled = false;
-    const fetchNotifications = async () => {
-      try {
-        const response = await privateApi.notification.getAllNotifications();
-        if (cancelled) return;
-        const items = (response.data.data?.content ?? []).filter(
-          (notification) => notification.projectId === projectId,
-        );
-        setNotifications(items);
-        // 실제 리스트 기준 unread 개수를 부모로 전달해 뱃지 동기화
-        const unreadInList = items.filter((n) => n.isRead === false).length;
-        onListLoaded?.(unreadInList);
-      } catch (caught) {
-        if (cancelled) return;
-        showErrorToast(caught, '알림 목록을 불러오지 못했어요.');
-      }
-    };
-    void fetchNotifications();
-    return () => {
-      cancelled = true;
-    };
-  }, [projectId, showErrorToast, onListLoaded]);
+    if (isError) showErrorToast(error, '알림 목록을 불러오지 못했어요.');
+  }, [isError, error, showErrorToast]);
 
   const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
     setHasScrolled(event.currentTarget.scrollTop > 0);
@@ -146,7 +127,7 @@ export const SidebarAlarmModal = ({
             aria-hidden="true"
           />
           <div className="min-h-0 flex-1 overflow-hidden px-2">
-            {notifications.length === 0 ? (
+            {isPending ? null : notifications.length === 0 ? (
               <div className="text-label-alternative flex h-full flex-col items-center justify-start gap-2 pt-40">
                 <IconInbox className="text-label-disable h-10 w-10" aria-hidden="true" />
                 <p className="text-body-2 font-medium">받은 알림이 없어요</p>
@@ -173,23 +154,9 @@ export const SidebarAlarmModal = ({
                         timeText={formatNotificationTime(item.createdAt)}
                         isUnread={item.isRead === false}
                         onClick={() => {
-                          // 클릭한 알림을 로컬에서 즉시 읽음 처리 (dot 즉시 사라짐)
+                          // 클릭한 알림을 낙관적으로 읽음 처리 (dot 즉시 사라지고, 뱃지는 캐시 갱신으로 동기화)
                           if (item.notificationId !== undefined && item.isRead === false) {
-                            setNotifications((prev) => {
-                              const next = prev.map((n) =>
-                                n.notificationId === item.notificationId
-                                  ? { ...n, isRead: true }
-                                  : n,
-                              );
-                              // 뱃지 카운트 즉시 동기화
-                              const unreadInList = next.filter((n) => n.isRead === false).length;
-                              onListLoaded?.(unreadInList);
-                              return next;
-                            });
-                            // 백엔드 동기화 (실패해도 UI는 그대로 유지)
-                            void privateApi.notification
-                              .markAsRead(item.notificationId)
-                              .catch(() => undefined);
+                            markAsRead.mutate(item.notificationId);
                           }
                           onNotificationClick?.(item);
                         }}
