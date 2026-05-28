@@ -219,9 +219,8 @@ export function convertToReactFlow(flowchart: GetFlowchartResponse | null): {
           source: String(edge.startNodeId),
           target: String(edge.endNodeId),
           type: 'reference',
-          // 참조 관계: 시작 노드 오른쪽 → 끝 노드 왼쪽
-          sourceHandle: 'source',
-          targetHandle: 'target',
+          sourceHandle: 'ref-source',
+          targetHandle: 'ref-target',
           data: { edgeData: edge },
         });
       }

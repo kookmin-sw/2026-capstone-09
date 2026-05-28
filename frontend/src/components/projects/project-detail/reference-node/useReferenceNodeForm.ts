@@ -67,19 +67,20 @@ export const useReferenceNodeForm = ({ startNodeId, nodeOptions }: UseReferenceN
 
   const [viewMode, setViewMode] = useState<ReferenceNodeViewMode>('list');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
 
   const nodeKeyword = useWatch({ control, name: 'nodeKeyword' });
   const comment = useWatch({ control, name: 'comment' });
   const trimmedNodeKeyword = nodeKeyword.trim();
   const trimmedComment = comment.trim();
 
+  // 타이틀이 중복되는 노드가 있을 수 있으므로, 사용자가 드롭다운에서 선택한 nodeId를 기준으로 식별한다.
   const selectedNode = useMemo(
     () =>
-      nodeOptions.find(
-        (node) =>
-          node.nodeTitle === trimmedNodeKeyword || `#${node.nodeNumber}` === trimmedNodeKeyword,
-      ) ?? null,
-    [nodeOptions, trimmedNodeKeyword],
+      selectedNodeId !== null
+        ? nodeOptions.find((node) => node.nodeId === selectedNodeId) ?? null
+        : null,
+    [nodeOptions, selectedNodeId],
   );
 
   const searchResults = useMemo(() => {
@@ -110,11 +111,13 @@ export const useReferenceNodeForm = ({ startNodeId, nodeOptions }: UseReferenceN
   const closeAddView = useCallback(() => {
     setViewMode('list');
     setIsSearchOpen(false);
+    setSelectedNodeId(null);
     reset({ nodeKeyword: '', comment: '' });
   }, [reset]);
 
   const selectNodeOption = useCallback(
     (option: ReferenceNodeOption) => {
+      setSelectedNodeId(option.nodeId);
       setValue('nodeKeyword', option.nodeTitle, {
         shouldValidate: true,
         shouldDirty: true,
@@ -125,6 +128,7 @@ export const useReferenceNodeForm = ({ startNodeId, nodeOptions }: UseReferenceN
   );
 
   const clearSelectedNode = useCallback(() => {
+    setSelectedNodeId(null);
     setValue('nodeKeyword', '', { shouldValidate: true, shouldDirty: true });
   }, [setValue]);
 

@@ -177,8 +177,16 @@ function ConnectedReferenceNodeModal({
   const queryClient = useQueryClient();
   const showErrorToast = useErrorToast();
 
+  // 이미 (현재 노드 -> 상대) 방향의 참조가 있는 노드는 중복 생성을 막기 위해 드롭다운에서 제외한다.
+  // 반대 방향(상대 -> 현재)만 존재하는 경우는 새 참조를 만들 수 있어야 하므로 제외하지 않는다.
+  const outgoingTargetIds = new Set(
+    linkedNodes
+      .filter((link) => link.linkType === 'START' && link.linkedNodeId !== undefined)
+      .map((link) => link.linkedNodeId as number),
+  );
+
   const nodeOptions = nodeList
-    .filter((n) => n.nodeId !== nodeId)
+    .filter((n) => n.nodeId !== nodeId && (n.nodeId === undefined || !outgoingTargetIds.has(n.nodeId)))
     .map((n) => ({ nodeId: n.nodeId ?? 0, nodeNumber: n.number ?? '', nodeTitle: n.title ?? '' }));
 
   return (

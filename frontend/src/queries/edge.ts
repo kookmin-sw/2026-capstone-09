@@ -73,7 +73,12 @@ export function useCreateEdgeMutation(projectId: number) {
 }
 
 export function useDeleteEdgeMutation(projectId: number) {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (edgeId: number) => privateApi.edge.deleteEdge(projectId, edgeId),
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: nodeKeys.flowchart(projectId) });
+      void queryClient.invalidateQueries({ queryKey: [...edgeKeys.all, 'linked', projectId] });
+    },
   });
 }
