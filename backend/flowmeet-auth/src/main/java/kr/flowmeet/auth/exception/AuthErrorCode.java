@@ -17,7 +17,8 @@ public enum AuthErrorCode implements ErrorCode {
     AUTH_SOCIAL_ID_DUPLICATED(HttpStatus.CONFLICT, "이미 존재하는 소셜 로그인 계정이 있어요."),
     AUTH_INVALID_SOCIAL_TOKEN(HttpStatus.UNAUTHORIZED, "소셜 로그인 정보가 유효하지 않아요. 다시 로그인해 주세요."),
     AUTH_PROVIDER_MISMATCH(HttpStatus.BAD_REQUEST, "소셜 로그인 정보가 일치하지 않아요. 다시 로그인해 주세요."),
-    AUTH_PROVIDER_UNSUPPORTED(HttpStatus.BAD_REQUEST, "아직 이 소셜 로그인은 지원하지 않아요.");
+    AUTH_PROVIDER_UNSUPPORTED(HttpStatus.BAD_REQUEST, "아직 이 소셜 로그인은 지원하지 않아요."),
+    AUTH_EMAIL_ALREADY_REGISTERED(HttpStatus.CONFLICT, "이미 %s(%s)로 가입된 이메일이에요. 기존 계정으로 로그인해 주세요.");
 
     private final HttpStatus httpStatus;
     private final String message;

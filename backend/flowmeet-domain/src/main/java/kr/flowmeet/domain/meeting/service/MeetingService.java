@@ -3,6 +3,7 @@ package kr.flowmeet.domain.meeting.service;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -59,6 +60,11 @@ public class MeetingService {
                 .stream()
                 .map(Meeting::getNodeId)
                 .collect(Collectors.toSet());
+    }
+
+    public Map<Long, MeetingStatus> findMeetingStatusByNodeIds(final List<Long> nodeIds) {
+        return findAllByNodeIds(nodeIds).stream()
+                .collect(Collectors.toMap(Meeting::getNodeId, Meeting::getStatus));
     }
 
     public List<Meeting> findScheduledToStart(final LocalDateTime now) {
@@ -168,10 +174,6 @@ public class MeetingService {
 
     @Transactional
     public void delete(final ProjectMember projectMember, final Meeting meeting) {
-        if (meeting.isInProgress()) {
-            throw new BusinessException(MeetingErrorCode.MEETING_IN_PROGRESS);
-        }
-
         validateCreatorOrOwner(meeting, projectMember);
 
         meetingParticipantRepository.deleteAllByMeetingId(meeting.getId());

@@ -15,6 +15,7 @@ import kr.flowmeet.auth.exception.AuthErrorCode;
 import kr.flowmeet.auth.exception.AuthException;
 import kr.flowmeet.auth.jwt.JwtProvider;
 import kr.flowmeet.domain.auth.service.RefreshTokenService;
+import kr.flowmeet.domain.common.exception.ParameterizedBusinessException;
 import kr.flowmeet.domain.emailverification.service.EmailVerificationService;
 import kr.flowmeet.domain.user.entity.SocialProvider;
 import kr.flowmeet.domain.user.entity.User;
@@ -42,6 +43,16 @@ public class AuthFacade {
         SocialUserInfo userInfo = oauthGateway.fetchUserInfo(provider, tokens.accessToken());
 
         Optional<User> existing = userService.findBySocialIdentity(new SocialIdentity(provider, userInfo.socialId()));
+
+        if (existing.isEmpty()) {
+            userService.findOptionalByEmail(userInfo.email()).ifPresent(conflictUser -> {
+                throw new ParameterizedBusinessException(
+                        AuthErrorCode.AUTH_EMAIL_ALREADY_REGISTERED,
+                        conflictUser.getSocialProvider().getDisplayName(),
+                        conflictUser.getSocialEmail()
+                );
+            });
+        }
 
         return existing
                 .map(user -> handleExistingUser(user, tokens))

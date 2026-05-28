@@ -36,6 +36,7 @@ import kr.flowmeet.api.node.dto.response.SearchNodeResponse;
 import kr.flowmeet.domain.common.exception.BusinessException;
 import kr.flowmeet.domain.meeting.entity.Meeting;
 import kr.flowmeet.domain.meeting.entity.MeetingParticipant;
+import kr.flowmeet.domain.meeting.entity.MeetingStatus;
 import kr.flowmeet.domain.meeting.service.MeetingService;
 import kr.flowmeet.domain.node.entity.Edge;
 import kr.flowmeet.domain.node.entity.Node;
@@ -82,14 +83,14 @@ public class NodeFacade {
 
         Map<Long, List<NodeTag>> nodeTagMap = nodeTagService.findAllByNodeIdsAsMap(nodeIds);
         Map<Long, List<NodeAssignee>> assigneeMap = nodeAssigneeService.findAllByNodeIdsAsMap(nodeIds);
-        Set<Long> meetingNodeIds = meetingService.findAllMeetingNodeIds(nodeIds);
+        Map<Long, MeetingStatus> meetingStatusByNodeId = meetingService.findMeetingStatusByNodeIds(nodeIds);
         Map<Long, List<Long>> childIdMap = nodeService.getChildNodeIdMap(nodes);
 
         List<Node> sortedNodes = nodes.stream()
                 .sorted(NODE_NUMBER_ORDER)
                 .toList();
 
-        return GetFlowchartResponse.of(sortedNodes, edges, nodeTagMap, assigneeMap, meetingNodeIds, childIdMap);
+        return GetFlowchartResponse.of(sortedNodes, edges, nodeTagMap, assigneeMap, meetingStatusByNodeId, childIdMap);
     }
 
     public GetNodeResponse getNode(final Long userId, final Long projectId, final Long nodeId) {
@@ -291,7 +292,6 @@ public class NodeFacade {
         return RequestNodeSummaryResponse.from(aiTask.getId());
     }
 
-    // TODO: 추후 노트(noteContent) 포함 여부 검토
     public AnalyzeDraggedNodesResponse analyzeDraggedNodes(
             final Long userId,
             final Long projectId,
@@ -317,11 +317,21 @@ public class NodeFacade {
         int count = 0;
         for (Node node : nodes) {
             Meeting meeting = meetingByNodeId.get(node.getId());
-            if (meeting == null) {
+            boolean hasSummary = meeting != null;
+            boolean hasNote = node.getNoteContent() != null && !node.getNoteContent().isBlank();
+
+            if (!hasSummary && !hasNote) {
                 continue;
             }
-            sb.append("name: ").append(node.getTitle()).append("\n")
-                    .append("\"").append(meeting.getSummary()).append("\"\n\n");
+
+            sb.append("name: ").append(node.getTitle()).append("\n");
+            if (hasSummary) {
+                sb.append("meeting: \"").append(meeting.getSummary()).append("\"\n");
+            }
+            if (hasNote) {
+                sb.append("note: \"").append(node.getNoteContent()).append("\"\n");
+            }
+            sb.append("\n");
             count++;
         }
 

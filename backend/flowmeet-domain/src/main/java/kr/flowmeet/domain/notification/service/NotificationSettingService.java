@@ -1,6 +1,7 @@
 package kr.flowmeet.domain.notification.service;
 
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,10 @@ public class NotificationSettingService {
     public NotificationSetting findByUserIdAndProjectId(final Long userId, final Long projectId) {
         return notificationSettingRepository.findByUserIdAndProjectId(userId, projectId)
                 .orElseThrow(() -> new BusinessException(NotificationErrorCode.NOTIFICATION_SETTING_NOT_FOUND));
+    }
+
+    public Optional<NotificationSetting> findOptionalByUserIdAndProjectId(final Long userId, final Long projectId) {
+        return notificationSettingRepository.findByUserIdAndProjectId(userId, projectId);
     }
 
     public List<NotificationSetting> findAllByProjectId(final Long projectId) {

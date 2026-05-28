@@ -35,11 +35,10 @@ public class TagService {
         if (existing.isPresent()) {
             Tag tag = existing.get();
             if (tag.getDeletedAt() != null) {
-                tag.restore();
-                tag.update(command.name(), command.color());
-                return tag;
+                tagRepository.hardDeleteById(tag.getId());
+            } else {
+                throw new BusinessException(TagErrorCode.TAG_NAME_DUPLICATED);
             }
-            throw new BusinessException(TagErrorCode.TAG_NAME_DUPLICATED);
         }
 
         return tagRepository.save(

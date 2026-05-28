@@ -1,14 +1,16 @@
 package kr.flowmeet.api.node.facade;
 
-import kr.flowmeet.domain.node.service.NodeValidator;
-import kr.flowmeet.domain.project.entity.ProjectMemberRole;
-import kr.flowmeet.domain.project.service.ProjectPermissionValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import kr.flowmeet.api.node.dto.request.CreateAssigneeRequest;
+import kr.flowmeet.api.node.event.NodeAssignedEvent;
 import kr.flowmeet.domain.node.entity.NodeAssignee;
 import kr.flowmeet.domain.node.service.NodeAssigneeService;
+import kr.flowmeet.domain.node.service.NodeValidator;
+import kr.flowmeet.domain.project.entity.ProjectMemberRole;
+import kr.flowmeet.domain.project.service.ProjectPermissionValidator;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +20,7 @@ public class NodeAssigneeFacade {
     private final NodeAssigneeService nodeAssigneeService;
     private final ProjectPermissionValidator projectPermissionValidator;
     private final NodeValidator nodeValidator;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public void createAssignee(
@@ -34,6 +37,9 @@ public class NodeAssigneeFacade {
         projectPermissionValidator.validate(projectId, assigneeUserId);
 
         nodeAssigneeService.create(nodeId, assigneeUserId);
+        if (!assigneeUserId.equals(userId)) {
+            eventPublisher.publishEvent(NodeAssignedEvent.of(assigneeUserId, projectId, nodeId));
+        }
     }
 
     @Transactional

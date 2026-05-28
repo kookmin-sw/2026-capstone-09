@@ -4,8 +4,12 @@ from typing import Any
 import httpx
 from mcp import ClientSession
 from mcp.client.streamable_http import streamable_http_client
- 
- 
+
+
+class MCPConnectionError(Exception):
+    pass
+
+
 class MCPClient:
     def __init__(self):
         self.session: ClientSession | None = None
@@ -41,9 +45,11 @@ class MCPClient:
  
     async def call_tool(self, tool_name: str, arguments: dict[str, Any]) -> str:
         if not self.session:
-            raise RuntimeError("서버에 연결되지 않았습니다.")
-        
-        response = await self.session.call_tool(tool_name, arguments)
+            raise MCPConnectionError("MCP 서버에 연결되지 않았습니다.")
+        try:
+            response = await self.session.call_tool(tool_name, arguments)
+        except (httpx.ConnectError, httpx.RemoteProtocolError, httpx.ReadError, httpx.TransportError) as e:
+            raise MCPConnectionError(f"MCP 연결 끊김: {e}") from e
         
         # 에러 체크 추가
         if response.isError:

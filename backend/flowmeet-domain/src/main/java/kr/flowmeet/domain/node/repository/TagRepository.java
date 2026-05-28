@@ -16,7 +16,7 @@ public interface TagRepository extends JpaRepository<Tag, Long> {
 
     boolean existsByIdAndProjectId(Long id, Long projectId);
 
-    @Query(value = "SELECT * FROM tags WHERE project_id = :projectId AND name = :name LIMIT 1", nativeQuery = true)
+    @Query(value = "SELECT * FROM tags WHERE project_id = :projectId AND name = :name LIMIT 1 FOR UPDATE", nativeQuery = true)
     Optional<Tag> findByProjectIdAndNameIncludingDeleted(@Param("projectId") Long projectId, @Param("name") String name);
 
     @Modifying(clearAutomatically = true)
