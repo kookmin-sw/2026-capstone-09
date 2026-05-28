@@ -17,7 +17,7 @@ import { authStorage } from '@/api/authStorage';
 import { userStorage } from '@/api/userStorage';
 import { useModal } from '@/components/commons/modal/ModalContext';
 import { notificationKeys } from '@/queries/keys/notificationKeys';
-import { prefetchNotificationSetting, useUnreadCountQuery } from '@/queries/notification';
+import { prefetchNotificationSetting, useNotificationListQuery } from '@/queries/notification';
 import { useProjectListQuery, useProjectQuery } from '@/queries/project';
 import { useCurrentUserQuery } from '@/queries/user';
 import { cn } from '@/utils/cn';
@@ -84,9 +84,12 @@ export const ProjectSidebar = ({
   const { data: currentUser } = useCurrentUserQuery();
   const storedUser = userStorage.get();
 
-  // 읽지 않은 알림 개수 — 최초 1회 fetch 후 SSE notification 이벤트의 unreadCount로 갱신.
-  // 수신함을 열면 SidebarAlarmModal이 목록 쿼리 결과로 이 캐시를 직접 동기화한다.
-  const { data: unreadCount = 0 } = useUnreadCountQuery();
+  // 읽지 않은 알림 개수 — 현재 프로젝트로 필터된 알림 목록에서 직접 파생한다.
+  // 글로벌 unread-count API는 다른 프로젝트의 알림까지 합산하므로 사용하지 않는다.
+  const { data: projectNotifications = [] } = useNotificationListQuery(
+    isProjectIdValid ? (projectId as number) : 0,
+  );
+  const unreadCount = projectNotifications.filter((n) => n.isRead === false).length;
   // SSE로 새로 수신한 알림 여부 (알림창 열면 초기화)
   const [hasNewSseNotification, setHasNewSseNotification] = useState(false);
 
@@ -162,20 +165,9 @@ export const ProjectSidebar = ({
                 // 'notification' 이벤트만 처리 (connect, heartbeat 등은 무시)
                 if (currentEventType === 'notification') {
                   setHasNewSseNotification(true);
-                  // 서버 payload의 실제 unreadCount를 그대로 반영해 카운트 드리프트 방지.
-                  try {
-                    const payload = JSON.parse(line.slice('data:'.length).trim()) as {
-                      unreadCount?: number;
-                    };
-                    if (typeof payload.unreadCount === 'number') {
-                      queryClient.setQueryData(
-                        notificationKeys.unreadCount(),
-                        payload.unreadCount,
-                      );
-                    }
-                  } catch {
-                    // payload 파싱 실패 — dot만 표시
-                  }
+                  // 목록 캐시를 무효화해 새 알림이 반영되도록 한다.
+                  // 뱃지 카운트는 목록에서 파생되므로 별도의 unread-count 캐시 갱신은 불필요.
+                  void queryClient.invalidateQueries({ queryKey: notificationKeys.list() });
                 }
               } else if (line.trim() === '') {
                 // 빈 줄은 메시지 구분자 — event 타입 초기화

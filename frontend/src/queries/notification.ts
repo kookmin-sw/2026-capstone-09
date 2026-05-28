@@ -23,14 +23,6 @@ const fetchNotificationSetting = async (projectId: number) => {
   }
 };
 
-export function useUnreadCountQuery() {
-  return useQuery({
-    queryKey: notificationKeys.unreadCount(),
-    queryFn: () =>
-      privateApi.notification.getUnreadCount().then((res) => res.data.data?.unreadCount ?? 0),
-  });
-}
-
 /**
  * 수신함 알림 목록.
  * 전체 목록을 하나의 캐시(list)로 받아두고 select로 현재 프로젝트만 필터링한다.

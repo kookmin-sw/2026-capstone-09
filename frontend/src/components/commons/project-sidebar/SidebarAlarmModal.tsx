@@ -1,13 +1,11 @@
 'use client';
 
-import { useQueryClient } from '@tanstack/react-query';
 import { IconChevronDoubleLeft, IconInbox } from '@wanteddev/wds-icon';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
 import type { NotificationSummaryResponse } from '@/api/Api';
 import { useErrorToast } from '@/hooks/useErrorToast';
-import { notificationKeys } from '@/queries/keys/notificationKeys';
 import {
   useMarkNotificationReadMutation,
   useNotificationListQuery,
@@ -83,23 +81,13 @@ export const SidebarAlarmModal = ({
   onNotificationClick,
 }: SidebarAlarmModalProps) => {
   const showErrorToast = useErrorToast();
-  const queryClient = useQueryClient();
   const [hasScrolled, setHasScrolled] = useState(false);
 
   // isPending인 동안에는 빈 상태('받은 알림이 없어요')를 그리지 않아 깜빡임을 막는다.
   // 캐시가 남아 있으면 재오픈 시 바로 목록이 보인다.
-  const { data: notifications = [], isPending, isError, error, isSuccess } =
+  const { data: notifications = [], isPending, isError, error } =
     useNotificationListQuery(projectId);
   const markAsRead = useMarkNotificationReadMutation();
-
-  const unreadInList = notifications.filter((n) => n.isRead === false).length;
-
-  // 목록 기준 실제 unread 개수로 뱃지 캐시를 직접 동기화한다(부모 콜백 대신 쿼리 캐시 사용).
-  // SSE는 unreadCount 캐시만 갱신하고 목록은 건드리지 않으므로, 이 effect는 SSE 수신 시 재실행되지 않는다.
-  useEffect(() => {
-    if (!isSuccess) return;
-    queryClient.setQueryData(notificationKeys.unreadCount(), unreadInList);
-  }, [isSuccess, unreadInList, queryClient]);
 
   useEffect(() => {
     if (isError) showErrorToast(error, '알림 목록을 불러오지 못했어요.');
