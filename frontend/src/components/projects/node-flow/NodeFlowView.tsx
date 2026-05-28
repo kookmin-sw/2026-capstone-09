@@ -79,7 +79,11 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
   const { data: flowChart, isFetching: loading } = useFlowchartQuery(projectId);
   const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
   const [sidebarNodeId, setSidebarNodeId] = useState<number | null>(null);
-  const [showDashedLines, setShowDashedLines] = useState(false);
+  const [showDashedLines, setShowDashedLines] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const saved = localStorage.getItem('showDashedLines');
+    return saved !== null ? JSON.parse(saved) : false;
+  });
   const [isCreating, setIsCreating] = useState(false);
   const [selectedNodes, setSelectedNodes] = useState<Node[]>([]);
   const [summaryMessageIndex, setSummaryMessageIndex] = useState(0);
@@ -133,16 +137,6 @@ function NodeFlowContent({ projectId }: NodeFlowViewProps) {
     },
     [nodes, setNodes],
   );
-
-  // localStorage에서 점선 표시 상태 불러오기
-  useEffect(() => {
-    const saved = localStorage.getItem('showDashedLines');
-    if (saved !== null) {
-      queueMicrotask(() => {
-        setShowDashedLines(JSON.parse(saved));
-      });
-    }
-  }, []);
 
   // 점선 토글 상태를 localStorage에 저장
   useEffect(() => {
