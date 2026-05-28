@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { asset } from '@/lib/asset';
 
 export function PosterCard() {
@@ -36,12 +37,14 @@ export function PosterCard() {
           transition={{ duration: 0.3 }}
           className="relative aspect-[930/1000] w-full max-w-[300px] overflow-hidden rounded-xl bg-[#050608] shadow-[0_30px_60px_rgba(0,0,0,0.5)]"
         >
-          <img
+          <Image
             src={asset('/docs/poster-preview.png')}
             alt="flowMeet 포스터 미리보기"
-            className="block h-full w-full object-cover"
+            fill
+            sizes="300px"
             loading="lazy"
             draggable={false}
+            className="object-cover"
           />
         </motion.div>
       </div>

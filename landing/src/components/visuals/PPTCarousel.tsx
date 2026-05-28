@@ -116,7 +116,7 @@ export function PPTCarousel() {
           <p className="text-[10.5px] text-[var(--color-text-dim)]">{SLIDES.length}개 슬라이드 · 31 pages</p>
         </div>
         <a
-          href="/플로밋.pdf"
+          href={asset('/플로밋.pdf')}
           download
           className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-primary-50)] px-4 py-2 text-[12.5px] font-semibold text-black transition-colors hover:bg-[var(--color-primary-50)]/90"
         >

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { DownloadButton } from './ui/DownloadButton';
 import { GoogleLoginButton } from './ui/GoogleLoginButton';
@@ -61,9 +62,12 @@ export function Header() {
           className="group flex flex-none items-center gap-2"
           aria-label="flowMeet 홈"
         >
-          <img
+          <Image
             src={asset('/flowmeet-logo.svg')}
             alt="flowMeet"
+            width={120}
+            height={28}
+            priority
             className="h-7 w-auto transition-transform duration-300 group-hover:scale-[1.03]"
           />
         </a>

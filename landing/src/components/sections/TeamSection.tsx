@@ -1,6 +1,7 @@
 'use client';
 
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import Image from 'next/image';
 import { useRef } from 'react';
 import { asset } from '@/lib/asset';
 import { SectionHeader } from '../ui/SectionHeader';
@@ -141,10 +142,12 @@ function MemberCard({ member, index }: { member: Member; index: number }) {
       className="group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.04] transition-colors hover:border-[var(--color-primary-50)]/35 hover:bg-white/[0.06]"
     >
       <div className={`relative aspect-[4/3] w-full bg-gradient-to-br ${member.accent}`}>
-        <img
+        <Image
           src={asset(member.photo)}
           alt={member.name}
-          className="absolute inset-0 h-full w-full object-cover"
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          className="object-cover"
           style={member.photoPosition ? { objectPosition: member.photoPosition } : undefined}
           onError={(e) => {
             (e.currentTarget as HTMLImageElement).style.display = 'none';

@@ -1,6 +1,7 @@
 'use client';
 
 import { motion, useMotionValue, useSpring } from 'framer-motion';
+import Image from 'next/image';
 import { useEffect } from 'react';
 import { DownloadButton } from '../ui/DownloadButton';
 import { GoogleLoginButton } from '../ui/GoogleLoginButton';
@@ -60,9 +61,12 @@ export function Hero() {
           <span className="block whitespace-nowrap text-gradient-soft text-[24px] sm:text-[clamp(24px,6vw,88px)]">
             기획이 흐름을 만나는 순간,
           </span>
-          <img
+          <Image
             src={asset('/flowMeet.svg')}
             alt="flowMeet"
+            width={840}
+            height={160}
+            priority
             style={{ width: 'min(82vw, 840px)' }}
             className="mx-auto mt-4 block h-auto"
           />
