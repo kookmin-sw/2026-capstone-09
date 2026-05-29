@@ -9,6 +9,8 @@ public record ReferencedUserResponse(
         Long userId,
         @Schema(description = "닉네임", example = "홍길동")
         String nickname,
+        @Schema(description = "이메일", example = "user@example.com")
+        String email,
         @Schema(description = "프로필 이미지 URL", example = "https://example.com/profile.png")
         String profileImageUrl
 ) {
@@ -16,6 +18,7 @@ public record ReferencedUserResponse(
         return new ReferencedUserResponse(
                 member.getUserId(),
                 member.getUser().getNickname(),
+                member.getUser().getEmail(),
                 member.getUser().getProfileImageUrl()
         );
     }
