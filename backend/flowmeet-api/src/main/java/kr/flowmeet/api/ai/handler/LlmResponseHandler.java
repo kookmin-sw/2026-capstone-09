@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -41,11 +42,6 @@ public class LlmResponseHandler {
             String summary = response.result().get("summary").asText();
             String mermaidCode = response.result().get("mermaid_code").asText();
             meetingService.saveSummary(task.getReferenceId(), summary, mermaidCode);
-            try {
-                tryTriggerMainSummary(task);
-            } catch (Exception e) {
-                log.error("main-summary 자동 트리거 실패 - jobId: {}", task.getId(), e);
-            }
         } else if (response.isMainSummary()) {
             String summary = response.result().asText();
             nodeService.saveSummary(task.getReferenceId(), summary);
@@ -54,7 +50,8 @@ public class LlmResponseHandler {
         return task;
     }
 
-    private void tryTriggerMainSummary(final AiTask task) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void triggerMainSummary(final AiTask task) {
         Meeting meeting = meetingService.findById(task.getReferenceId());
         Node node = nodeService.findById(meeting.getNodeId());
 
@@ -78,5 +75,18 @@ public class LlmResponseHandler {
         eventPublisher.publishEvent(new NodeSummaryRequestEvent(mainTask.getId(), mergedText));
         log.info("sub-summary 완료 → main-summary 자동 트리거 - parentNodeId: {}, jobId: {}",
                 node.getParentId(), mainTask.getId());
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void compensateMainSummaryTrigger(final Long meetingId) {
+        Meeting meeting = meetingService.findById(meetingId);
+        Node node = nodeService.findById(meeting.getNodeId());
+
+        if (node.getParentId() == null) {
+            return;
+        }
+
+        aiTaskService.cancelIfPending(node.getParentId(), AiTaskType.MAIN_SUMMARY);
+        log.warn("main-summary 트리거 실패 보상 완료 - parentNodeId: {}", node.getParentId());
     }
 }

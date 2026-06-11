@@ -72,4 +72,8 @@ public class AiTask extends BaseTimeEntity {
         this.status = AiTaskStatus.FAILED;
         this.errorMessage = errorMessage;
     }
+
+    public void cancel() {
+        this.status = AiTaskStatus.CANCELLED;
+    }
 }

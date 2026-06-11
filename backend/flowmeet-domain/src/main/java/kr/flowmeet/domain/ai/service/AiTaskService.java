@@ -1,7 +1,9 @@
 package kr.flowmeet.domain.ai.service;
 
+import java.util.Optional;
 import java.util.UUID;
 import kr.flowmeet.domain.ai.entity.AiTask;
+import kr.flowmeet.domain.ai.entity.AiTaskStatus;
 import kr.flowmeet.domain.ai.entity.AiTaskType;
 import kr.flowmeet.domain.ai.exception.AiTaskErrorCode;
 import kr.flowmeet.domain.ai.repository.AiTaskRepository;
@@ -47,5 +49,12 @@ public class AiTaskService {
         AiTask task = findById(jobId);
         task.fail(errorMessage);
         return task;
+    }
+
+    @Transactional
+    public void cancelIfPending(final Long referenceId, final AiTaskType taskType) {
+        Optional<AiTask> task = aiTaskRepository.findByReferenceIdAndTaskTypeAndStatus(
+                referenceId, taskType, AiTaskStatus.PENDING);
+        task.ifPresent(AiTask::cancel);
     }
 }
