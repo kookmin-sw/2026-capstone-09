@@ -41,6 +41,15 @@ public class LlmResponseListener {
 
             AiTask completedTask = llmResponseHandler.completeAndSave(response);
 
+            if (response.isSubSummary()) {
+                try {
+                    llmResponseHandler.triggerMainSummary(completedTask);
+                } catch (Exception e) {
+                    log.error("main-summary 트리거 실패, 보상 실행 - jobId: {}", completedTask.getId(), e);
+                    llmResponseHandler.compensateMainSummaryTrigger(completedTask.getReferenceId());
+                }
+            }
+
             log.info("LLM 처리 완료 - jobId: {}, taskType: {}", response.jobId(), response.taskType());
             notifyUser(completedTask);
         } catch (Exception e) {

@@ -4,5 +4,6 @@ public enum AiTaskStatus {
     PENDING,
     PROCESSING,
     COMPLETED,
-    FAILED
+    FAILED,
+    CANCELLED
 }
